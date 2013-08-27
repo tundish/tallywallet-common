@@ -1,11 +1,13 @@
 #!/usr/bin/env python3.4
 #   encoding: UTF-8
 
+from collections import defaultdict
 from collections import namedtuple
 import datetime
 import decimal
 import enum
 import unittest
+import warnings
 
 @enum.unique
 class Currency(enum.Enum):
@@ -30,30 +32,43 @@ class Role(enum.Enum):
         obj._value_ = value
         return obj
 
-Column = namedtuple("LedgerColumn", ["name", "typ", "role"])
+Column = namedtuple("LedgerColumn", ["name", "currency", "role"])
 
 class Ledger(object):
 
-    def exchange(self, src, dst, val):
-        pass
-
-    def trade(self, src, dst, val):
-        pass
-
     def __init__(self, *args):
+        self._cols = args
+        self._tally = defaultdict(decimal.Decimal)
         self._transactions = []
+        self._rates = {}
 
     def __enter__(self, *args):
         return self
 
-    def __iter__(self):
-        return iter(self._transactions)
-
     def __exit__(self, exc_type, exc_value, traceback):
         return False
 
-    def put(self, entry):
-        self._transactions.append(entry)
+    def __iter__(self):
+        return iter(self._transactions)
+
+    def exchange(self, src, dst, val, **kwargs):
+        self._rates[(src, dst)] = val
+
+    def trade(self, src, dst, val=None, **kwargs):
+        src = next(i for i in self._cols if i.name == src)
+        dst = next(i for i in self._cols if i.name == dst)
+        val = val if val is not None else 0
+        rate = self._rates[(src.currency, dst.currency)]
+        try:
+            tallyCol = next(i for i in self._cols
+                if i.currency == src and i.role == Role.trading)
+        except StopIteration:
+            warnings.warn(
+                "Ledger lacks a trading column for {}".format(
+                    src.currency.name.capitalize()))
+        else:
+            print("col: ", tallyCol)
+
 
 class CurrencyTests(unittest.TestCase):
 
@@ -69,14 +84,18 @@ class CurrencyTests(unittest.TestCase):
         Cy = Currency
         Dl = decimal.Decimal
         with Ledger(
-            Column("date", datetime.date, None)
-            ) as ldgr:
-            for i in [
-                (datetime.date(2013, 1, 1),
-                ldgr.exchange(Cy.dollar, Cy.canadian, Dl(1.2))),
-                (datetime.date(2013, 1, 1),
-                ldgr.trade(Cy.dollar, Cy.canadian, Dl(1.2)))]:
-                ldgr.put(i)
+            Column("Canadian cash", Cy.canadian, Role.asset),
+            Column("US cash", Cy.dollar, Role.asset),
+            Column("Capital", Cy.canadian, Role.capital)
+        ) as ldgr, decimal.localcontext() as computation:
+            computation.prec = 10
+            ldgr.exchange(
+                Cy.dollar, Cy.canadian, Dl(1.2),
+                ts=datetime.date(2013, 1, 1))
+            ldgr.trade(
+                "US cash", "Canadian cash",
+                ts=datetime.date(2013, 1, 1))
+        print(list(ldgr))
         self.assertEqual(-5, list(ldgr)[-1][-1])
 
 if __name__ == "__main__":
