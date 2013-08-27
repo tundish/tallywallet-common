@@ -43,12 +43,17 @@ class Ledger(object):
     def __init__(self, *args):
         self._transactions = []
 
-    def __iter__(self):
-        for i in self._transactions:
-            yield i
+    def __enter__(self, *args):
+        return self
 
-    def load(self, entries):
-        self._transactions.extend(entries)
+    def __iter__(self):
+        return iter(self._transactions)
+
+    def __exit__(self, exc_type, exc_value, traceback):
+        return False
+
+    def put(self, entry):
+        self._transactions.append(entry)
 
 class CurrencyTests(unittest.TestCase):
 
@@ -63,15 +68,15 @@ class CurrencyTests(unittest.TestCase):
         """
         Cy = Currency
         Dl = decimal.Decimal
-        ldgr = Ledger(
+        with Ledger(
             Column("date", datetime.date, None)
-        )
-        ldgr.load([
-            (datetime.date(2013, 1, 1),
-            ldgr.exchange(Cy.dollar, Cy.canadian, Dl(1.2))),
-            (datetime.date(2013, 1, 1),
-            ldgr.trade(Cy.dollar, Cy.canadian, Dl(1.2)))
-        ])
+            ) as ldgr:
+            for i in [
+                (datetime.date(2013, 1, 1),
+                ldgr.exchange(Cy.dollar, Cy.canadian, Dl(1.2))),
+                (datetime.date(2013, 1, 1),
+                ldgr.trade(Cy.dollar, Cy.canadian, Dl(1.2)))]:
+                ldgr.put(i)
         self.assertEqual(-5, list(ldgr)[-1][-1])
 
 if __name__ == "__main__":
