@@ -61,13 +61,13 @@ class Ledger(object):
         rate = self._rates[(src.currency, dst.currency)]
         try:
             tallyCol = next(i for i in self._cols
-                if i.currency == src and i.role == Role.trading)
+                if i.currency is src.currency and i.role is Role.trading)
         except StopIteration:
             warnings.warn(
                 "Ledger lacks a trading column for {}".format(
                     src.currency.name.capitalize()))
         else:
-            print("col: ", tallyCol)
+            self._tally[tallyCol] += val * rate
 
 
 class CurrencyTests(unittest.TestCase):
@@ -83,12 +83,12 @@ class CurrencyTests(unittest.TestCase):
         """
         Cy = Currency
         Dl = decimal.Decimal
-        with Ledger(
+        with decimal.localcontext() as computation, Ledger(
             Column("Canadian cash", Cy.canadian, Role.asset),
             Column("US cash", Cy.dollar, Role.asset),
-            Column("Capital", Cy.canadian, Role.capital)
+            Column("Capital", Cy.canadian, Role.capital),
             Column("Gain", Cy.dollar, Role.trading)
-        ) as ldgr, decimal.localcontext() as computation:
+        ) as ldgr:
             computation.prec = 10
             ldgr.exchange(
                 Cy.dollar, Cy.canadian, Dl(1.2),
@@ -96,6 +96,7 @@ class CurrencyTests(unittest.TestCase):
             ldgr.trade(
                 "US cash", "Canadian cash",
                 ts=datetime.date(2013, 1, 1))
+        print(ldgr._tally)
         print(list(ldgr))
         self.assertEqual(-5, list(ldgr)[-1][-1])
 
