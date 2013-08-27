@@ -87,6 +87,7 @@ class CurrencyTests(unittest.TestCase):
             Column("Canadian cash", Cy.canadian, Role.asset),
             Column("US cash", Cy.dollar, Role.asset),
             Column("Capital", Cy.canadian, Role.capital)
+            Column("Gain", Cy.dollar, Role.trading)
         ) as ldgr, decimal.localcontext() as computation:
             computation.prec = 10
             ldgr.exchange(
