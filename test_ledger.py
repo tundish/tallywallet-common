@@ -77,19 +77,6 @@ class Ledger(object):
     def columns(self):
         return self._cols[:]
 
-    def set_exchange(self, exchange, cols=None, **kwargs):
-        cols = cols or [i for i in self.columns if not i.role is Role.trading]
-        accounts = {i.currency: i for i in self._cols if i.role is Role.trading}
-        for c in cols:
-            account = accounts[c.currency]
-            trade = exchange.trade(self._tally[c],
-                path=TradePath(c.currency, self.ref, self.ref),
-                prior=self._rates[c])
-            self._tally[account] += trade.gain
-            self._rates[c] = exchange
-            print("trade: ", trade)
-        return (self._rates, kwargs, Status.ok)
-
     def speculate(self, exchange, cols=None, **kwargs):
         cols = cols or [i for i in self.columns if not i.role is Role.trading]
         accounts = {i.currency: i for i in self._cols if i.role is Role.trading}
@@ -100,6 +87,14 @@ class Ledger(object):
                 path=TradePath(c.currency, self.ref, self.ref),
                 prior=self._rates[c])
             yield (c, exchange, trade, kwargs)
+
+    def commit(self, exchange, cols=None, **kwargs):
+        accounts = {i.currency: i for i in self._cols if i.role is Role.trading}
+        for c, xchg, trade, kwgs in self.speculate(exchange, cols, **kwargs):
+            account = accounts[c.currency]
+            self._tally[account] += trade.gain
+            self._rates[c] = exchange
+        return (self._rates, kwargs, Status.ok)
 
     def add_entry(self, *args, **kwargs):
         for k, v in zip(self._cols, args):
@@ -179,7 +174,7 @@ class CurrencyTests(unittest.TestCase):
         ) as ldgr:
             computation.prec = 10
             usC = next(i for i in ldgr.columns if i.name == "US cash")
-            txn = ldgr.set_exchange(
+            txn = ldgr.commit(
                 Exchange({
                     (Cy.CAD, Cy.CAD): 1,
                     (Cy.USD, Cy.CAD): Dl("1.2")
@@ -189,19 +184,19 @@ class CurrencyTests(unittest.TestCase):
             txn = ldgr.add_entry(
                 Dl(60), Dl(100), Dl(180),
                 ts=datetime.date(2013, 1, 1), note="Initial balance")
-            txn = ldgr.set_exchange(
+            txn = ldgr.commit(
                 Exchange({
                     (Cy.USD, Cy.CAD): Dl("1.3")
                 }),
                 [usC],
                 ts=datetime.date(2013, 1, 2), note="1 USD = 1.30 CAD")
-            txn = ldgr.set_exchange(
+            txn = ldgr.commit(
                 Exchange({
                     (Cy.USD, Cy.CAD): Dl("1.25")
                 }),
                 [usC],
                 ts=datetime.date(2013, 1, 3), note="1 USD = 1.25 CAD")
-            txn = ldgr.set_exchange(
+            txn = ldgr.commit(
                 Exchange({
                     (Cy.USD, Cy.CAD): Dl("1.15")
                 }),
@@ -224,9 +219,8 @@ class CurrencyTests(unittest.TestCase):
             ref=Cy.CAD
         ) as ldgr:
             computation.prec = 10
-            print(ldgr.columns)
             usC = next(i for i in ldgr.columns if i.name == "US cash")
-            txn = ldgr.set_exchange(
+            txn = ldgr.commit(
                 Exchange({
                     (Cy.CAD, Cy.CAD): 1,
                     (Cy.USD, Cy.CAD): Dl("1.2")
@@ -243,7 +237,6 @@ class CurrencyTests(unittest.TestCase):
                 }),
                 [usC],
                 ts=datetime.date(2013, 1, 2), note="1 USD = 1.30 CAD")
-            print(*txn, sep='\n')
             txn = ldgr.speculate(
                 Exchange({
                     (Cy.CAD, Cy.CAD): 1,
@@ -251,7 +244,6 @@ class CurrencyTests(unittest.TestCase):
                 }),
                 [usC],
                 ts=datetime.date(2013, 1, 3), note="1 USD = 1.25 CAD")
-            print(*txn, sep='\n')
             txn = ldgr.speculate(
                 Exchange({
                     (Cy.CAD, Cy.CAD): 1,
@@ -259,7 +251,6 @@ class CurrencyTests(unittest.TestCase):
                 }),
                 [usC],
                 ts=datetime.date(2013, 1, 4), note="1 USD = 1.15 CAD")
-            print(*txn, sep='\n')
 
 if __name__ == "__main__":
     unittest.main()
