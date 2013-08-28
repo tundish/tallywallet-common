@@ -5,9 +5,21 @@ from collections import namedtuple
 from collections import OrderedDict
 import datetime
 import decimal
+from decimal import Decimal as Dl
 import enum
+import functools
 import unittest
 import warnings
+
+@enum.unique
+class Status(enum.Enum):
+    ok = "OK"
+    blocked = "BLOCKED"
+    failed = "FAILED"
+    stopped = "STOPPED"
+    error = "ERROR"
+    timedout = "TIMED OUT"
+
 
 @enum.unique
 class Currency(enum.Enum):
@@ -16,6 +28,7 @@ class Currency(enum.Enum):
     dollar = "USD"
     pound = "GBP"
     tallywallet = "XTW"
+Cy = Currency
 
 @enum.unique
 class Role(enum.Enum):
@@ -33,6 +46,10 @@ class Role(enum.Enum):
         return obj
 
 Column = namedtuple("LedgerColumn", ["name", "currency", "role"])
+
+TradeFees = namedtuple("TradeFees", ["rcv", "out"])
+TradePath = namedtuple("TradePath", ["rcv", "work", "out"])
+TradeGain = namedtuple("TradeGain", ["rcv", "gain", "out"])
 
 class Ledger(object):
 
@@ -59,24 +76,46 @@ class Ledger(object):
         tradeCol = next(i for i in self._cols
             if i.currency is src and i.role is Role.trading)
         preVals = [preFn(self._tally[i]) for i in assetCols]
+        return (self._exchange, kwargs, Status.ok)
         
-
-    def trade(self, src, dst, val=None, **kwargs):
-        src = next(i for i in self._cols if i.name == src)
-        dst = next(i for i in self._cols if i.name == dst)
-        val = val if val is not None else 0
-        fn = self._exchange[(src.currency, dst.currency)]
-        try:
-            tallyCol = next(i for i in self._cols
-                if i.currency is src.currency and i.role is Role.trading)
-        except StopIteration:
-            warnings.warn(
-                "Ledger lacks a trading column for {}".format(
-                    src.currency.name.capitalize()))
-        else:
-            self._tally[tallyCol] += fn(val)
+    def add_entry(self, *args, **kwargs):
+        for k, v in zip(self._cols, args):
+            self._tally[k] += v
+        return (args, kwargs, Status.ok)
 
 
+def convert(self, val, path, fees=TradeFees(0, 0)):
+    work = (val - fees.rcv) * self[(path.rcv, path.work)]
+    rv = work * self[(path.work, path.out)] - fees.out
+    return rv
+
+def trade(self, val, path, prior=None, fees=TradeFees(0, 0)):
+    prior = prior or self
+    this = self.convert(val, path, fees)
+    that = prior.convert(val, path, fees)
+    return TradeGain(val, this - that, this)
+
+Exchange = type("Exchange", (dict,), {"convert": convert, "trade": trade})
+
+class TradeTests(unittest.TestCase):
+
+    def test_null_currency_trade(self):
+        exchange = Exchange({
+            (Cy.pound, Cy.pound): Dl(1)
+        })
+        trader = functools.partial(
+            exchange.trade, path=TradePath(Cy.pound, Cy.pound, Cy.pound))
+
+        rv = trader(Dl(0))
+        self.assertIsInstance(rv, TradeGain)
+
+        self.assertEqual(trader(Dl(1)), (Dl(1), Dl(1), Dl(0)))
+         
+    def test_reference_currency_trade(self):
+        exchange = {
+            (Currency.pound, Currency.dollar): decimal.Decimal("1.55")
+        }
+        
 class CurrencyTests(unittest.TestCase):
 
     def test_exchange_gain_with_fixed_assets(self):
@@ -88,8 +127,6 @@ class CurrencyTests(unittest.TestCase):
         Jan 3 Balance (1 USD = 1.25 CAD) CAD 60 USD 100 CAD 180 CAD 5
         Jan 4 Balance (1 USD = 1.15 CAD) CAD 60 USD 100 CAD 180 – CAD 5
         """
-        Cy = Currency
-        Dl = decimal.Decimal
         with decimal.localcontext() as computation, Ledger(
             Column("Canadian cash", Cy.canadian, Role.asset),
             Column("US cash", Cy.dollar, Role.asset),
@@ -98,9 +135,21 @@ class CurrencyTests(unittest.TestCase):
         ) as ldgr:
             computation.prec = 10
             txn = ldgr.set_exchange(
-                Cy.dollar, Cy.canadian, lambda x: Dl(1.2) * x,
+                Cy.dollar, Cy.canadian, lambda x: Dl("1.2") * x,
                 ts=datetime.date(2013, 1, 1), note="1 USD = 1.20 CAD")
-        print(ldgr._tally)
+            txn = ldgr.add_entry(
+                Dl(60), Dl(100), Dl(180),
+                ts=datetime.date(2013, 1, 1), note="Initial balance")
+            txn = ldgr.set_exchange(
+                Cy.dollar, Cy.canadian, lambda x: Dl("1.2") * x,
+                ts=datetime.date(2013, 1, 2), note="1 USD = 1.30 CAD")
+            print(ldgr._tally) 
+            txn = ldgr.set_exchange(
+                Cy.dollar, Cy.canadian, lambda x: Dl("1.2") * x,
+                ts=datetime.date(2013, 1, 3), note="1 USD = 1.25 CAD")
+            txn = ldgr.set_exchange(
+                Cy.dollar, Cy.canadian, lambda x: Dl("1.15") * x,
+                ts=datetime.date(2013, 1, 4), note="1 USD = 1.15 CAD")
         self.assertEqual(-5, list(ldgr)[-1][-1])
 
 if __name__ == "__main__":
