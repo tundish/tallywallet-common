@@ -90,7 +90,7 @@ class Ledger(object):
             print("trade: ", trade)
         return (self._rates, kwargs, Status.ok)
 
-    def exchange_trades(self, exchange, cols=None, **kwargs):
+    def speculate(self, exchange, cols=None, **kwargs):
         cols = cols or [i for i in self.columns if not i.role is Role.trading]
         accounts = {i.currency: i for i in self._cols if i.role is Role.trading}
         for c in cols:
@@ -160,53 +160,6 @@ class ExchangeTests(unittest.TestCase):
 
 class CurrencyTests(unittest.TestCase):
 
-    def test_track_exchange_gain_with_fixed_assets(self):
-        """
-        From Selinger table 4.1
-        date                             asset  asset   capital gain
-        Jan 1 Balance (1 USD = 1.20 CAD) CAD 60 USD 100 CAD 180 CAD 0
-        Jan 2 Balance (1 USD = 1.30 CAD) CAD 60 USD 100 CAD 180 CAD 10
-        Jan 3 Balance (1 USD = 1.25 CAD) CAD 60 USD 100 CAD 180 CAD 5
-        Jan 4 Balance (1 USD = 1.15 CAD) CAD 60 USD 100 CAD 180 – CAD 5
-        """
-        with decimal.localcontext() as computation, Ledger(
-            Column("Canadian cash", Cy.CAD, Role.asset),
-            Column("US cash", Cy.USD, Role.asset),
-            Column("Capital", Cy.CAD, Role.capital),
-            ref=Cy.CAD
-        ) as ldgr:
-            computation.prec = 10
-            print(ldgr.columns)
-            usC = next(i for i in ldgr.columns if i.name == "US cash")
-            txn = ldgr.exchange_trades(
-                Exchange({
-                    (Cy.CAD, Cy.CAD): 1,
-                    (Cy.USD, Cy.CAD): Dl("1.2")
-                }),
-                [usC],
-                ts=datetime.date(2013, 1, 1), note="1 USD = 1.20 CAD")
-            txn = ldgr.add_entry(
-                Dl(60), Dl(100), Dl(180),
-                ts=datetime.date(2013, 1, 1), note="Initial balance")
-            txn = ldgr.exchange_trades(
-                Exchange({
-                    (Cy.CAD, Cy.CAD): 1,
-                    (Cy.USD, Cy.CAD): Dl("1.3")
-                }),
-                ts=datetime.date(2013, 1, 2), note="1 USD = 1.30 CAD")
-            print(*txn, sep='\n')
-            txn = ldgr.exchange_trades(
-                Exchange({
-                    (Cy.CAD, Cy.CAD): 1,
-                    (Cy.USD, Cy.CAD): Dl("1.25")
-                }),
-                ts=datetime.date(2013, 1, 3), note="1 USD = 1.25 CAD")
-            txn = ldgr.exchange_trades(
-                Exchange({
-                    (Cy.CAD, Cy.CAD): 1,
-                    (Cy.USD, Cy.CAD): Dl("1.15")
-                }),
-                ts=datetime.date(2013, 1, 4), note="1 USD = 1.15 CAD")
 
     def test_make_exchange_gain_with_fixed_assets(self):
         """
@@ -256,6 +209,59 @@ class CurrencyTests(unittest.TestCase):
                 }),
                 [usC],
                 ts=datetime.date(2013, 1, 4), note="1 USD = 1.15 CAD")
+
+    def test_track_exchange_gain_with_fixed_assets(self):
+        """
+        From Selinger table 4.1
+        date                             asset  asset   capital gain
+        Jan 1 Balance (1 USD = 1.20 CAD) CAD 60 USD 100 CAD 180 CAD 0
+        Jan 2 Balance (1 USD = 1.30 CAD) CAD 60 USD 100 CAD 180 CAD 10
+        Jan 3 Balance (1 USD = 1.25 CAD) CAD 60 USD 100 CAD 180 CAD 5
+        Jan 4 Balance (1 USD = 1.15 CAD) CAD 60 USD 100 CAD 180 – CAD 5
+        """
+        with decimal.localcontext() as computation, Ledger(
+            Column("Canadian cash", Cy.CAD, Role.asset),
+            Column("US cash", Cy.USD, Role.asset),
+            Column("Capital", Cy.CAD, Role.capital),
+            ref=Cy.CAD
+        ) as ldgr:
+            computation.prec = 10
+            print(ldgr.columns)
+            usC = next(i for i in ldgr.columns if i.name == "US cash")
+            txn = ldgr.set_exchange(
+                Exchange({
+                    (Cy.CAD, Cy.CAD): 1,
+                    (Cy.USD, Cy.CAD): Dl("1.2")
+                }),
+                [usC],
+                ts=datetime.date(2013, 1, 1), note="1 USD = 1.20 CAD")
+            txn = ldgr.add_entry(
+                Dl(60), Dl(100), Dl(180),
+                ts=datetime.date(2013, 1, 1), note="Initial balance")
+            txn = ldgr.speculate(
+                Exchange({
+                    (Cy.CAD, Cy.CAD): 1,
+                    (Cy.USD, Cy.CAD): Dl("1.3")
+                }),
+                [usC],
+                ts=datetime.date(2013, 1, 2), note="1 USD = 1.30 CAD")
+            print(*txn, sep='\n')
+            txn = ldgr.speculate(
+                Exchange({
+                    (Cy.CAD, Cy.CAD): 1,
+                    (Cy.USD, Cy.CAD): Dl("1.25")
+                }),
+                [usC],
+                ts=datetime.date(2013, 1, 3), note="1 USD = 1.25 CAD")
+            print(*txn, sep='\n')
+            txn = ldgr.speculate(
+                Exchange({
+                    (Cy.CAD, Cy.CAD): 1,
+                    (Cy.USD, Cy.CAD): Dl("1.15")
+                }),
+                [usC],
+                ts=datetime.date(2013, 1, 4), note="1 USD = 1.15 CAD")
+            print(*txn, sep='\n')
 
 if __name__ == "__main__":
     unittest.main()
