@@ -60,9 +60,9 @@ class Ledger(object):
         self._cols.extend(
             Column("{} trading account".format(c.name), c, Role.trading)
             for c in set(i.currency for i in args))
-        self._rates = deque([], maxlen=2)
-        self._tally = OrderedDict((i, decimal.Decimal(0)) for i in args)
-        self._transactions = []
+        self._rates = {i: Exchange({}) for i in args}
+        self._tally = OrderedDict((i, decimal.Decimal(0)) for i in self._cols)
+        self._transactions = deque([], maxlen=200)
 
     def __enter__(self, *args):
         return self
@@ -73,26 +73,28 @@ class Ledger(object):
     def __iter__(self):
         return iter(self._transactions)
 
-    def set_exchange(self, exchange, **kwargs):
-        if len(self._rates) < 2:
-            self._rates.appendleft(exchange)
-            return (self._rates, kwargs, Status.stopped)
-        else:
-            self._rates[0] = exchange
-        varying = {c for k in exchange
-            if self._rates[0][k] != self._rates[-1][k] for c in k}
-        varying.discard(self.ref)
-        cols = (i for i in self._cols if i.currency in varying and
-            i.role in (Role.asset,))
-        accounts = {i.currency:i for i in self._cols if i.role is Role.trading}
+    @property
+    def columns(self):
+        return self._cols[:]
+
+    def set_exchange(self, exchange, cols=[], **kwargs):
+
+        #varying = {c for k in exchange
+        #    if self._rates[0][k] != self._rates[-1][k] for c in k}
+        #varying.discard(self.ref)
+
+        #cols = (i for i in self._cols if i.currency in varying and
+        #    i.role in (Role.asset,))
+        accounts = {i.currency: i for i in self._cols if i.role is Role.trading}
         for c in cols:
             account = accounts[c.currency]
-            trade = self._rates[0].trade(self._tally[c],
+            trade = exchange.trade(self._tally[c],
                 path=TradePath(c.currency, self.ref, self.ref),
-                prior=self._rates[1])
-            self._tally[account] = trade.gain
+                prior=self._rates[c])
+            self._tally[account] += trade.gain
+            self._rates[c] = exchange
             print("trade: ", trade)
-        return (self._rates[0], kwargs, Status.ok)
+        return (self._rates, kwargs, Status.ok)
 
     def add_entry(self, *args, **kwargs):
         for k, v in zip(self._cols, args):
@@ -154,7 +156,7 @@ class ExchangeTests(unittest.TestCase):
 
 class CurrencyTests(unittest.TestCase):
 
-    def test_exchange_gain_with_fixed_assets(self):
+    def test_track_exchange_gain_with_fixed_assets(self):
         """
         From Selinger table 4.1
         date                             asset  asset   capital gain
@@ -170,12 +172,14 @@ class CurrencyTests(unittest.TestCase):
             ref=Cy.CAD
         ) as ldgr:
             computation.prec = 10
-            print(ldgr._cols)
+            print(ldgr.columns)
+            usC = next(i for i in ldgr.columns if i.name == "US cash")
             txn = ldgr.set_exchange(
                 Exchange({
                     (Cy.CAD, Cy.CAD): 1,
                     (Cy.USD, Cy.CAD): Dl("1.2")
                 }),
+                [usC],
                 ts=datetime.date(2013, 1, 1), note="1 USD = 1.20 CAD")
             txn = ldgr.add_entry(
                 Dl(60), Dl(100), Dl(180),
@@ -197,6 +201,55 @@ class CurrencyTests(unittest.TestCase):
                     (Cy.CAD, Cy.CAD): 1,
                     (Cy.USD, Cy.CAD): Dl("1.15")
                 }),
+                ts=datetime.date(2013, 1, 4), note="1 USD = 1.15 CAD")
+
+    def test_make_exchange_gain_with_fixed_assets(self):
+        """
+        From Selinger table 4.1
+        date                             asset  asset   capital gain
+        Jan 1 Balance (1 USD = 1.20 CAD) CAD 60 USD 100 CAD 180 CAD 0
+        Jan 2 Balance (1 USD = 1.30 CAD) CAD 60 USD 100 CAD 180 CAD 10
+        Jan 3 Balance (1 USD = 1.25 CAD) CAD 60 USD 100 CAD 180 CAD 5
+        Jan 4 Balance (1 USD = 1.15 CAD) CAD 60 USD 100 CAD 180 – CAD 5
+        """
+        with decimal.localcontext() as computation, Ledger(
+            Column("Canadian cash", Cy.CAD, Role.asset),
+            Column("US cash", Cy.USD, Role.asset),
+            Column("Capital", Cy.CAD, Role.capital),
+            ref=Cy.CAD
+        ) as ldgr:
+            computation.prec = 10
+            usC = next(i for i in ldgr.columns if i.name == "US cash")
+            txn = ldgr.set_exchange(
+                Exchange({
+                    (Cy.CAD, Cy.CAD): 1,
+                    (Cy.USD, Cy.CAD): Dl("1.2")
+                }),
+                [usC],
+                ts=datetime.date(2013, 1, 1), note="1 USD = 1.20 CAD")
+            txn = ldgr.add_entry(
+                Dl(60), Dl(100), Dl(180),
+                ts=datetime.date(2013, 1, 1), note="Initial balance")
+            txn = ldgr.set_exchange(
+                Exchange({
+                    (Cy.CAD, Cy.CAD): 1,
+                    (Cy.USD, Cy.CAD): Dl("1.3")
+                }),
+                [usC],
+                ts=datetime.date(2013, 1, 2), note="1 USD = 1.30 CAD")
+            txn = ldgr.set_exchange(
+                Exchange({
+                    (Cy.CAD, Cy.CAD): 1,
+                    (Cy.USD, Cy.CAD): Dl("1.25")
+                }),
+                [usC],
+                ts=datetime.date(2013, 1, 3), note="1 USD = 1.25 CAD")
+            txn = ldgr.set_exchange(
+                Exchange({
+                    (Cy.CAD, Cy.CAD): 1,
+                    (Cy.USD, Cy.CAD): Dl("1.15")
+                }),
+                [usC],
                 ts=datetime.date(2013, 1, 4), note="1 USD = 1.15 CAD")
 
 if __name__ == "__main__":
