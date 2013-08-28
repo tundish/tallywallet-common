@@ -1,0 +1,4215 @@
+<title>Peter Selinger: Tutorial on multiple currency accounting</title>
+<h1>Tutorial on multiple currency accounting</h1>
+
+Author: Peter Selinger &lt;selinger at users dot sourceforge dot net&gt;<br>
+<!-- Date: May 16, 2005<br> -->
+Written: Jun 4, 2005<br>
+Updated: Oct 20&ndash;26, 2008 (added section on realized and unrealized gains)<br>
+Updated: Nov 15, 2010 (changed sectioning)
+<br>
+Updated: Jan 2, 2011 (added Australia info to Section 5.3)
+
+<p>
+
+<h2>Contents</h2>
+
+<p><b>0. <a href="#0">Introduction</a></b><br>
+<p><b>1. <a href="#1">A brief review of double-entry accounting</a></b><br>
+
+&nbsp;&nbsp;&nbsp;1.1. <a href="#1.1">Single-entry accounting</a><br>
+&nbsp;&nbsp;&nbsp;1.2. <a href="#1.2">Net worth and equity</a><br>
+&nbsp;&nbsp;&nbsp;1.3. <a href="#1.3">Double entry accounting</a><br>
+&nbsp;&nbsp;&nbsp;1.4. <a href="#1.4">Income and Expenses</a><br>
+&nbsp;&nbsp;&nbsp;1.5. <a href="#1.5">The Fundamental Accounting Equation</a><br>
+
+<p><b>2. <a href="#2">Foreign currency accounting issues</a></b><br>
+
+&nbsp;&nbsp;&nbsp;2.1. <a href="#2.1">Single-entry foreign currency accounting</a><br>
+&nbsp;&nbsp;&nbsp;2.2. <a href="#2.2">Double entry foreign currency accounting, the wrong way</a><br>
+&nbsp;&nbsp;&nbsp;2.3. <a href="#2.3">Foreign exchange gains and losses</a><br>
+&nbsp;&nbsp;&nbsp;2.4. <a href="#2.4">Calculating gains and losses through adjustments</a><br>
+
+<p><b>3. <a href="#3">Foreign currency accounting according to SSAP 20</a></b><br>
+
+&nbsp;&nbsp;&nbsp;3.1. <a href="#3.1">Accounting for non-monetary current assets</a><br>
+&nbsp;&nbsp;&nbsp;3.2. <a href="#3.2">The "official" solution: translation to a single currency</a><br>
+
+<p><b>4. <a href="#4">Foreign currency accounting using currency trading accounts</a></b><br>
+
+&nbsp;&nbsp;&nbsp;4.1. <a href="#4.1">Restoring symmetry to foreign currency accounting</a><br>
+&nbsp;&nbsp;&nbsp;4.2. <a href="#4.2">Accounting with currency trading accounts</a><br>
+&nbsp;&nbsp;&nbsp;4.3. <a href="#4.3">Equivalence with SSAP 20</a><br>
+&nbsp;&nbsp;&nbsp;4.4. <a href="#4.4">Example: tracking exchange gains and losses by source</a><br>
+
+<p><b>5. <a href="#5">Realized and unrealized gains and losses</a></b><br>
+
+&nbsp;&nbsp;&nbsp;5.1. <a href="#5.1">An example from real estate</a><br>
+&nbsp;&nbsp;&nbsp;5.2. <a href="#5.2">Importance of the "identity" of assets</a><br>
+&nbsp;&nbsp;&nbsp;5.3. <a href="#5.3">The FIFO, LIFO, and adjusted cost base methods</a><br>
+
+<p><b>6. <a href="#6">Translation issues</a></b><br>
+
+&nbsp;&nbsp;&nbsp;6.1. <a href="#6.1">Independence of viewpoint</a><br>
+&nbsp;&nbsp;&nbsp;6.2. <a href="#6.2">Reference currency vs. Equity currency</a><br>
+
+<p><b>7. <a href="#7">Specific software</a></b><br>
+
+&nbsp;&nbsp;&nbsp;7.1. <a href="#7.1">GnuCash</a><br>
+
+<a name="0"><h2>0. Introduction</h2></a>
+
+Accounting with multiple currencies can be tricky. It is easy enough
+to use an exchange rate to translate between different currencies. But
+things get less obvious when one takes into account how exchange rates
+fluctuate over time.  Multi-currency transactions can incur foreign
+exchange gains or losses. How does one account for these, while
+respecting the Fundamental Accounting Equation? Do different
+accounting methods give different results?  What are their advantages
+and disadvantages? Does one need to pick a single reference currency,
+and why? And most importantly, how does all of this work?
+
+<p>
+
+As a non-expert, I found it surprisingly difficult to find useful
+information on this subject. I searched online, and I also consulted
+about fifteen different accounting textbooks in the U.K. and
+Canada. Of the few books that mentioned foreign currencies at all,
+most contained only a single paragraph on the topic, stating that
+foreign currency transactions should be translated to the local
+currency. I also studied the foreign currency support in the
+accounting software I was using (GnuCash), and I quickly found that
+the software did not balance my accounts correctly when multiple
+currencies were involved.
+
+<p>
+
+After much frustration and some additional thought and research, I
+believe I arrived at an understanding how multiple currency accounting
+should work, and why. So I wrote this document as a resource for those
+who might be looking for such information.  The information in this
+tutorial is a synthesis of what I learned from books, what I learned
+from accounting standards such as SSAP 20, and what I figured out by
+myself. Since I am not an accounting expert, I am sure that some
+incorrect terminology has slipped into this document. If you find a
+mistake, I would be happy if you send me a correction.  Aside from
+terminology issues, I am reasonably certain that the concepts
+described in this tutorial are sound.
+
+<p>
+
+<b>Disclaimer:</b> I am not an accountant, and I am not qualified to
+offer any kind of accounting advice. This tutorial expresses my
+opinion on how accounting with multiple currencies should work. I do
+not claim anything about the accuracy or legality of any of the
+information presented here, nor do I warrant its correctness or
+applicability in any way. Although I cite some accounting standards
+documents, I do not claim that this tutorial conforms with accepted
+accounting standards. If you need accounting advice, please consult a
+professional accountant.
+
+<a name="1"><h2>1. A brief review of double-entry accounting</h2></a>
+
+<a name="1.1"><h3>1.1. Single-entry accounting</h3></a>
+
+Users of accounting software fall into two main classes: home users
+and business users. Most home users are only interested in tracking
+<i>assets</i> and <i>liabilities</i>. Assets are what you
+<i>own</i> (such as money in your bank account or cash in your
+pocket), and liabilities are what you <i>owe</i> (such as the balance
+on your credit card account, or money you owe your neighbor). An
+<i>account</i> keeps a running total of one particular type of asset
+or liability. A <i>transaction</i> is an increase or decrease of the
+balance of one or more accounts.
+
+<p>
+<a name="Table-1.1"><b>Table 1.1: Single-entry personal accounting</b></a>
+<p>
+
+<table border=0 bgcolor=#000000 cellspacing=1>
+
+<tr bgcolor=#ffc0c0>
+<th width=50>Date</th>
+<th>Description</th>
+<th width=100>Bank&nbsp;Account<br>(asset)</th>
+<th width=100>Cash<br>(asset)</th>
+<th width=100>Credit Card<br>(liability)</th>
+</tr>
+
+<tr bgcolor=#ffffc0>
+<td bgcolor=#ffffff>Jan 1</td>
+<td>Opening balance</td>
+<td align=right>$1,000</td>
+<td align=right>$20</td>
+<td align=right>$600</td>
+</tr>
+
+<tr bgcolor=#ffffff>
+<td rowspan=2 valign=top>Jan 4</td>
+<td>Get paid</td>
+<td align=right>+ $200</td>
+<td align=right>&nbsp;</td>
+<td align=right>&nbsp;</td>
+</tr>
+
+<tr bgcolor=#ffffc0>
+<td>Balance</td>
+<td align=right>$1,200</td>
+<td align=right>$20</td>
+<td align=right>$600</td>
+</tr>
+
+<tr bgcolor=#ffffff>
+<td rowspan=2 valign=top>Jan 5</td>
+<td>Buy food with credit card</td>
+<td align=right>&nbsp;</td>
+<td align=right>&nbsp;</td>
+<td align=right>+ $70</td>
+</tr>
+
+<tr bgcolor=#ffffc0>
+<td>Balance</td>
+<td align=right>$1,200</td>
+<td align=right>$20</td>
+<td align=right>$670</td>
+</tr>
+
+<tr bgcolor=#ffffff>
+<td rowspan=2 valign=top>Jan 12</td>
+<td>Withdraw cash</td>
+<td align=right>&ndash; $100</td>
+<td align=right>+ $100</td>
+<td align=right>&nbsp;</td>
+</tr>
+
+<tr bgcolor=#ffffc0>
+<td>Balance</td>
+<td align=right>$1,100</td>
+<td align=right>$120</td>
+<td align=right>$670</td>
+</tr>
+
+<tr bgcolor=#ffffff>
+<td rowspan=2 valign=top>Jan 15</td>
+<td>Pay credit card bill</td>
+<td align=right>&ndash; $670</td>
+<td align=right>&nbsp;</td>
+<td align=right>&ndash; $670</td>
+</tr>
+
+<tr bgcolor=#ffffc0>
+<td>Balance</td>
+<td align=right>$430</td>
+<td align=right>$120</td>
+<td align=right>$0</td>
+</tr>
+
+<tr bgcolor=#ffffff>
+<td rowspan=2 valign=top>Jan 18</td>
+<td>Get paid</td>
+<td align=right>+ $200</td>
+<td align=right>&nbsp;</td>
+<td align=right>&nbsp;</td>
+</tr>
+
+<tr bgcolor=#ffffc0>
+<td>Balance</td>
+<td align=right>$630</td>
+<td align=right>$120</td>
+<td align=right>$0</td>
+</tr>
+
+<tr bgcolor=#ffffff>
+<td rowspan=2 valign=top>Jan 20</td>
+<td>Buy food with cash</td>
+<td align=right>&nbsp;</td>
+<td align=right>&ndash; $65</td>
+<td align=right>&nbsp;</td>
+</tr>
+
+<tr bgcolor=#ffffc0>
+<td>Balance</td>
+<td align=right>$630</td>
+<td align=right>$55</td>
+<td align=right>$0</td>
+</tr>
+
+<tr bgcolor=#ffffff>
+<td rowspan=2 valign=top>Jan 23</td>
+<td>Buy book with cash</td>
+<td align=right>&nbsp;</td>
+<td align=right>&ndash; $16</td>
+<td align=right>&nbsp;</td>
+</tr>
+
+<tr bgcolor=#ffffc0>
+<td>Balance</td>
+<td align=right>$630</td>
+<td align=right>$39</td>
+<td align=right>$0</td>
+</tr>
+
+</table>
+
+<p>
+
+<a href="#Table-1.1">Table 1.1</a> shows an example of single-entry
+personal accounting with three accounts. It uses just a single
+currency, the Canadian Dollar.  Note that account balances are shown
+on yellow lines, and transactions are shown on white lines.  Also note
+that in asset accounts, positive numbers mean "more assets", whereas
+in liability accounts, positive numbers mean "more liability". Thus,
+transferring money from one asset account to another (as on January 12)
+leads to an increase in one account and a decrease in the other. But
+transferring money from an asset account to a liability account (as in
+paying a credit card bill on January 15) leads to a decrease in both
+accounts.
+
+<a name="1.2"><h3>1.2. Net worth and equity</h3></a>
+
+A person's <i>net worth</i> is equal to their total assets minus their
+total liabilities. In other words, the net worth is the effective
+amount of money (and property) they own after compensating for all
+outstanding debts. A person's net worth can be negative if the total
+liabilities exceed the total assets (this is called "living above
+one's means", and is not recommended). In a business context, net
+worth is also called <i>equity</i>. We therefore have the first
+accounting equation:
+
+<p>
+<center>Assets &ndash; Liabilities = Equity.</center>
+<p>
+
+Going back to the example from <a href="#Table-1.1">Table 1.1</a>, note
+that some transactions, like "get paid" on January 4 and 18, increase
+a person's net worth. This is called <i>income</i>. Other
+transactions, like "buy food" or "buy books" on January 5, 20, and 23,
+decrease a person's net worth. This is called an <i>expense</i>. Still
+other transactions, such as "withdraw cash" on January 12 or "pay
+credit card bill" on January 15, do not affect the net worth at all.
+
+<p>
+
+The following chart shows the same transactions as <a
+href="#Table-1.1">Table 1.1</a>, but this time we also show the net
+worth in a separate column.
+
+<p>
+<a name="Table-1.2"><b>Table 1.2: Personal accounting with net worth shown</b></a>
+<p>
+
+<table border=0 bgcolor=#000000 cellspacing=1>
+
+<tr bgcolor=#ffc0c0>
+<th width=50>Date</th>
+<th>Description</th>
+<th width=100>Bank&nbsp;Account<br>(asset)</th>
+<th width=100>Cash<br>(asset)</th>
+<th width=100>Credit Card<br>(liability)</th>
+<td width=0 bgcolor=#000000></td>
+<th width=100>Net Worth<br>(equity)</th>
+</tr>
+
+<tr bgcolor=#ffffc0>
+<td bgcolor=#ffffff>Jan 1</td>
+<td>Opening balance</td>
+<td align=right>$1,000</td>
+<td align=right>$20</td>
+<td align=right>$600</td>
+<td width=0 bgcolor=#000000></td>
+<td align=right>$420</td>
+</tr>
+
+<tr bgcolor=#ffffff>
+<td rowspan=2 valign=top>Jan 4</td>
+<td>Get paid</td>
+<td align=right>+ $200</td>
+<td align=right>&nbsp;</td>
+<td align=right>&nbsp;</td>
+<td width=0 bgcolor=#000000></td>
+<td align=right>+ $200</td>
+</tr>
+
+<tr bgcolor=#ffffc0>
+<td>Balance</td>
+<td align=right>$1,200</td>
+<td align=right>$20</td>
+<td align=right>$600</td>
+<td width=0 bgcolor=#000000></td>
+<td align=right>$620</td>
+</tr>
+
+<tr bgcolor=#ffffff>
+<td rowspan=2 valign=top>Jan 5</td>
+<td>Buy food with credit card</td>
+<td align=right>&nbsp;</td>
+<td align=right>&nbsp;</td>
+<td align=right>+ $70</td>
+<td width=0 bgcolor=#000000></td>
+<td align=right>&ndash; $70</td>
+</tr>
+
+<tr bgcolor=#ffffc0>
+<td>Balance</td>
+<td align=right>$1,200</td>
+<td align=right>$20</td>
+<td align=right>$670</td>
+<td width=0 bgcolor=#000000></td>
+<td align=right>$550</td>
+</tr>
+
+<tr bgcolor=#ffffff>
+<td rowspan=2 valign=top>Jan 12</td>
+<td>Withdraw cash</td>
+<td align=right>&ndash; $100</td>
+<td align=right>+ $100</td>
+<td align=right>&nbsp;</td>
+<td width=0 bgcolor=#000000></td>
+<td align=right>&nbsp;</td>
+</tr>
+
+<tr bgcolor=#ffffc0>
+<td>Balance</td>
+<td align=right>$1,100</td>
+<td align=right>$120</td>
+<td align=right>$670</td>
+<td width=0 bgcolor=#000000></td>
+<td align=right>$550</td>
+</tr>
+
+<tr bgcolor=#ffffff>
+<td rowspan=2 valign=top>Jan 15</td>
+<td>Pay credit card bill</td>
+<td align=right>&ndash; $670</td>
+<td align=right>&nbsp;</td>
+<td align=right>&ndash; $670</td>
+<td width=0 bgcolor=#000000></td>
+<td align=right>&nbsp;</td>
+</tr>
+
+<tr bgcolor=#ffffc0>
+<td>Balance</td>
+<td align=right>$430</td>
+<td align=right>$120</td>
+<td align=right>$0</td>
+<td width=0 bgcolor=#000000></td>
+<td align=right>$550</td>
+</tr>
+
+<tr bgcolor=#ffffff>
+<td rowspan=2 valign=top>Jan 18</td>
+<td>Get paid</td>
+<td align=right>+ $200</td>
+<td align=right>&nbsp;</td>
+<td align=right>&nbsp;</td>
+<td width=0 bgcolor=#000000></td>
+<td align=right>+ $200</td>
+</tr>
+
+<tr bgcolor=#ffffc0>
+<td>Balance</td>
+<td align=right>$630</td>
+<td align=right>$120</td>
+<td align=right>$0</td>
+<td width=0 bgcolor=#000000></td>
+<td align=right>$750</td>
+</tr>
+
+<tr bgcolor=#ffffff>
+<td rowspan=2 valign=top>Jan 20</td>
+<td>Buy food with cash</td>
+<td align=right>&nbsp;</td>
+<td align=right>&ndash; $65</td>
+<td align=right>&nbsp;</td>
+<td width=0 bgcolor=#000000></td>
+<td align=right>&ndash; $65</td>
+</tr>
+
+<tr bgcolor=#ffffc0>
+<td>Balance</td>
+<td align=right>$630</td>
+<td align=right>$55</td>
+<td align=right>$0</td>
+<td width=0 bgcolor=#000000></td>
+<td align=right>$685</td>
+</tr>
+
+<tr bgcolor=#ffffff>
+<td rowspan=2 valign=top>Jan 23</td>
+<td>Buy book with cash</td>
+<td align=right>&nbsp;</td>
+<td align=right>&ndash; $16</td>
+<td align=right>&nbsp;</td>
+<td width=0 bgcolor=#000000></td>
+<td align=right>&ndash; $16</td>
+</tr>
+
+<tr bgcolor=#ffffc0>
+<td>Balance</td>
+<td align=right>$630</td>
+<td align=right>$39</td>
+<td align=right>$0</td>
+<td width=0 bgcolor=#000000></td>
+<td align=right>$669</td>
+</tr>
+
+</table>
+
+<p>
+
+Note that the accounting equation "Assets &ndash; Liabilities = Equity" is
+not only satisfied by the balances (yellow lines), but also by the
+individual transactions (white lines).
+
+<a name="1.3"><h3>1.3. Double entry accounting</h3></a>
+
+Let us promote the equity column from <a href="#Table-1.2">Table
+1.2</a> by calling it an "account".  Then <a href="#Table-1.2">Table
+1.2</a> is a simple instance of <i>double entry accounting</i>.  The
+idea is to keep a separate running total for equity, in addition to
+the running totals for assets and liabilities. Each transaction must
+be
+<i>balanced</i>, which means, it must satisfy the accounting equation. 
+
+<p>
+
+Historically (i.e., before computers were used), one of the
+purposes of double entry accounting was to catch arithmetic errors and
+data entry errors.  Since each transaction had to be recorded in at
+least two places, the results of additions and subtractions could be
+double-checked simply by checking whether the accounts were balanced. 
+
+<p>
+
+Today, arithmetic mistakes are no longer a major issue (although data
+entry errors still are). However, there is one other important benefit
+of double-entry accounting. Namely, it gives a convenient way of
+tracking and classifying income and expenses.
+
+<a name="1.4"><h3>1.4. Income and Expenses</h3></a>
+
+For businesses, it is important to keep track not just of assets
+and liabilities, but also of income and expenses. For example, a
+business needs to classify its income according to source. This is
+necessary both for tax reasons (income from different sources may be
+taxed differently), and also for business reasons (it helps to
+determine which parts of the business are profitable).
+
+<p>
+
+In the asset/liability method of tracking finances, money is classified
+according to its <i>location</i>: how much money is in your bank
+account, and how much in your wallet? By contrast, in tracking income
+and expenses, one must classify money according to its <i>purpose</i>:
+how much money did you spend on food, and how much on books? 
+
+<p>
+
+For example, in <a href="#Table-1.2">Table 1.2</a>, the total money
+spent on food in the given time period was $135 (namely, $70 on
+January 5 and $65 on January 20).  Some of the food was bought with
+cash, and some with a credit card.  While these different payment
+methods matter from the point of view of assets and liabilities, they
+are irrelevant from the point of view of expenses.
+
+<p>
+
+The most convenient way to track income and expenses is to split the
+column for "equity" from <a href="#Table-1.2">Table 1.2</a> into
+several columns. This is normally done for a fixed time period, for
+example, one year (called an "accounting period"). The equity at the
+beginning of the time period is called the "initial capital". All
+increases in equity since the beginning of the time period are called
+"income", and all decreases are called "expenses". We therefore have
+the second accounting equation:
+
+<p>
+<center>Equity = Capital + Income &ndash; Expenses.</center>
+<p>
+
+We will therefore split the "equity" account into three columns called
+"initial capital", "income" and "expense". The income and expense
+columns can be further subdivided to account for different types of
+income and expenses. To keep our example simple, we will consider a
+single income account called "salary", and two expense accounts called
+"food" and "books". 
+
+<p>
+
+<a name="Table-1.3"><b>Table 1.3: Personal accounting with income/expense tracking</b></a>
+<p>
+
+<table border=0 bgcolor=#000000 cellspacing=1>
+
+<tr bgcolor=#ffc0c0>
+<th width=50>Date</th>
+<th>Description</th>
+<th width=100>Bank&nbsp;Account<br>(asset)</th>
+<th width=100>Cash<br>(asset)</th>
+<th width=100>Credit Card<br>(liability)</th>
+<td width=0 bgcolor=#000000></td>
+<th width=100>Initial Capital<br>(capital)</th>
+<th width=100>Salary<br>(income)</th>
+<th width=100>Food<br>(expense)</th>
+<th width=100>Books<br>(expense)</th>
+</tr>
+
+<tr bgcolor=#ffffc0>
+<td bgcolor=#ffffff>Jan 1</td>
+<td>Opening balance</td>
+<td align=right>$1,000</td>
+<td align=right>$20</td>
+<td align=right>$600</td>
+<td width=0 bgcolor=#000000></td>
+<td align=right>$420</td>
+<td align=right>$0</td>
+<td align=right>$0</td>
+<td align=right>$0</td>
+</tr>
+
+<tr bgcolor=#ffffff>
+<td rowspan=2 valign=top>Jan 4</td>
+<td>Get paid</td>
+<td align=right>+ $200</td>
+<td align=right>&nbsp;</td>
+<td align=right>&nbsp;</td>
+<td width=0 bgcolor=#000000></td>
+<td align=right>&nbsp;</td>
+<td align=right>+ $200</td>
+<td align=right>&nbsp;</td>
+<td align=right>&nbsp;</td>
+</tr>
+
+<tr bgcolor=#ffffc0>
+<td>Balance</td>
+<td align=right>$1,200</td>
+<td align=right>$20</td>
+<td align=right>$600</td>
+<td width=0 bgcolor=#000000></td>
+<td align=right>$420</td>
+<td align=right>$200</td>
+<td align=right>$0</td>
+<td align=right>$0</td>
+</tr>
+
+<tr bgcolor=#ffffff>
+<td rowspan=2 valign=top>Jan 5</td>
+<td>Buy food with credit card</td>
+<td align=right>&nbsp;</td>
+<td align=right>&nbsp;</td>
+<td align=right>+ $70</td>
+<td width=0 bgcolor=#000000></td>
+<td align=right>&nbsp;</td>
+<td align=right>&nbsp;</td>
+<td align=right>+ $70</td>
+<td align=right>&nbsp;</td>
+</tr>
+
+<tr bgcolor=#ffffc0>
+<td>Balance</td>
+<td align=right>$1,200</td>
+<td align=right>$20</td>
+<td align=right>$670</td>
+<td width=0 bgcolor=#000000></td>
+<td align=right>$420</td>
+<td align=right>$200</td>
+<td align=right>$70</td>
+<td align=right>$0</td>
+</tr>
+
+<tr bgcolor=#ffffff>
+<td rowspan=2 valign=top>Jan 12</td>
+<td>Withdraw cash</td>
+<td align=right>&ndash; $100</td>
+<td align=right>+ $100</td>
+<td align=right>&nbsp;</td>
+<td width=0 bgcolor=#000000></td>
+<td align=right>&nbsp;</td>
+<td align=right>&nbsp;</td>
+<td align=right>&nbsp;</td>
+<td align=right>&nbsp;</td>
+</tr>
+
+<tr bgcolor=#ffffc0>
+<td>Balance</td>
+<td align=right>$1,100</td>
+<td align=right>$120</td>
+<td align=right>$670</td>
+<td width=0 bgcolor=#000000></td>
+<td align=right>$420</td>
+<td align=right>$200</td>
+<td align=right>$70</td>
+<td align=right>$0</td>
+</tr>
+
+<tr bgcolor=#ffffff>
+<td rowspan=2 valign=top>Jan 15</td>
+<td>Pay credit card bill</td>
+<td align=right>&ndash; $670</td>
+<td align=right>&nbsp;</td>
+<td align=right>&ndash; $670</td>
+<td width=0 bgcolor=#000000></td>
+<td align=right>&nbsp;</td>
+<td align=right>&nbsp;</td>
+<td align=right>&nbsp;</td>
+<td align=right>&nbsp;</td>
+</tr>
+
+<tr bgcolor=#ffffc0>
+<td>Balance</td>
+<td align=right>$430</td>
+<td align=right>$120</td>
+<td align=right>$0</td>
+<td width=0 bgcolor=#000000></td>
+<td align=right>$420</td>
+<td align=right>$200</td>
+<td align=right>$70</td>
+<td align=right>$0</td>
+</tr>
+
+<tr bgcolor=#ffffff>
+<td rowspan=2 valign=top>Jan 18</td>
+<td>Get paid</td>
+<td align=right>+ $200</td>
+<td align=right>&nbsp;</td>
+<td align=right>&nbsp;</td>
+<td width=0 bgcolor=#000000></td>
+<td align=right>&nbsp;</td>
+<td align=right>+ $200</td>
+<td align=right>&nbsp;</td>
+<td align=right>&nbsp;</td>
+</tr>
+
+<tr bgcolor=#ffffc0>
+<td>Balance</td>
+<td align=right>$630</td>
+<td align=right>$120</td>
+<td align=right>$0</td>
+<td width=0 bgcolor=#000000></td>
+<td align=right>$420</td>
+<td align=right>$400</td>
+<td align=right>$70</td>
+<td align=right>$0</td>
+</tr>
+
+<tr bgcolor=#ffffff>
+<td rowspan=2 valign=top>Jan 20</td>
+<td>Buy food with cash</td>
+<td align=right>&nbsp;</td>
+<td align=right>&ndash; $65</td>
+<td align=right>&nbsp;</td>
+<td width=0 bgcolor=#000000></td>
+<td align=right>&nbsp;</td>
+<td align=right>&nbsp;</td>
+<td align=right>+ $65</td>
+<td align=right>&nbsp;</td>
+</tr>
+
+<tr bgcolor=#ffffc0>
+<td>Balance</td>
+<td align=right>$630</td>
+<td align=right>$55</td>
+<td align=right>$0</td>
+<td width=0 bgcolor=#000000></td>
+<td align=right>$420</td>
+<td align=right>$400</td>
+<td align=right>$135</td>
+<td align=right>$0</td>
+</tr>
+
+<tr bgcolor=#ffffff>
+<td rowspan=2 valign=top>Jan 23</td>
+<td>Buy book with cash</td>
+<td align=right>&nbsp;</td>
+<td align=right>&ndash; $16</td>
+<td align=right>&nbsp;</td>
+<td width=0 bgcolor=#000000></td>
+<td align=right>&nbsp;</td>
+<td align=right>&nbsp;</td>
+<td align=right>&nbsp;</td>
+<td align=right>+ $16</td>
+</tr>
+
+<tr bgcolor=#ffffc0>
+<td>Balance</td>
+<td align=right>$630</td>
+<td align=right>$39</td>
+<td align=right>$0</td>
+<td width=0 bgcolor=#000000></td>
+<td align=right>$420</td>
+<td align=right>$400</td>
+<td align=right>$135</td>
+<td align=right>$16</td>
+</tr>
+
+</table>
+
+<p>
+
+As there is no limit to the number of accounts one can have, there is
+no limit on the number of different types of income and expenses that
+can be tracked using this system. Note that expenses (like
+liabilities) are recorded as positive numbers, even though they
+contribute to equity negatively. 
+
+<p>
+
+Also note that the "initial capital" account never changes in this
+example. In business use, there are other types of capital besides
+"initial capital", and some of these other types are changeable. For
+example, if somebody invests money in a business (thereby becoming an
+owner), then this is considered an increase in capital rather than
+income. Thus, in general, there can be more than one capital account. 
+
+<a name="1.5"><h3>1.5. The Fundamental Accounting Equation</h3></a>
+
+Putting together the first and second accounting equations
+<p>
+<center>Assets &ndash; Liabilities = Equity</center>
+<p>
+
+and
+<p>
+<center>Equity = Capital + Income &ndash; Expenses,</center>
+<p>
+
+we obtain the following, which is called the Fundamental Accounting
+Equation:
+<p>
+<center>Assets &ndash; Liabilities = Capital + Income &ndash; Expenses.</center>
+<p>
+
+The reader should check that both the yellow and the white rows in <a
+href="#Table-1.3">Table 1.3</a> indeed satisfy this equation.
+
+<p>
+
+Remark: "equity" is sometimes called "capital" and vice versa; I am
+not really sure of the most correct terminology. In this tutorial, I
+will continue to use these terms with their meanings introduced above.
+
+<p>
+
+Remark: Traditionally, accountants did not like to subtract or to use
+negative numbers. The accounting equation is therefore often written
+as "Assets + Expenses = Capital + Income + Liabilities". The
+quantities on the left-hand side of this last equation are sometimes
+called <i>activa</i> (Assets and Expenses), and those on the
+right-hand side are sometimes called <i>passiva</i> (Capital, Income,
+and Liabilities). The reader will easily verify that the two versions
+of the accounting equation are mathematically equivalent. Conceptually
+and pedagogically, I find the division into <i>location</i> (Assets
+and Liabilities) and <i>purpose</i> (Capital, Income, and Expenses)
+more useful than the division into activa and passiva. Therefore, in
+this tutorial, I will continue to use the version of the accounting
+equation that uses subtraction.
+
+<a name="2"><h2>2. Foreign currency accounting issues</h2></a>
+
+<a name="2.1"><h3>2.1. Single-entry foreign currency accounting</h3></a>
+
+Handling foreign currencies in single-entry accounting is very simple.
+Each asset or liability account can have its own currency. When
+transferring money from one account to another, we simply use the
+exchange rate that is in effect at the time of the transfer.
+
+<p>
+
+Suppose you keep two kinds of cash in your pocket: Canadian dollars
+(CAD) and U.S. dollars (USD). On January 1, you have CAD 200 and no
+U.S. dollars. On January 2, you exchange CAD 120 for USD 100 at a bank
+(at the day's exchange rate, which is 1.20 CAD/USD). On January 3, you
+spend USD 40 on food.  On January 5, you exchange USD 60 for CAD 75
+(at that day's rate of 1.25 CAD/USD). On January 7, you spend CAD 20 on
+food. These transactions can easily be accounted for with two asset
+accounts:
+
+<p>
+<a name="Table-2.1"><b>Table 2.1: Single-entry foreign currency accounting</b></a>
+<p>
+
+<table border=0 bgcolor=#000000 cellspacing=1>
+
+<tr bgcolor=#ffc0c0>
+<th width=50>Date</th>
+<th>Description</th>
+<th width=100>Canadian&nbsp;Cash<br>(asset)</th>
+<th width=100>U.S.&nbsp;Cash<br>(asset)</th>
+</tr>
+
+<tr bgcolor=#ffffc0>
+<td bgcolor=#ffffff>Jan 1</td>
+<td>Opening balance</td>
+<td align=right>CAD 200</td>
+<td align=right>USD 0</td>
+</tr>
+
+<tr bgcolor=#ffffff>
+<td rowspan=2 valign=top>Jan 2</td>
+<td>Exchange (1 USD = 1.20 CAD)</td>
+<td align=right>&ndash; CAD 120</td>
+<td align=right>+ USD 100</td>
+</tr>
+
+<tr bgcolor=#ffffc0>
+<td>Balance</td>
+<td align=right>CAD 80</td>
+<td align=right>USD 100</td>
+</tr>
+
+<tr bgcolor=#ffffff>
+<td rowspan=2 valign=top>Jan 3</td>
+<td>Buy food</td></td>
+<td align=right>&nbsp;</td>
+<td align=right>&ndash; USD 40</td>
+</tr>
+
+<tr bgcolor=#ffffc0>
+<td>Balance</td>
+<td align=right>CAD 80</td>
+<td align=right>USD 60</td>
+</tr>
+
+<tr bgcolor=#ffffff>
+<td rowspan=2 valign=top>Jan 5</td>
+<td>Exchange (1 USD = 1.25 CAD)</td>
+<td align=right>+ CAD 75</td>
+<td align=right>&ndash; USD 60</td>
+</tr>
+
+<tr bgcolor=#ffffc0>
+<td>Balance</td>
+<td align=right>CAD 155</td>
+<td align=right>USD 0</td>
+</tr>
+
+<tr bgcolor=#ffffff>
+<td rowspan=2 valign=top>Jan 7</td>
+<td>Buy food</td>
+<td align=right>&ndash; CAD 20</td>
+<td align=right>&nbsp;</td>
+</tr>
+
+<tr bgcolor=#ffffc0>
+<td>Balance</td>
+<td align=right>CAD 135</td>
+<td align=right>USD 0</td>
+</tr>
+
+</table>
+
+<p>
+
+As the example shows, foreign currencies are easy to account for as
+long as you only want to keep track of <i>assets</i> (and it is
+equally easy for <i>liabilities</i>). The process of doing currency
+transfers with exchange rates can easily be automated in software.
+
+<a name="2.2"><h3>2.2. Double entry foreign currency accounting, the wrong way</h3></a>
+
+Things get more complicated if we also want to keep track of income
+and expenses.  To illustrate this, we follow the method from <a
+href="#Table-1.3">Table 1.3</a> and add accounts for initial capital
+and expenses. (Since there is no income in this example, we don't need
+an income account). Because I live in Canada, we will keep the capital
+and expense accounts in Canadian dollars. Of course, when there is a
+transaction that affects one of these accounts, the amount will have
+to be translated to Canadian dollars. To do this, we have to know the
+exchange rate on January 3; let us assume for the sake of this example
+that this exchange rate was 1.30 CAD/USD, so that USD 40 = CAD 52 on
+that day.
+
+<p>
+<a name="Table-2.2"><b>Table 2.2: Double-entry foreign currency accounting, naively</b></a>
+<p>
+
+<table border=0 bgcolor=#000000 cellspacing=1>
+
+<tr bgcolor=#ffc0c0>
+<th width=50>Date</th>
+<th>Description</th>
+<th width=100>Canadian&nbsp;Cash<br>(asset)</th>
+<th width=100>U.S.&nbsp;Cash<br>(asset)</th>
+<td width=0 bgcolor=#000000></td>
+<th width=100>Initial&nbsp;Capital<br>(capital)</th>
+<th width=100>Food<br>(expense)</th>
+</tr>
+
+<tr bgcolor=#ffffc0>
+<td bgcolor=#ffffff>Jan 1</td>
+<td>Opening balance</td>
+<td align=right>CAD 200</td>
+<td align=right>USD 0</td>
+<td width=0 bgcolor=#000000></td>
+<td align=right>CAD 200</td>
+<td align=right>CAD 0</td>
+</tr>
+
+<tr bgcolor=#ffffff>
+<td rowspan=2 valign=top>Jan 2</td>
+<td>Exchange (1 USD = 1.20 CAD)</td>
+<td align=right>&ndash; CAD 120</td>
+<td align=right>+ USD 100</td>
+<td width=0 bgcolor=#000000></td>
+<td align=right>&nbsp;</td>
+<td align=right>&nbsp;</td>
+</tr>
+
+<tr bgcolor=#ffffc0>
+<td>Balance</td>
+<td align=right>CAD 80</td>
+<td align=right>USD 100</td>
+<td width=0 bgcolor=#000000></td>
+<td align=right>CAD 200</td>
+<td align=right>CAD 0</td>
+</tr>
+
+<tr bgcolor=#ffffff>
+<td rowspan=2 valign=top>Jan 3</td>
+<td>Buy food (1 USD = 1.30 CAD)</td></td>
+<td align=right>&nbsp;</td>
+<td align=right>&ndash; USD 40</td>
+<td width=0 bgcolor=#000000></td>
+<td align=right>&nbsp;</td>
+<td align=right>+ CAD 52</td>
+</tr>
+
+<tr bgcolor=#ffffc0>
+<td>Balance</td>
+<td align=right>CAD 80</td>
+<td align=right>USD 60</td>
+<td width=0 bgcolor=#000000></td>
+<td align=right>CAD 200</td>
+<td align=right>CAD 52</td>
+</tr>
+
+<tr bgcolor=#ffffff>
+<td rowspan=2 valign=top>Jan 5</td>
+<td>Exchange (1 USD = 1.25 CAD)</td>
+<td align=right>+ CAD 75</td>
+<td align=right>&ndash; USD 60</td>
+<td width=0 bgcolor=#000000></td>
+<td align=right>&nbsp;</td>
+<td align=right>&nbsp;</td>
+</tr>
+
+<tr bgcolor=#ffffc0>
+<td>Balance</td>
+<td align=right>CAD 155</td>
+<td align=right>USD 0</td>
+<td width=0 bgcolor=#000000></td>
+<td align=right>CAD 200</td>
+<td align=right>CAD 52</td>
+</tr>
+
+<tr bgcolor=#ffffff>
+<td rowspan=2 valign=top>Jan 7</td>
+<td>Buy food</td>
+<td align=right>&ndash; CAD 20</td>
+<td align=right>&nbsp;</td>
+<td width=0 bgcolor=#000000></td>
+<td align=right>&nbsp;</td>
+<td align=right>+ CAD 20</td>
+</tr>
+
+<tr bgcolor=#ffffc0>
+<td>Balance</td>
+<td align=right>CAD 135</td>
+<td align=right>USD 0</td>
+<td width=0 bgcolor=#000000></td>
+<td align=right>CAD 200</td>
+<td align=right>CAD 72</td>
+</tr>
+
+</table>
+
+<p>
+
+Note that we have recorded each transaction according to the exchange
+rate in effect on the date the transaction was made. Remember the
+accounting equation "Assets &ndash; Liabilities = Capital + Income &ndash;
+Expenses". Please convince yourself that each transaction (white line)
+indeed satisfies this equation, if one takes the daily exchange rate
+into account. Therefore, the white lines are balanced. 
+
+<p>
+
+So what is the problem? The problem is that the yellow lines are not
+balanced. For example, consider the balance for January 7. We started
+with CAD 200, and we spent CAD 72 on food, so we should still have CAD
+128 in our pocket. Yet, we have CAD 135. So something went wrong:
+we gained CAD 7 without any record of it on the "equity" side of the
+balance sheet.
+
+The accounting system of <a href="#Table-2.2">Table 2.2</a> violates
+the Fundamental Accounting Equation. 
+
+<a name="2.3"><h3>2.3. Foreign exchange gains and losses</h3></a>
+
+The CAD 7 that were "won" in <a href="#Table-2.2">Table 2.2</a> are
+called a <i>foreign exchange gain</i>. Such gains are caused by
+exchange rate fluctuations between transactions. For example, if you
+buy a foreign currency, then sell it later at a higher price, you have
+enjoyed a foreign exchange gain. Similarly, if you lose money due to
+exchange rate fluctuations, then this is called a <i>foreign exchange
+loss</i>.  For accounting purposes, foreign exchange gains count as
+<i>income</i>, and foreign exchange losses count as an <i>expense</i>.
+What the accounting method from <a href="#Table-2.2">Table 2.2</a>
+lacks is a way to track foreign exchange gains and losses.
+
+<p>
+
+The question we need to address is therefore how to calculate foreign
+exchange gains and losses, and how to record them, preferably while
+keeping the Fundamental Accounting Equation intact.
+
+<p>
+
+Calculating foreign exchange gains and losses is somewhat tricky,
+because such gains and losses do not occur during transactions, but
+rather in the time intervals <i>between</i> transactions. It is
+therefore not immediately clear at what time they should be entered in
+the balance sheet. In principle, gains and losses happen every time
+the exchange rate changes, whether or not there was a transaction. But
+it is clearly not feasible to record them on a continuous basis (for
+example, once per second). So there must be a better way. 
+
+<p>
+
+Another potential complication is that the concept of a gain or loss
+depends on the "base" currency, and therefore on your point of view.
+Suppose you have CAD 150 and USD 100, and the exchange rate changes
+from 1.20 CAD/USD to 1.25 CAD/USD. If you are Canadian, then you have
+just enjoyed a gain (your equity increased from CAD 270 to CAD
+275). But if you are American, then you have suffered a loss (your
+equity decreased from USD 225 to USD 220).  This dependency on a base
+currency seems necessary, but it is also frustrating, as it seems to
+imply that a multi-currency accounting system cannot be "symmetric" in
+the way different currencies are treated. (It is in fact possible to
+design a symmetric system, as we will see in <a href="#6.1">Section
+6.1</a> below).
+
+<a name="2.4"><h3>2.4. Calculating gains and losses through adjustments</h3></a>
+
+In principle, one could account for foreign exchange gains and losses
+in the same way one accounts for intractable arithmetic errors: by
+adding an "adjusting entry" before each yellow line in <a
+href="#Table-2.2">Table 2.2</a>, forcing the balances to obey the
+accounting equation. This method is shown in <a
+href="#Table-2.3">Table 2.3</a>.
+
+<p>
+<a name="Table-2.3"><b>Table 2.3: Foreign currency accounting with adjustments</b></a>
+<p>
+
+<table border=0 bgcolor=#000000 cellspacing=1>
+
+<tr bgcolor=#ffc0c0>
+<th width=50>Date</th>
+<th>Description</th>
+<th width=100>Canadian&nbsp;Cash<br>(asset)</th>
+<th width=100>U.S.&nbsp;Cash<br>(asset)</th>
+<td width=0 bgcolor=#000000></td>
+<th width=100>Initial&nbsp;Capital<br>(capital)</th>
+<th width=100>Food<br>(expense)</th>
+<th width=100>Exchange&nbsp;gain<br>(income)</th>
+</tr>
+
+<tr bgcolor=#ffffc0>
+<td bgcolor=#ffffff>Jan 1</td>
+<td>Opening balance</td>
+<td align=right>CAD 200</td>
+<td align=right>USD 0</td>
+<td width=0 bgcolor=#000000></td>
+<td align=right>CAD 200</td>
+<td align=right>CAD 0</td>
+<td align=right>CAD 0</td>
+</tr>
+
+<tr bgcolor=#ffffff>
+<td rowspan=2 valign=top>Jan 2</td>
+<td>Exchange (1 USD = 1.20 CAD)</td>
+<td align=right>&ndash; CAD 120</td>
+<td align=right>+ USD 100</td>
+<td width=0 bgcolor=#000000></td>
+<td align=right>&nbsp;</td>
+<td align=right>&nbsp;</td>
+<td align=right>&nbsp;</td>
+</tr>
+
+<tr bgcolor=#ffffc0>
+<td>Balance</td>
+<td align=right>CAD 80</td>
+<td align=right>USD 100</td>
+<td width=0 bgcolor=#000000></td>
+<td align=right>CAD 200</td>
+<td align=right>CAD 0</td>
+<td align=right>CAD 0</td>
+</tr>
+
+<tr bgcolor=#ffffff>
+<td rowspan=3 valign=top>Jan 3</td>
+<td>Buy food (1 USD = 1.30 CAD)</td></td>
+<td align=right>&nbsp;</td>
+<td align=right>&ndash; USD 40</td>
+<td width=0 bgcolor=#000000></td>
+<td align=right>&nbsp;</td>
+<td align=right>+ CAD 52</td>
+<td align=right>&nbsp;</td>
+</tr>
+
+<tr bgcolor=#ffffff>
+<td>Adjustment</td></td>
+<td align=right>&nbsp;</td>
+<td align=right>&nbsp;</td>
+<td width=0 bgcolor=#000000></td>
+<td align=right>&nbsp;</td>
+<td align=right>&nbsp;</td>
+<td align=right>+ CAD 10</td>
+</tr>
+
+<tr bgcolor=#ffffc0>
+<td>Balance</td>
+<td align=right>CAD 80</td>
+<td align=right>USD 60</td>
+<td width=0 bgcolor=#000000></td>
+<td align=right>CAD 200</td>
+<td align=right>CAD 52</td>
+<td align=right>CAD 10</td>
+</tr>
+
+<tr bgcolor=#ffffff>
+<td rowspan=3 valign=top>Jan 5</td>
+<td>Exchange (1 USD = 1.25 CAD)</td>
+<td align=right>+ CAD 75</td>
+<td align=right>&ndash; USD 60</td>
+<td width=0 bgcolor=#000000></td>
+<td align=right>&nbsp;</td>
+<td align=right>&nbsp;</td>
+<td align=right>&nbsp;</td>
+</tr>
+
+<tr bgcolor=#ffffff>
+<td>Adjustment</td>
+<td align=right>&nbsp;</td>
+<td align=right>&nbsp;</td>
+<td width=0 bgcolor=#000000></td>
+<td align=right>&nbsp;</td>
+<td align=right>&nbsp;</td>
+<td align=right>&ndash; CAD 3</td>
+</tr>
+
+<tr bgcolor=#ffffc0>
+<td>Balance</td>
+<td align=right>CAD 155</td>
+<td align=right>USD 0</td>
+<td width=0 bgcolor=#000000></td>
+<td align=right>CAD 200</td>
+<td align=right>CAD 52</td>
+<td align=right>CAD 7</td>
+</tr>
+
+<tr bgcolor=#ffffff>
+<td rowspan=2 valign=top>Jan 7</td>
+<td>Buy food</td>
+<td align=right>&ndash; CAD 20</td>
+<td align=right>&nbsp;</td>
+<td width=0 bgcolor=#000000></td>
+<td align=right>&nbsp;</td>
+<td align=right>+ CAD 20</td>
+<td align=right>&nbsp;</td>
+</tr>
+
+<tr bgcolor=#ffffc0>
+<td>Balance</td>
+<td align=right>CAD 135</td>
+<td align=right>USD 0</td>
+<td width=0 bgcolor=#000000></td>
+<td align=right>CAD 200</td>
+<td align=right>CAD 72</td>
+<td align=right>CAD 7</td>
+</tr>
+
+</table>
+
+<p>
+
+To calculate <a href="#Table-2.3">Table 2.3</a>, we simply had to look
+at each day's balance (yellow line), and force it to satisfy the
+accounting equation according to that day's exchange rate. An
+adjusting entry was then added to produce the desired numbers. As a
+result, the "yellow" (balance) lines are balanced, but the "white"
+(transaction) lines are not.
+
+<p>
+
+Note that there was an exchange loss of CAD 3 on January 5. While this
+technically is an "expense", we have not created a special "expense"
+account for it; instead we have recorded this loss as a "negative
+gain". This is in accordance with an accepted accounting principle
+that states that exchange gains and losses can be directly offset
+against each other.
+
+<p>
+
+The method shown in <a href="#Table-2.3">Table 2.3</a> is undesirable
+for several reasons. The main problem is that the additional
+"adjusting entries" are themselves not balanced, thus violating the
+principle of double entry accounting. This removes a source of
+redundancy. In effect, since one constantly has to "force" the
+accounts to balance, one can no longer notice the difference between
+currency fluctuations and random arithmetical errors.
+
+<p>
+
+Moreover, even if the accounts are in balance at one point, they
+continually "go out of balance" as the exchange rate changes, even
+while no transactions occur. Thus, adjustment entries should really be
+added continuously, rather than once per transaction. This would be an
+undesirable thing to have to do.
+
+<p>
+
+Another problem with the adjustment method is that it makes it
+difficult to add or change transactions retroactively. Suppose we want
+to enter another transaction on January 2. Then all future adjusting
+balances (on January 3 and 5) have to be re-calculated. While it would
+be possible for a computer to do this automatically, it is not
+very elegant and even seems manipulative. Instead of simply
+<i>recording</i> transactions, we are now <i>calculating</i>
+transactions, and the separation of data entry and analysis seems to
+be violated. Cause and effect of individual transactions are difficult
+to track.
+
+<a name="3"><h2>3. Foreign currency accounting according to SSAP 20</h2></a>
+
+<a name="3.1"><h3>3.1. Accounting for non-monetary current assets</h3></a>
+
+So if the methods shown in <a href="#Table-2.2">Tables 2.2</a> and <a
+href="#Table-2.3">2.3</a> are bad, then how should double-entry
+accounting for multiple currencies be done? Before we look at possible
+solutions, it is useful to recall how one accounts for the changing
+value of non-monetary assets.
+
+<p>
+
+Imagine that you are in the business of buying and selling oil. Let us
+assume that oil is a <i>current</i> asset, which means that it can be
+easily converted to cash on the market. Therefore, oil should always
+be accounted for at its <i>current market price</i>.  (This is
+different from <i>non-current</i> assets, such as real-estate, which
+are usually accounted for at their historical cost).
+
+<p>
+
+Suppose you buy oil at market prices, and you sell it at market price
+plus a profit margin of CAD 5 per barrel. On January 1, you buy 10
+barrels of oil at a price of CAD 30 per barrel. On January 2, you sell
+2 barrels for CAD 35 each (the market price is still CAD 30). On
+January 3, the price of oil increases to CAD 32 per barrel. On January
+4, you sell 5 more barrels at CAD 37. We can account for this as
+follows:
+
+<p>
+<a name="Table-3.1"><b>Table 3.1: Accounting for non-monetary current assets</b></a>
+<p>
+
+<table border=0 bgcolor=#000000 cellspacing=1>
+
+<tr bgcolor=#ffc0c0>
+<th width=50>Date</th>
+<th>Description</th>
+<th width=100>Cash<br>(asset)</th>
+<th width=100>Oil<br>(asset)</th>
+<th width=100 bgcolor=#80c080>Inventory</th>
+<td width=0 bgcolor=#000000></td>
+<th width=100>Initial&nbsp;capital<br>(capital)</th>
+<th width=100>Sales&nbsp;profit<br>(income)</th>
+<th width=100>Capital&nbsp;gain<br>(income)</th>
+</tr>
+
+<tr bgcolor=#ffffc0>
+<td bgcolor=#ffffff>Jan 1</td>
+<td>Opening balance</td>
+<td align=right>CAD 500</td>
+<td align=right>CAD 0</td>
+<td align=right bgcolor=#80c080>0 barrels</td>
+<td width=0 bgcolor=#000000></td>
+<td align=right>CAD 500</td>
+<td align=right>CAD 0</td>
+<td align=right>CAD 0</td>
+</tr>
+
+<tr bgcolor=#ffffff>
+<td rowspan=2 valign=top>Jan 1</td>
+<td>Buy 10 barrels</td>
+<td align=right>&ndash; CAD 300</td>
+<td align=right>+ CAD 300</td>
+<td align=right bgcolor=#80c080>+10&nbsp;barrels<br>(@CAD&nbsp;30)</td>
+<td width=0 bgcolor=#000000></td>
+<td align=right>&nbsp;</td>
+<td align=right>&nbsp;</td>
+<td align=right>&nbsp;</td>
+</tr>
+
+<tr bgcolor=#ffffc0>
+<td>Balance</td>
+<td align=right>CAD 200</td>
+<td align=right>CAD 300</td>
+<td align=right bgcolor=#80c080>10 barrels<br>(@CAD 30)</td>
+<td width=0 bgcolor=#000000></td>
+<td align=right>CAD 500</td>
+<td align=right>CAD 0</td>
+<td align=right>CAD 0</td>
+</tr>
+
+<tr bgcolor=#ffffff>
+<td rowspan=2 valign=top>Jan 2</td>
+<td>Sell 2 barrels</td>
+<td align=right>+ CAD 70</td>
+<td align=right>&ndash; CAD 60</td>
+<td align=right bgcolor=#80c080>&ndash;2 barrels<br>(@CAD 30)</td>
+<td width=0 bgcolor=#000000></td>
+<td align=right>&nbsp;</td>
+<td align=right>+ CAD 10</td>
+<td align=right>&nbsp;</td>
+</tr>
+
+<tr bgcolor=#ffffc0>
+<td>Balance</td>
+<td align=right>CAD 270</td>
+<td align=right>CAD 240</td>
+<td align=right bgcolor=#80c080>8 barrels<br>(@CAD 30)</td>
+<td width=0 bgcolor=#000000></td>
+<td align=right>CAD 500</td>
+<td align=right>CAD 10</td>
+<td align=right>CAD 0</td>
+</tr>
+
+<tr bgcolor=#ffffff>
+<td rowspan=2 valign=top>Jan 3</td>
+<td>Re-value inventory</td>
+<td align=right>&nbsp;</td>
+<td align=right>+ CAD 16</td>
+<td align=right bgcolor=#80c080>8 barrels<br>(+CAD 2)</td>
+<td width=0 bgcolor=#000000></td>
+<td align=right>&nbsp;</td>
+<td align=right>&nbsp;</td>
+<td align=right>+ CAD 16</td>
+</tr>
+
+<tr bgcolor=#ffffc0>
+<td>Balance</td>
+<td align=right>CAD 270</td>
+<td align=right>CAD 256</td>
+<td align=right bgcolor=#80c080>8 barrels<br>(@CAD 32)</td>
+<td width=0 bgcolor=#000000></td>
+<td align=right>CAD 500</td>
+<td align=right>CAD 10</td>
+<td align=right>CAD 16</td>
+</tr>
+
+<tr bgcolor=#ffffff>
+<td rowspan=2 valign=top>Jan 4</td>
+<td>Sell 5 barrels</td>
+<td align=right>+ CAD 185</td>
+<td align=right>&ndash; CAD 160</td>
+<td align=right bgcolor=#80c080>&ndash;5 barrels<br>(@CAD 32)</td>
+<td width=0 bgcolor=#000000></td>
+<td align=right>&nbsp;</td>
+<td align=right>+ CAD 25</td>
+<td align=right>&nbsp;</td>
+</tr>
+
+<tr bgcolor=#ffffc0>
+<td>Balance</td>
+<td align=right>CAD 455</td>
+<td align=right>CAD 96</td>
+<td align=right bgcolor=#80c080>3 barrels<br>(@CAD 32)</td>
+<td width=0 bgcolor=#000000></td>
+<td align=right>CAD 500</td>
+<td align=right>CAD 35</td>
+<td align=right>CAD 16</td>
+</tr>
+
+</table>
+
+<p>
+
+There are several things to note in this example. The first remark is
+that the green column marked "Inventory" is not an <i>account</i>; it
+is simply an informational column recording the number of barrels of
+oil we currently own, and their current price. This column does not
+usually appear in a company's accounts; it can be kept separately. The
+accounts only contain the <i>value</i> of the assets, rather than the
+assets themselves.
+
+<p>
+
+Also note that this accounting method clearly distinguishes different
+sources of income: CAD 35 of the income is from sales profits (for 7
+barrels sold at a profit margin of CAD 5 each), and CAD 16 is from
+capital gains (because the price of oil rose by CAD 2 at a time when
+you had 8 barrels).
+
+<p>
+
+From the viewpoint of multiple currency accounting, we remark that a
+"barrel of oil", while cumbersome to carry in your wallet, might
+nevertheless be regarded as a kind of currency. We make the
+following observations:
+
+<ul>
+
+<li>All accounts are in CAD. Even though there is another currency
+involved, namely "barrels of oil", we do not actually keep any account
+in this currency. Our "oil asset" account is kept in CAD. 
+
+<li>Because any fluctuations in the price of oil are recorded in CAD,
+they are reflected on the asset side of the balance sheet and also on
+the income/expense side. As a result, the accounts are balanced at all
+times.
+
+<li>Since the oil asset account is denominated in CAD and not in
+barrels, we must separately keep an inventory of the actual amount of
+oil owned, and also of the current market price. This inventory, which
+is shown in the green column in the example, is only informational; it
+is not part of the account sheet, and does not take part in any
+balancing.
+
+</ul>
+
+<a name="3.2"><h3>3.2. The "official" solution: translation to a single currency</h3></a>
+
+Most countries have a code of standard accounting practices that deals
+with foreign currency accounting. These can be searched for (and in
+some cases, found) on the web. Examples of such documents are SSAP 20
+(for Canada and the U.K.) and FASB 52 (for the U.S.). It is my
+understanding that these various country-specific documents more or
+less all say the same thing. For example, SSAP 20 states:
+
+<blockquote>
+ During an accounting period, a company may enter into transactions
+ which are denominated in a foreign currency. The result of each
+ transaction should normally be translated into the company's local
+ currency using the exchange rate in operation on the date on which
+ the transaction occurred [...].
+</blockquote>
+
+In effect, this means that foreign currencies should be treated
+precisely in the same way as non-monetary assets, i.e., they should be
+accounted for <i>in the local currency</i>. (As before, we use
+Canadian dollars as the local currency in our examples). This means
+that, just as the oil account in <a href="#Table-3.1">Table 3.1</a>
+was denominated in CAD (and not in "barrels of oil"), the U.S. dollar
+account in our foreign currency example should also be denominated in
+CAD (and not in USD), when using this accounting method. Currency
+gains and losses are determined in the same way as other kinds of
+capital gains and losses: namely, by re-valuing accounts when a change
+of exchange rates occurs.
+
+<p>
+
+We illustrate this by reconsidering the example from <a
+href="#Table-2.1">Tables 2.1</a>&ndash;<a href="#Table-2.3">2.3</a>,
+using the SSAP 20 method. Note that the accounting principle used here
+is very similar to <a href="#Table-3.1">Table 3.1</a>.
+
+<p>
+<a name="Table-3.2"><b>Table 3.2: Foreign currency accounting &agrave; la SSAP 20</b></a>
+<p>
+
+<table border=0 bgcolor=#000000 cellspacing=1>
+
+<tr bgcolor=#ffc0c0>
+<th width=50>Date</th>
+<th>Description</th>
+<th width=100>CAD&nbsp;Cash<br>(asset)</th>
+<th width=100>USD&nbsp;Cash<br>(asset)</th>
+<th width=100 bgcolor=#80c080>USD&nbsp;Cash<br>Inventory</th>
+<td width=0 bgcolor=#000000></td>
+<th width=100>Initial&nbsp;Capital<br>(capital)</th>
+<th width=100>Food<br>(expense)</th>
+<th width=100>Exchange gain<br>(income)</th>
+</tr>
+
+<tr bgcolor=#ffffc0>
+<td bgcolor=#ffffff>Jan 1</td>
+<td>Opening balance</td>
+<td align=right>CAD 200</td>
+<td align=right>CAD 0</td>
+<td align=right bgcolor=#80c080>USD 0</td>
+<td width=0 bgcolor=#000000></td>
+<td align=right>CAD 200</td>
+<td align=right>CAD 0</td>
+<td align=right>CAD 0</td>
+</tr>
+
+<tr bgcolor=#ffffff>
+<td rowspan=2 valign=top>Jan 2</td>
+<td>Exchange</td>
+<td align=right>&ndash; CAD 120</td>
+<td align=right>+ CAD 120</td>
+<td align=right bgcolor=#80c080>+ USD 100<br>(@CAD&nbsp;1.20)</td>
+<td width=0 bgcolor=#000000></td>
+<td align=right>&nbsp;</td>
+<td align=right>&nbsp;</td>
+<td align=right>&nbsp;</td>
+</tr>
+
+<tr bgcolor=#ffffc0>
+<td>Balance</td>
+<td align=right>CAD 80</td>
+<td align=right>CAD 120</td>
+<td align=right bgcolor=#80c080>USD 100<br>(@CAD&nbsp;1.20)</td>
+<td width=0 bgcolor=#000000></td>
+<td align=right>CAD 200</td>
+<td align=right>CAD 0</td>
+<td align=right>CAD 0</td>
+</tr>
+
+<tr bgcolor=#ffffff>
+<td rowspan=4 valign=top>Jan 3</td>
+<td>Re-value USD</td></td>
+<td align=right>&nbsp;</td>
+<td align=right>+ CAD 10</td>
+<td align=right bgcolor=#80c080>USD 100<br>(+ CAD&nbsp;0.10)</td>
+<td width=0 bgcolor=#000000></td>
+<td align=right>&nbsp;</td>
+<td align=right>&nbsp;</td>
+<td align=right>+ CAD 10</td>
+</tr>
+
+<tr bgcolor=#ffffc0>
+<td>Balance</td>
+<td align=right>CAD 80</td>
+<td align=right>CAD 130</td>
+<td align=right bgcolor=#80c080>USD 100<br>(@CAD&nbsp;1.30)</td>
+<td width=0 bgcolor=#000000></td>
+<td align=right>CAD 200</td>
+<td align=right>CAD 0</td>
+<td align=right>CAD 10</td>
+</tr>
+
+<tr bgcolor=#ffffff>
+<td>Buy food</td></td>
+<td align=right>&nbsp;</td>
+<td align=right>&ndash; CAD 52</td>
+<td align=right bgcolor=#80c080>&ndash; USD 40<br>(@CAD&nbsp;1.30)</td>
+<td width=0 bgcolor=#000000></td>
+<td align=right>&nbsp;</td>
+<td align=right>+ CAD 52</td>
+<td align=right>&nbsp;</td>
+</tr>
+
+<tr bgcolor=#ffffc0>
+<td>Balance</td>
+<td align=right>CAD 80</td>
+<td align=right>CAD 78</td>
+<td align=right bgcolor=#80c080>USD 60<br>(@CAD&nbsp;1.30)</td>
+<td width=0 bgcolor=#000000></td>
+<td align=right>CAD 200</td>
+<td align=right>CAD 52</td>
+<td align=right>CAD 10</td>
+</tr>
+
+<tr bgcolor=#ffffff>
+<td rowspan=4 valign=top>Jan 5</td>
+<td>Re-value USD</td>
+<td align=right>&nbsp;</td>
+<td align=right>&ndash; CAD 3</td>
+<td align=right bgcolor=#80c080>USD 60<br>(&ndash; CAD&nbsp;0.05)</td>
+<td width=0 bgcolor=#000000></td>
+<td align=right>&nbsp;</td>
+<td align=right>&nbsp;</td>
+<td align=right>&ndash; CAD 3</td>
+</tr>
+
+<tr bgcolor=#ffffc0>
+<td>Balance</td>
+<td align=right>CAD 80</td>
+<td align=right>CAD 75</td>
+<td align=right bgcolor=#80c080>USD 60<br>(@CAD&nbsp;1.25)</td>
+<td width=0 bgcolor=#000000></td>
+<td align=right>CAD 200</td>
+<td align=right>CAD 52</td>
+<td align=right>CAD 7</td>
+</tr>
+
+<tr bgcolor=#ffffff>
+<td>Exchange</td>
+<td align=right>+ CAD 75</td>
+<td align=right>&ndash; CAD 75</td>
+<td align=right bgcolor=#80c080>&ndash; USD 60<br>(@CAD&nbsp;1.25)</td>
+<td width=0 bgcolor=#000000></td>
+<td align=right>&nbsp;</td>
+<td align=right>&nbsp;</td>
+<td align=right>&nbsp;</td>
+</tr>
+
+<tr bgcolor=#ffffc0>
+<td>Balance</td>
+<td align=right>CAD 155</td>
+<td align=right>CAD 0</td>
+<td align=right bgcolor=#80c080>USD 0</td>
+<td width=0 bgcolor=#000000></td>
+<td align=right>CAD 200</td>
+<td align=right>CAD 52</td>
+<td align=right>CAD 7</td>
+</tr>
+
+<tr bgcolor=#ffffff>
+<td rowspan=2 valign=top>Jan 7</td>
+<td>Buy food</td>
+<td align=right>&ndash; CAD 20</td>
+<td align=right>&nbsp;</td>
+<td align=right bgcolor=#80c080>&nbsp;</td>
+<td width=0 bgcolor=#000000></td>
+<td align=right>&nbsp;</td>
+<td align=right>+ CAD 20</td>
+<td align=right>&nbsp;</td>
+</tr>
+
+<tr bgcolor=#ffffc0>
+<td>Balance</td>
+<td align=right>CAD 135</td>
+<td align=right>USD 0</td>
+<td align=right bgcolor=#80c080>USD 0</td>
+<td width=0 bgcolor=#000000></td>
+<td align=right>CAD 200</td>
+<td align=right>CAD 72</td>
+<td align=right>CAD 7</td>
+</tr>
+
+</table>
+
+<p>
+
+Compare this carefully to <a href="#Table-2.3">Table 2.3</a>. The
+first thing to notice is that each white and yellow row is balanced in
+<a href="#Table-3.2">Table 3.2</a>, which was not the case in <a
+href="#Table-2.3">Table 2.3</a>. On the equity side of the balance
+sheet (to the right of the solid black line), nothing has changed
+(except the order of some transactions). On the assets/liabilities
+side (to the left of the solid black line), the USD account is now
+denominated in CAD, and therefore, the currency fluctuations on
+January 3 and 5 lead to re-valuations of assets.  As in <a
+href="#Table-3.1">Table 3.1</a>, the green column is only
+informational and should be disregarded for balancing purposes.
+
+<p>
+
+We summarize the main points of the SSAP 20 method:
+
+<ul>
+<li>There is always one special <i>reference currency</i>,
+typically "the company's local currency".
+<li>All accounts are kept in the reference currency. 
+<li>Tallies in non-reference currencies are only informational, and do
+not take part in balancing.
+<li>Fluctuations in the relative values of non-reference currencies
+are reflected immediately in their corresponding asset accounts (and
+also in a currency gain/loss account).
+</ul>
+
+The advantages of this method are:
+
+<ul>
+<li>Since all entries are in one currency, no special software support
+for multiple currencies is needed &mdash; in principle, only single-currency
+accounting software is required.
+<li>The accounts are balanced.  
+</ul>
+
+The disadvantages are:
+
+<ul>
+<li>Separate "tallies" of foreign currencies and their exchange rates
+must be kept (the green columns in the examples). In fact, these
+"tallies" contain original (<i>source</i>) information, whereas the
+corresponding asset/liability accounts contain derived
+(<i>calculated</i>) information. In a sense, the foreign currency
+accounts that are kept in a local currency are only "virtual"
+accounts, whose contents are entirely calculated.
+
+<li>Accounts must be re-valued periodically, and the question arises
+when to do this. In principle, this should happen just before every
+transaction, and just before generating a report. If there are many
+foreign currency accounts, this can mean a lot of (manual) work.
+
+<li>It is relatively difficult to add or change a transaction
+retroactively. If new a transaction is entered for an earlier date,
+then all future currency gains and losses must be recalculated. This
+changes future transactions, not just future balances.
+
+<li>There is an unsatisfying asymmetry in this accounting method,
+because one currency must be given prominence above all others.
+</ul>
+
+The first three of these disadvantages can be alleviated by using
+software that supports the SSAP 20 accounting method. In this case,
+the user only has to enter the data from the green columns, and the
+software is able to take care of conversions, re-valuations, and
+calculating the corresponding gains and losses. 
+
+<a name="4"><h2>4. Foreign currency accounting using currency trading accounts</h2></a>
+
+<a name="4.1"><h3>4.1. Restoring symmetry to foreign currency accounting</h3></a>
+
+In <a href="#3">Section 3</a>, one of our main complaints about the
+SSAP 20 accounting method was that it introduces an apparent asymmetry
+by requiring one currency to be singled out as the "reference
+currency". We would prefer to work with accounts that are directly
+denominated in multiple currencies, but we have seen in <a
+href="#2">Section 2</a> that this leads to problems with the
+accounting equation. Let us now investigate a method that restores
+symmetry while also respecting the accounting equation.
+
+<p>
+
+Consider the following simple scenario. On January 1, you have assets
+of CAD 60 and USD 100, and the exchange rate is 1.20
+CAD/USD. Therefore, your total capital, in Canadian dollars, is CAD 60
++ CAD 120 = CAD 180. Let us assume that you do not make any further
+transactions in January, but the exchange rate changes to 1.30
+CAD/USD, 1.25 CAD/USD, and 1.15 CAD/USD on the three days following
+January 1. Recording only balances (yellow lines) and ignoring
+transactions (white lines) for the moment, we find that we should
+record the following, more or less in the style of <a
+href="#Table-2.3">Table 2.3</a>:
+
+<p>
+<a name="Table-4.1"><b>Table 4.1: Cumulative exchange gain as a function of exchange rate</b></a>
+<p>
+
+<table border=0 bgcolor=#000000 cellspacing=1>
+
+<tr bgcolor=#ffc0c0>
+<th width=50>Date</th>
+<th>Description</th>
+<th width=100>Canadian&nbsp;Cash<br>(asset)</th>
+<th width=100>U.S.&nbsp;Cash<br>(asset)</th>
+<td width=0 bgcolor=#000000></td>
+<th width=100>Initial&nbsp;Capital<br>(capital)</th>
+<th width=100>Exchange&nbsp;gain<br>(income)</th>
+</tr>
+
+<tr bgcolor=#ffffc0>
+<td bgcolor=#ffffff>Jan 1</td>
+<td>Balance (1 USD = 1.20 CAD)</td>
+<td align=right>CAD 60</td>
+<td align=right>USD 100</td>
+<td width=0 bgcolor=#000000></td>
+<td align=right>CAD 180</td>
+<td align=right>CAD 0</td>
+</tr>
+
+<tr bgcolor=#ffffc0>
+<td bgcolor=#ffffff>Jan 2</td>
+<td>Balance (1 USD = 1.30 CAD)</td>
+<td align=right>CAD 60</td>
+<td align=right>USD 100</td>
+<td width=0 bgcolor=#000000></td>
+<td align=right>CAD 180</td>
+<td align=right>CAD 10</td>
+</tr>
+
+<tr bgcolor=#ffffc0>
+<td bgcolor=#ffffff>Jan 3</td>
+<td>Balance (1 USD = 1.25 CAD)</td>
+<td align=right>CAD 60</td>
+<td align=right>USD 100</td>
+<td width=0 bgcolor=#000000></td>
+<td align=right>CAD 180</td>
+<td align=right>CAD 5</td>
+</tr>
+
+<tr bgcolor=#ffffc0>
+<td bgcolor=#ffffff>Jan 4</td>
+<td>Balance (1 USD = 1.15 CAD)</td>
+<td align=right>CAD 60</td>
+<td align=right>USD 100</td>
+<td width=0 bgcolor=#000000></td>
+<td align=right>CAD 180</td>
+<td align=right>&ndash; CAD 5</td>
+</tr>
+
+</table>
+
+<p>
+
+Note that the only change from day to day is the exchange gain; there
+are no changes in the asset accounts or in the initial capital
+account. Also note that the accounts are balanced on each day, if one
+takes that day's exchange rate into account.
+
+<p>
+
+Now let us save some work by giving a <i>formula</i> for the exchange
+gain, instead of calculating it explicitly each day. Let the exchange
+rate on a given day be <i>x</i> CAD/USD, and let
+<i>y</i> be the corresponding exchange gain.  What is the formula for
+<i>y</i> in terms of <i>x</i>? We must satisfy the Fundamental
+Accounting Equation "Assets &ndash; Liabilities = Capital + Income &ndash;
+Expense", and therefore we must have:
+
+<p>
+CAD 60 + <i>x</i> * USD 100 = CAD 180 + <i>y</i>.
+<p>
+
+This can easily be solved for <i>y</i>:
+
+<p>
+<i>y</i> = <i>x</i> * USD 100 &ndash; CAD 120. 
+<p>
+
+In other words, the exchange gain <i>y</i> on any given day is exactly
+equal to the current value of (USD 100 minus CAD 120), expressed in
+Canadian dollars.  We can simplify <a href="#Table-4.1">Table 4.1</a>
+by expressing the exchange gain as a difference of multiple
+currencies, rather than expressing it as a value in a single currency.
+
+<p>
+<a name="Table-4.2"><b>Table 4.2: Cumulative exchange gain expressed as a difference of multiple currencies</b></a>
+<p>
+
+<table border=0 bgcolor=#000000 cellspacing=1>
+
+<tr bgcolor=#ffc0c0>
+<th width=50>Date</th>
+<th>Description</th>
+<th width=100>Canadian&nbsp;Cash<br>(asset)</th>
+<th width=100>U.S.&nbsp;Cash<br>(asset)</th>
+<td width=0 bgcolor=#000000></td>
+<th width=100>Initial&nbsp;Capital<br>(capital)</th>
+<th width=100>Exchange&nbsp;gain<br>(income)</th>
+</tr>
+
+<tr bgcolor=#ffffc0>
+<td bgcolor=#ffffff>Jan 1</td>
+<td>Balance (1 USD = 1.20 CAD)</td>
+<td align=right>CAD 60</td>
+<td align=right>USD 100</td>
+<td width=0 bgcolor=#000000></td>
+<td align=right>CAD 180</td>
+<td align=right>USD&nbsp;100&nbsp;&ndash;&nbsp;CAD&nbsp;120</td>
+</tr>
+
+<tr bgcolor=#ffffc0>
+<td bgcolor=#ffffff>Jan 2</td>
+<td>Balance (1 USD = 1.30 CAD)</td>
+<td align=right>CAD 60</td>
+<td align=right>USD 100</td>
+<td width=0 bgcolor=#000000></td>
+<td align=right>CAD 180</td>
+<td align=right>USD&nbsp;100&nbsp;&ndash;&nbsp;CAD&nbsp;120</td>
+</tr>
+
+<tr bgcolor=#ffffc0>
+<td bgcolor=#ffffff>Jan 3</td>
+<td>Balance (1 USD = 1.25 CAD)</td>
+<td align=right>CAD 60</td>
+<td align=right>USD 100</td>
+<td width=0 bgcolor=#000000></td>
+<td align=right>CAD 180</td>
+<td align=right>USD&nbsp;100&nbsp;&ndash;&nbsp;CAD&nbsp;120</td>
+</tr>
+
+<tr bgcolor=#ffffc0>
+<td bgcolor=#ffffff>Jan 4</td>
+<td>Balance (1 USD = 1.15 CAD)</td>
+<td align=right>CAD 60</td>
+<td align=right>USD 100</td>
+<td width=0 bgcolor=#000000></td>
+<td align=right>CAD 180</td>
+<td align=right>USD&nbsp;100&nbsp;&ndash;&nbsp;CAD&nbsp;120</td>
+</tr>
+
+</table>
+
+<p>
+
+Note that the exchange gains shown in <a href="#Table-4.2">Table
+4.2</a> are exactly identical to those shown in <a
+href="#Table-4.1">Table 4.1</a>, given each day's exchange rate. For
+example, on January 3, <a href="#Table-4.2">Table 4.2</a> shows (USD
+100 &ndash; CAD 120), but this is equal to the amount of CAD 5 shown
+in <a href="#Table-4.1">Table 4.1</a>, given that day's exchange rate
+of 1.25 CAD/USD.
+
+<p>
+
+By expressing exchange gains in terms of multiple currencies, we have
+not altered the <i>substance</i> of what has been recorded. We have
+only changed the <i>method</i> of recording. 
+
+<p>
+
+Note that each line of <a href="#Table-4.2">Table 4.2</a> is
+<i>balanced</i>, independently of the current exchange rate. Indeed,
+the entries of each currency are balanced separately: we have CAD 60 =
+CAD 180 &ndash; CAD 120, and also USD 100 = USD 100.
+
+<a name="4.2"><h3>4.2. Accounting with currency trading accounts</h3></a>
+
+An account that is denominated as a difference of multiple currencies,
+like the "exchange gain" account in <a href="#Table-4.2">Table 4.2</a>,
+is known as a
+<i>currency trading account</i>. The following is an exact copy of <a
+href="#Table-4.2">Table 4.2</a>, except that we have renamed the
+"exchange gain" account as "USD trading":
+
+<p>
+<a name="Table-4.3"><b>Table 4.3: Foreign currency accounting with a currency trading account</b></a>
+<p>
+
+<table border=0 bgcolor=#000000 cellspacing=1>
+
+<tr bgcolor=#ffc0c0>
+<th width=50>Date</th>
+<th>Description</th>
+<th width=100>Canadian&nbsp;Cash<br>(asset)</th>
+<th width=100>U.S.&nbsp;Cash<br>(asset)</th>
+<td width=0 bgcolor=#000000></td>
+<th width=100>Initial&nbsp;Capital<br>(capital)</th>
+<th width=100>USD&nbsp;Trading<br>(trading)</th>
+</tr>
+
+<tr bgcolor=#ffffc0>
+<td bgcolor=#ffffff>Jan 1</td>
+<td>Balance (1 USD = 1.20 CAD)</td>
+<td align=right>CAD 60</td>
+<td align=right>USD 100</td>
+<td width=0 bgcolor=#000000></td>
+<td align=right>CAD 180</td>
+<td align=right>USD&nbsp;100&nbsp;&ndash;&nbsp;CAD&nbsp;120</td>
+</tr>
+
+<tr bgcolor=#ffffc0>
+<td bgcolor=#ffffff>Jan 2</td>
+<td>Balance (1 USD = 1.30 CAD)</td>
+<td align=right>CAD 60</td>
+<td align=right>USD 100</td>
+<td width=0 bgcolor=#000000></td>
+<td align=right>CAD 180</td>
+<td align=right>USD&nbsp;100&nbsp;&ndash;&nbsp;CAD&nbsp;120</td>
+</tr>
+
+<tr bgcolor=#ffffc0>
+<td bgcolor=#ffffff>Jan 3</td>
+<td>Balance (1 USD = 1.25 CAD)</td>
+<td align=right>CAD 60</td>
+<td align=right>USD 100</td>
+<td width=0 bgcolor=#000000></td>
+<td align=right>CAD 180</td>
+<td align=right>USD&nbsp;100&nbsp;&ndash;&nbsp;CAD&nbsp;120</td>
+</tr>
+
+<tr bgcolor=#ffffc0>
+<td bgcolor=#ffffff>Jan 4</td>
+<td>Balance (1 USD = 1.15 CAD)</td>
+<td align=right>CAD 60</td>
+<td align=right>USD 100</td>
+<td width=0 bgcolor=#000000></td>
+<td align=right>CAD 180</td>
+<td align=right>USD&nbsp;100&nbsp;&ndash;&nbsp;CAD&nbsp;120</td>
+</tr>
+
+</table>
+
+<p>
+
+It is important to note that a currency trading account does not
+represent <i>assets</i>. The purpose of a currency trading account is
+to calculate foreign exchange gains and losses. By convention, gains
+are recorded positively and losses negatively, and therefore a
+currency trading account is a kind of <i>income</i> account.
+
+<p>
+
+Currency trading accounts are different from any other account in that
+they are denominated in two (or more) currencies. Typically, one of
+these currencies is your "reference" currency, and the other one is in
+the usual terminology called a "security". Thus, in the above example,
+we may say that the USD trading account holds "securities" of USD 100,
+which are offset by CAD 120 in negative "currency".
+
+<p>
+
+A currency trading account reflects currency exchanges made in the
+past, and in an ideal situation where exchange rates never change, its
+balance is supposed to be zero. However, as the exchange rate
+fluctuates, so does the value of the currency trading account, and
+such fluctuations correspond exactly to currency gains and losses. At
+the end of an accounting period, one may move the actual (<a
+name="4.2.realized">"realized"</a>) gain or loss to an income or expense
+account denominated in the reference currency.
+
+<p>
+
+Let us now illustrate the use of a currency trading account by redoing
+the example from <a href="#2">Sections 2</a> and <a href="#3">3</a>.
+We replace the "currency gain" account by a "currency trading" account
+between U.S. dollars and Canadian dollars.
+
+<p>
+<a name="Table-4.4"><b>Table 4.4: Foreign currency accounting with a currency trading account</b></a>
+<p>
+
+<table border=0 bgcolor=#000000 cellspacing=1>
+
+<tr bgcolor=#ffc0c0>
+<th width=50>Date</th>
+<th>Description</th>
+<th width=100>Canadian&nbsp;Cash<br>(asset)</th>
+<th width=100>U.S.&nbsp;Cash<br>(asset)</th>
+<td width=0 bgcolor=#000000></td>
+<th width=100>Initial&nbsp;Capital<br>(capital)</th>
+<th width=100>Food<br>(expense)</th>
+<th width=100>USD&nbsp;Trading<br>(trading)</th>
+</tr>
+
+<tr bgcolor=#ffffc0>
+<td bgcolor=#ffffff>Jan 1</td>
+<td>Opening balance</td>
+<td align=right>CAD 200</td>
+<td align=right>USD 0</td>
+<td width=0 bgcolor=#000000></td>
+<td align=right>CAD 200</td>
+<td align=right>CAD 0</td>
+<td align=right>USD 0<br>&ndash; CAD 0</td>
+</tr>
+
+<tr bgcolor=#ffffff>
+<td rowspan=2 valign=top>Jan 2</td>
+<td>Exchange (1 USD = 1.20 CAD)</td>
+<td align=right>&ndash; CAD 120</td>
+<td align=right>+ USD 100</td>
+<td width=0 bgcolor=#000000></td>
+<td align=right>&nbsp;</td>
+<td align=right>&nbsp;</td>
+<td align=right>+&nbsp;USD&nbsp;100<br>&ndash;&nbsp;CAD&nbsp;120</td>
+</tr>
+
+<tr bgcolor=#ffffc0>
+<td>Balance</td>
+<td align=right>CAD 80</td>
+<td align=right>USD 100</td>
+<td width=0 bgcolor=#000000></td>
+<td align=right>CAD 200</td>
+<td align=right>CAD 0</td>
+<td align=right>USD 100<br>&ndash; CAD 120</td>
+</tr>
+
+<tr bgcolor=#ffffff>
+<td rowspan=2 valign=top>Jan 3</td>
+<td>Buy food (1 USD = 1.30 CAD)</td></td>
+<td align=right>&nbsp;</td>
+<td align=right>&ndash; USD 40</td>
+<td width=0 bgcolor=#000000></td>
+<td align=right>&nbsp;</td>
+<td align=right>+ CAD 52</td>
+<td align=right>&ndash; USD 40<br>+ CAD 52</td>
+</tr>
+
+<tr bgcolor=#ffffc0>
+<td>Balance</td>
+<td align=right>CAD 80</td>
+<td align=right>USD 60</td>
+<td width=0 bgcolor=#000000></td>
+<td align=right>CAD 200</td>
+<td align=right>CAD 52</td>
+<td align=right>USD 60<br>&ndash; CAD 68</td>
+</tr>
+
+<tr bgcolor=#ffffff>
+<td rowspan=2 valign=top>Jan 5</td>
+<td>Exchange (1 USD = 1.25 CAD)</td>
+<td align=right>+ CAD 75</td>
+<td align=right>&ndash; USD 60</td>
+<td width=0 bgcolor=#000000></td>
+<td align=right>&nbsp;</td>
+<td align=right>&nbsp;</td>
+<td align=right>&ndash; USD 60<br>+ CAD 75</td>
+</tr>
+
+<tr bgcolor=#ffffc0>
+<td>Balance</td>
+<td align=right>CAD 155</td>
+<td align=right>USD 0</td>
+<td width=0 bgcolor=#000000></td>
+<td align=right>CAD 200</td>
+<td align=right>CAD 52</td>
+<td align=right>USD 0<br>+ CAD 7</td>
+</tr>
+
+<tr bgcolor=#ffffff>
+<td rowspan=2 valign=top>Jan 7</td>
+<td>Buy food</td>
+<td align=right>&ndash; CAD 20</td>
+<td align=right>&nbsp;</td>
+<td width=0 bgcolor=#000000></td>
+<td align=right>&nbsp;</td>
+<td align=right>+ CAD 20</td>
+<td align=right>&nbsp;</td>
+</tr>
+
+<tr bgcolor=#ffffc0>
+<td>Balance</td>
+<td align=right>CAD 135</td>
+<td align=right>USD 0</td>
+<td width=0 bgcolor=#000000></td>
+<td align=right>CAD 200</td>
+<td align=right>CAD 72</td>
+<td align=right>USD 0<br>+ CAD 7</td>
+</tr>
+
+</table>
+
+<p>
+
+Note that transactions that do not involve currency conversions (like
+"buy food" on January 7) are entered in the usual way for double entry
+accounting. Transactions that do involve currency conversions (like
+"exchange" on January 2 and 5 or "buy food" on January 3) must go
+through the trading account. Conceptually, when exchanging Canadian
+dollars for U.S. dollars, we are moving Canadian dollars "into" the
+trading account, and an equivalent amount of U.S. dollars "out of" the
+trading account. However, there is a sign reversal, so money moved
+"into" the trading account is given a negative sign and money moved
+"out of" it is given a positive sign. [FIXME: is there a standard
+convention for signs on trading accounts?]
+
+<p>
+
+Comparing the use of a currency trading account (as in <a
+href="#Table-4.4">Table 4.4</a>) to the other accounting methods shown
+in <a href="#Table-2.3">Tables 2.3</a> and <a
+href="#Table-3.2">3.2</a>, we note that the need for any periodic
+adjustments (as in <a href="#Table-2.3">Table 2.3</a>, January 3 and
+5) or for periodic re-valuation of assets (as in <a
+href="#Table-3.2">Table 3.2</a>, January 3 and 5) has been eliminated.
+Indeed, the value of the trading account is "self-adjusting", because
+it is sensitive to exchange rates.  Since no manual adjustments or
+re-valuations are needed, the question of
+<i>when</i> to record them becomes a moot point.
+
+<p>
+
+Another consequence of the self-adjusting nature of currency trading
+accounts is that there is no penalty for entering or changing
+transactions retroactively. Unlike in the SSAP 20 system, where
+retroactive transactions have an effect on future transactions and
+balances, in the currency trading account system, retroactive currency
+transactions only affect future balances (and not future
+transactions). In this respect, their effect is no different from
+other retroactive transactions.
+
+<p>
+
+Also note that, when using the currency trading account method as in
+<a href="#Table-4.4">Table 4.4</a>, there is no need to keep a separate
+"tally" or "inventory" of foreign currency assets, as we had to do
+using the SSAP 20 method in <a href="#Table-3.2">Table 3.2</a> (green
+column). Instead, the foreign currency assets are held directly in an
+account.
+
+<p>
+
+Another advantage of the currency trading account method is that it
+provides some flexibility in tracking income and expenses from currency
+exchange. For many applications, it will be sufficient to have just a
+single currency trading account. But it is also possible to have
+several such accounts, for instance, one account for each foreign
+currency, or one account for each branch of your business, or one
+account for each customer. This makes it possible to keep track of
+foreign exchange gains and losses attributed to different sources.
+
+<p>
+
+There is no reason that a single currency trading account has to be
+limited to two currencies. It is possible to set up a currency trading
+account to account for gains and losses from trades between
+three or more currencies. The balance in such an account is expressed
+as a sum or difference of amounts from each of the participating
+currencies.
+
+<p>
+
+Here is a summary of the main advantages of using currency trading
+accounts for multi-currency accounting:
+
+<ul>
+<li>Foreign currency transactions are entered in accounts that are
+denominated directly in the foreign currency. Thus, the account sheet
+contains <i>source</i> information.
+
+<li>Accounts are balanced; all transactions and balances respect the accounting
+equation.
+
+<li>Foreign exchange gains and losses do not need to be calculated on
+a continuous basis; instead, they can be calculated whenever
+convenient (e.g. once per accounting period).
+
+<li>Transactions can easily be entered or changed retroactively,
+without causing any change in future transactions.
+
+<li>Foreign exchange gains and losses from different sources can be
+tracked independently (see <a href="#4.4">Section 4.4</a> for an example).
+
+<li>There is no "reference" currency and thus no inherent asymmetry in
+this accounting method.
+</ul>
+
+The most important conceptual facts to remember about currency trading
+accounts are the following:
+
+<ul>
+<li> The purpose of a currency trading accounts is not to perform
+conversions, but to calculate gains and losses.  
+
+<li> The value of a currency trading account does not change during
+transactions, but in the time intervals between transactions.  
+</ul>
+
+<a name="4.3"><h3>4.3. Equivalence with SSAP 20</h3></a>
+
+The accounting method using currency trading accounts is
+mathematically equivalent to methods such as SSAP 20. By this, I mean
+that it can be used to generate identical financial reports as those
+generated under SSAP 20. Indeed, suppose we were to generate a
+financial report from the data in <a href="#Table-4.4">Table 4.4</a> at
+the end of January 3.  We have recorded the following balances at the
+end of January 3:
+
+<p>
+
+<table border=0 bgcolor=#000000 cellspacing=1>
+
+<tr bgcolor=#ffc0c0>
+<th width=50>Date</th>
+<th>Description</th>
+<th width=100>Canadian&nbsp;Cash<br>(asset)</th>
+<th width=100>U.S.&nbsp;Cash<br>(asset)</th>
+<td width=0 bgcolor=#000000></td>
+<th width=100>Initial&nbsp;Capital<br>(capital)</th>
+<th width=100>Food<br>(expense)</th>
+<th width=100>USD&nbsp;Trading<br>(trading)</th>
+</tr>
+
+<tr bgcolor=#ffffc0>
+<td bgcolor=#ffffff>Jan 3</td>
+<td>Balance</td>
+<td align=right>CAD 80</td>
+<td align=right>USD 60</td>
+<td width=0 bgcolor=#000000></td>
+<td align=right>CAD 200</td>
+<td align=right>CAD 52</td>
+<td align=right>USD 60<br>&ndash; CAD 68</td>
+</tr>
+
+</table>
+
+<p>
+
+Using the exchange rate of 1.30 CAD/USD in effect on January 3, we
+translate all balances to CAD. Note that USD 60 = CAD 78, and
+therefore USD 60 &ndash; CAD 68 = CAD 10. Here is the "translated" balance
+sheet:
+
+<p>
+
+<table border=0 bgcolor=#000000 cellspacing=1>
+
+<tr bgcolor=#ffc0c0>
+<th width=50>Date</th>
+<th>Description</th>
+<th width=100>Canadian&nbsp;Cash<br>(asset)</th>
+<th width=100>U.S.&nbsp;Cash<br>(asset)</th>
+<td width=0 bgcolor=#000000></td>
+<th width=100>Initial&nbsp;Capital<br>(capital)</th>
+<th width=100>Food<br>(expense)</th>
+<th width=100>USD&nbsp;Trading<br>(trading)</th>
+</tr>
+
+<tr bgcolor=#ffffc0>
+<td bgcolor=#ffffff>Jan 3</td>
+<td>Balance</td>
+<td align=right>CAD 80</td>
+<td align=right>CAD 78</td>
+<td width=0 bgcolor=#000000></td>
+<td align=right>CAD 200</td>
+<td align=right>CAD 52</td>
+<td align=right>CAD 10</td>
+</tr>
+
+</table>
+
+<p>
+
+Keeping in mind that a currency trading account is a special kind of
+income account representing a foreign exchange gain, the translated
+balance sheet is <i>exactly identical</i> to the end-of-day balances
+for January 3 obtained from the SSAP 20 method that are shown in <a
+href="#Table-3.2">Table 3.2</a>.
+
+<p>
+
+Therefore, after translation to the "reference" currency, both
+accounting methods yield identical data and generate identical
+financial reports.
+
+<a name="4.4"><h3>4.4. Example: tracking exchange gains and losses by source</h3></a>
+
+Suppose you are a Canadian company selling goods to U.S. customers.
+Your books are mostly kept in Canadian dollars, but you invoice your
+customers in USD. Your customers are given 10 days to pay after you
+send them an invoice, and some additional time may pass until you
+receive and deposit their USD check in your CAD bank account. Foreign
+exchange gains and losses will occur if the exchange rate changes
+between the invoice date and the date the payment is received
+and converted to CAD. 
+
+<p>
+
+Suppose that, for some reason, you would like to track foreign
+exchange gains and losses on a per-customer basis (for example, you
+want to determine whether it would be worthwhile to tighten some customer's
+payment terms). This can easily be done by using one currency trading
+account for each customer.
+
+<p>
+<a name="Table-4.5"><b>Table 4.5: One currency trading account per customer</b></a>
+<p>
+
+<table border=0 bgcolor=#000000 cellspacing=1>
+
+<tr bgcolor=#ffc0c0>
+<th width=50>Date</th>
+<th>Description</th>
+<th width=100>Cash<br>(asset)</th>
+<th width=100>U.S.&nbsp;Accounts Receivable<br>(asset)</th>
+<td width=0 bgcolor=#000000></td>
+<th width=100>Income<br>(income)</th>
+<th width=100><nobr>Trading<br>Customer 2<br>(trading)</nobr></th>
+<th width=100><nobr>Trading<br>Customer 1<br>(trading)</nobr></th>
+</tr>
+
+<tr bgcolor=#ffffc0>
+<td bgcolor=#ffffff>Jan 1</td>
+<td>Opening balance</td>
+<td align=right><nobr>CAD 0</nobr></td>
+<td align=right><nobr>USD 0</nobr></td>
+<td width=0 bgcolor=#000000></td>
+<td align=right><nobr>CAD 0</nobr></td>
+<td align=right><nobr>USD 0<br>&ndash; CAD 0</nobr></td>
+<td align=right><nobr>USD 0<br>&ndash; CAD 0</nobr></td>
+</tr>
+
+<tr bgcolor=#ffffff>
+<td rowspan=2 valign=top>Jan 2</td>
+<td><nobr>Invoice Customer 1<br>(1 USD = 1.20 CAD)</nobr></nobr></td>
+<td align=right><nobr>&nbsp;</nobr></td>
+<td align=right><nobr>+ USD 100</nobr></td>
+<td width=0 bgcolor=#000000></td>
+<td align=right><nobr>+ CAD 120</nobr></td>
+<td align=right><nobr>&nbsp;</nobr></td>
+<td align=right><nobr>+&nbsp;USD&nbsp;100<br>&ndash;&nbsp;CAD&nbsp;120</nobr></td>
+</tr>
+
+<tr bgcolor=#ffffc0>
+<td>Balance</td>
+<td align=right><nobr>CAD 0</nobr></td>
+<td align=right><nobr>USD 100</nobr></td>
+<td width=0 bgcolor=#000000></td>
+<td align=right><nobr>CAD 120</nobr></td>
+<td align=right><nobr>USD 0<br>&ndash; CAD 0</nobr></td>
+<td align=right><nobr>USD 100<br>&ndash; CAD 120</nobr></td>
+</tr>
+
+<tr bgcolor=#ffffff>
+<td rowspan=2 valign=top>Jan 5</td>
+<td><nobr>Invoice Customer 2<br>(1 USD = 1.30 CAD)</nobr></nobr></td>
+<td align=right><nobr>&nbsp;</nobr></td>
+<td align=right><nobr>+ USD 200</nobr></td>
+<td width=0 bgcolor=#000000></td>
+<td align=right><nobr>+ CAD 260</nobr></td>
+<td align=right><nobr>+&nbsp;USD&nbsp;200<br>&ndash;&nbsp;CAD&nbsp;260</nobr></td>
+<td align=right><nobr>&nbsp;</nobr></td>
+</tr>
+
+<tr bgcolor=#ffffc0>
+<td>Balance</td>
+<td align=right><nobr>CAD 0</nobr></td>
+<td align=right><nobr>USD 300</nobr></td>
+<td width=0 bgcolor=#000000></td>
+<td align=right><nobr>CAD 380</nobr></td>
+<td align=right><nobr>USD 200<br>&ndash; CAD 260</nobr></td>
+<td align=right><nobr>USD 100<br>&ndash; CAD 120</nobr></td>
+</tr>
+
+<tr bgcolor=#ffffff>
+<td rowspan=2 valign=top>Jan 7</td>
+<td><nobr>Payment Customer 1<br>(1 USD = 1.25 CAD)</nobr></nobr></td>
+<td align=right><nobr>+ CAD 125</nobr></td>
+<td align=right><nobr>&ndash; USD 100</nobr></td>
+<td width=0 bgcolor=#000000></td>
+<td align=right><nobr>&nbsp;</nobr></td>
+<td align=right><nobr>&nbsp;</nobr></td>
+<td align=right><nobr>&ndash;&nbsp;USD&nbsp;100<br>+&nbsp;CAD&nbsp;125</nobr></td>
+</tr>
+
+<tr bgcolor=#ffffc0>
+<td>Balance</td>
+<td align=right><nobr>CAD 125</nobr></td>
+<td align=right><nobr>USD 200</nobr></td>
+<td width=0 bgcolor=#000000></td>
+<td align=right><nobr>CAD 380</nobr></td>
+<td align=right><nobr>USD 200<br>&ndash; CAD 260</nobr></td>
+<td align=right><nobr>USD 0<br>+ CAD 5</nobr></td>
+</tr>
+
+<tr bgcolor=#ffffff>
+<td rowspan=2 valign=top>Jan 20</td>
+<td><nobr>Payment Customer 2<br>(1 USD = 1.15 CAD)</nobr></nobr></td>
+<td align=right><nobr>+ CAD 230</nobr></td>
+<td align=right><nobr>&ndash; USD 200</nobr></td>
+<td width=0 bgcolor=#000000></td>
+<td align=right><nobr>&nbsp;</nobr></td>
+<td align=right><nobr>&ndash;&nbsp;USD&nbsp;200<br>+&nbsp;CAD&nbsp;230</nobr></td>
+<td align=right><nobr>&nbsp;</nobr></td>
+</tr>
+
+<tr bgcolor=#ffffc0>
+<td>Balance</td>
+<td align=right><nobr>CAD 355</nobr></td>
+<td align=right><nobr>USD 0</nobr></td>
+<td width=0 bgcolor=#000000></td>
+<td align=right><nobr>CAD 380</nobr></td>
+<td align=right><nobr>USD 0<br>&ndash; CAD 30</nobr></td>
+<td align=right><nobr>USD 0<br>+ CAD 5</nobr></td>
+</tr>
+
+</table>
+
+<p>
+
+The trading account balances on January 20 show that your interaction
+with customer 1 resulted in a foreign exchange gain of CAD 5, whereas
+your interaction with customer 2 resulted in a foreign exchange loss
+of CAD 30. The fact that a particular foreign currency interaction is
+"finished", i.e., there are no outstanding currency exchanges, is
+reflected in the fact that the USD balance in the corresponding currency
+trading account is 0.
+
+<p>
+
+The same method can be used to track foreign exchange gains and losses
+associated with any division of sources that you care to keep track
+of. For example, you might want to separate exchange gains and losses
+from different parts of your business, or from different countries
+(this works even when several countries share the same currency).
+
+<a name="5"><h2>5. Realized and unrealized gains and losses</h2></a>
+
+So far, I have discussed a method for calculating gains and losses
+from currency transactions (and by extension, from transactions with
+other types of variable-priced assets, such as barrels of oil or
+shares of stock).  Such gains and losses are also called <i>capital
+gains and losses</i>.  In practice, it is often important to
+distinguish between <i>realized</i> and <i>unrealized</i> gains and
+losses. One area where this distinction is relevant is taxation:
+usually, only realized gains are taxable. The exact determination of
+whether a particular gain or loss is realized or unrealized is often
+tricky, and the rules vary from country to country. In this section, I
+will briefly discuss these issues, and show how they can fit into the
+multi-currency accounting method.
+
+<p>
+
+In general terms, when you own a variable-priced asset, market
+fluctuations will cause the value of the asset to change over
+time. These changes of value are called <i>unrealized</i> gains and
+losses as long as you still own the item. When you sell the item, they
+turn into a <i>realized</i> gain or loss.  While the basic principle
+is simple, the precise rules for when a gain/loss is realized depend
+on details of the tax code and accounting practices. In particular, it
+is not always obvious how to determine the realized gain or loss when
+you sell only part of an asset.
+
+<p>
+
+The calculation of <i>unrealized</i> gains and losses can sometimes require
+guesswork, because it depends on the fair market value of an asset
+that has not yet been sold.  For assets that are unique and not traded
+on a daily basis, such as houses, it is often impossible to determine
+their precise value, and it is usually better to account for such
+items at their original purchasing price, rather than trying to
+re-evaluate them all the time. Some other types of assets, such as
+currencies and stock, are easier to evaluate. On the other hand,
+<i>realized</i> gains and losses can always be calculated exactly,
+because when an item is sold, its exact sales price is known.
+
+<a name="5.1"><h3>5.1. An example from real estate</h3></a>
+
+Let us start by considering a simple example from real estate. Suppose
+there are two houses on your street, called House A and House B. The
+houses are very similar, but they are on opposite sides of the
+street. Let us assume that the two houses have equal or similar market
+values at any given time.
+
+<p>
+
+Suppose on January 1, you have $500,000. On February 1, you buy House
+A for $100,000. On March 1, you buy House B for $120,000. On April 1,
+your real estate agent estimates that, in the current market, each
+house is worth $115,000.  At this point, the market price of your two
+houses is $10,000 more than what you paid for them, so you have an
+unrealized capital gain of $10,000.  More specifically, your
+unrealized gain from House A is $15,000, and your unrealized loss from
+House B is $5,000. On May 1, you sell House A for $105,000, and you
+estimate that House B, which you keep, is also worth $105,000. At this
+point, you have a <i>realized</i> gain of $5,000 from House A (and you
+may have to pay taxes on this amount, minus any expenses, depending on
+the applicable tax laws). At the same time, you also have a total
+<i>unrealized</i> loss of $15,000 from House B. On
+June 1, you decide to sell House B for $110,000. You now no longer
+have any unrealized gains or losses. There is a realized loss of
+$10,000 from your sale of House B. Together with the realized gain of
+$5,000 from House A, this results in an overall realized loss of
+$5,000 for the year.
+
+<p>
+
+Here is how the above scenario can be accounted for in the trading
+account model. The units are "CAD" for Canadian dollars, and "HOU" for
+houses.
+
+<p>
+<a name="Table-5.1"><b>Table 5.1: Realized and unrealized gains and losses: first real estate example</b></a>
+<p>
+
+<table border=0 bgcolor=#000000 cellspacing=1>
+
+<tr bgcolor=#ffc0c0>
+<th width=50>Date</th>
+<th>Description</th>
+<th width=100>Canadian&nbsp;Cash<br>(asset)</th>
+<th width=100>House&nbsp;A<br>(asset)</th>
+<th width=100>House&nbsp;B<br>(asset)</th>
+<td width=0 bgcolor=#000000></td>
+<th width=100>Initial&nbsp;Capital<br>(capital)</th>
+<th width=100>House&nbsp;Trading<br>(trading)</th>
+<th width=100>Realized&nbsp;Gain<br>(income)</th>
+</tr>
+
+<tr bgcolor=#ffffc0>
+<td bgcolor=#ffffff>Jan&nbsp;1</td>
+<td>Opening balance</td>
+<td align=right>CAD 500,000</td>
+<td align=right>HOU 0</td>
+<td align=right>HOU 0</td>
+<td width=0 bgcolor=#000000></td>
+<td align=right>CAD 500,000</td>
+<td align=right>HOU 0<br>&ndash; CAD 0</td>
+<td align=right>CAD 0</td>
+</tr>
+
+<tr bgcolor=#ffffff>
+<td rowspan=2 valign=top>Feb&nbsp;1</td>
+<td>Buy House&nbsp;A</td>
+<td align=right>&ndash; CAD 100,000</td>
+<td align=right>+ HOU 1</td>
+<td align=right>&nbsp;</td>
+<td width=0 bgcolor=#000000></td>
+<td align=right>&nbsp;</td>
+<td align=right>+&nbsp;HOU&nbsp;1<br>&ndash;&nbsp;CAD&nbsp;100,000</td>
+<td align=right>&nbsp;</td>
+</tr>
+
+<tr bgcolor=#ffffc0>
+<td>Balance</td>
+<td align=right>CAD 400,000</td>
+<td align=right>HOU 1</td>
+<td align=right>HOU 0</td>
+<td width=0 bgcolor=#000000></td>
+<td align=right>CAD 500,000</td>
+<td align=right>HOU 1<br>&ndash; CAD 100,000</td>
+<td align=right>CAD 0</td>
+</tr>
+
+<tr bgcolor=#ffffff>
+<td rowspan=2 valign=top>Mar&nbsp;1</td>
+<td>Buy House&nbsp;B</td>
+<td align=right>&ndash; CAD 120,000</td>
+<td align=right>&nbsp;</td>
+<td align=right>+ HOU 1</td>
+<td width=0 bgcolor=#000000></td>
+<td align=right>&nbsp;</td>
+<td align=right>+&nbsp;HOU&nbsp;1<br>&ndash;&nbsp;CAD&nbsp;120,000</td>
+<td align=right>&nbsp;</td>
+</tr>
+
+<tr bgcolor=#ffffc0>
+<td>Balance</td>
+<td align=right>CAD 280,000</td>
+<td align=right>HOU 1</td>
+<td align=right>HOU 1</td>
+<td width=0 bgcolor=#000000></td>
+<td align=right>CAD 500,000</td>
+<td align=right>HOU 2<br>&ndash; CAD 220,000</td>
+<td align=right>CAD 0</td>
+</tr>
+
+<tr bgcolor=#ffffc0>
+<td bgcolor=#ffffff valign=top>Apr&nbsp;1</td>
+<td>Balance</td>
+<td align=right>CAD 280,000</td>
+<td align=right>HOU 1</td>
+<td align=right>HOU 1</td>
+<td width=0 bgcolor=#000000></td>
+<td align=right>CAD 500,000</td>
+<td align=right>HOU 2<br>&ndash; CAD 220,000</td>
+<td align=right>CAD 0</td>
+</tr>
+
+<tr bgcolor=#ffffff>
+<td rowspan=3 valign=top>May&nbsp;1</td>
+<td>Sell House&nbsp;A</td>
+<td align=right>+ CAD 105,000</td>
+<td align=right>&ndash; HOU 1</td>
+<td align=right>&nbsp;</td>
+<td width=0 bgcolor=#000000></td>
+<td align=right>&nbsp;</td>
+<td align=right>&ndash;&nbsp;HOU&nbsp;1<br>+&nbsp;CAD&nbsp;105,000</td>
+<td align=right>&nbsp;</td>
+</tr>
+
+<tr bgcolor=#ffffff>
+<td>Realized gain</td>
+<td align=right>&nbsp;</td>
+<td align=right>&nbsp;</td>
+<td align=right>&nbsp;</td>
+<td width=0 bgcolor=#000000></td>
+<td align=right>&nbsp;</td>
+<td align=right>&ndash;&nbsp;CAD&nbsp;5,000</td>
+<td align=right>+ CAD 5,000</td>
+</tr>
+
+<tr bgcolor=#ffffc0>
+<td>Balance</td>
+<td align=right>CAD 385,000</td>
+<td align=right>HOU 0</td>
+<td align=right>HOU 1</td>
+<td width=0 bgcolor=#000000></td>
+<td align=right>CAD 500,000</td>
+<td align=right>HOU 1<br>&ndash; CAD 120,000</td>
+<td align=right>CAD 5,000</td>
+</tr>
+
+<tr bgcolor=#ffffff>
+<td rowspan=3 valign=top>Jun&nbsp;1</td>
+<td>Sell House&nbsp;B</td>
+<td align=right>+ CAD 110,000</td>
+<td align=right>&nbsp;</td>
+<td align=right>&ndash; HOU 1</td>
+<td width=0 bgcolor=#000000></td>
+<td align=right>&nbsp;</td>
+<td align=right>&ndash;&nbsp;HOU&nbsp;1<br>+&nbsp;CAD&nbsp;110,000</td>
+<td align=right>&nbsp;</td>
+</tr>
+
+<tr bgcolor=#ffffff>
+<td>Realized loss</td>
+<td align=right>&nbsp;</td>
+<td align=right>&nbsp;</td>
+<td align=right>&nbsp;</td>
+<td width=0 bgcolor=#000000></td>
+<td align=right>&nbsp;</td>
+<td align=right>+&nbsp;CAD&nbsp;10,000</td>
+<td align=right>&ndash; CAD 10,000</td>
+</tr>
+
+<tr bgcolor=#ffffc0>
+<td>Balance</td>
+<td align=right>CAD 495,000</td>
+<td align=right>HOU 0</td>
+<td align=right>HOU 0</td>
+<td width=0 bgcolor=#000000></td>
+<td align=right>CAD 500,000</td>
+<td align=right>HOU 0<br>&ndash; CAD 0</td>
+<td align=right>&ndash; CAD 5,000</td>
+</tr>
+
+</table>
+
+<p>
+
+A number of observations are in order. First, unrealized gains and
+losses are implicitly recorded in the trading account, and thus
+fluctuate automatically as that account is evaluated at different
+times. For example, on March 1, the two houses are valued at $240,000,
+and therefore the balance of the trading account (converted to CAD) is
+$20,000, corresponding to the unrealized gain up to that day. On April 1,
+the two houses are valued at $230,000, and therefore the trading
+account balance is worth only $10,000.
+
+<p>
+
+Second, when an unrealized gain or loss becomes realized (on May 1 and
+June 1), this is witnessed by an explicit transaction, namely by
+moving the corresponding amount from a trading account to an income
+account.  The important point is that realized gains and losses are
+not calculated implicitly by the accounting system, but must be
+explicitly stated by a bookkeeper or accountant. I will argue that
+this is a desirable and necessary feature. As the below examples will
+show, the calculation of realized gains in many cases depends on local
+laws and accounting practices, and it is therefore reasonable that it
+should be resolved by a human being. Of course the calculation can
+also be automated, but this should then be done by a customizable
+rule. 
+
+<p>
+
+There is the question of <i>when</i> a realized gain or loss should be
+recorded. In the above example, and in the examples following below, I
+recorded it immediately on the date of the sale.  However, if the
+number of transactions is large, it might be more convenient to
+calculate and record realized gains or losses less frequently. For
+example, one might decide to do so only once at the end of each
+accounting period.
+
+<p>
+
+If we had been very pedantic, we would have used two different units
+of "currency" for houses, for example HOA for quantity of House A, and
+HOB for quantity of House B. This is because the two houses, while
+similar, are not entirely interchangeable (after all, they are on
+different sides of the street!) Had we done this, we would have also
+created two separate trading accounts for HOA and HOB, similar to what
+was done in <a href="#Table-4.5">Table 4.5</a>. In this case, the
+realized gain for House A would have been the <i>total</i> content of
+the trading account for House A on May 1 (which would have been
+denominated in pure CAD on that day). Similarly, the realized loss for
+House B would have been the total content of the trading account for
+House B on June 1. In this way, it is possible to avoid doing a
+separate "side calculation" for determining realized gains and losses,
+at the expense of keeping a larger number of separate trading
+accounts.
+
+<a name="5.2"><h3>5.2. Importance of the "identity" of assets</h3></a>
+
+To see why things can get more complicated, let us change the above
+real-estate scenario slightly. Suppose you had decided to sell House
+B on May 1 and House A on June 1, rather than the other way around
+(after all, the houses are very similar). Then on May 1, you would
+have sold House B for $105,000, resulting in a realized
+<i>loss</i> off $15,000 for House B (compared to a realized
+<i>gain</i> of $5,000 in the scenario where you sold House A on this
+day). On the other hand, on June 1, you would have sold House A for
+$110,000, resulting in a realized gain of $10,000 for House A
+(compared to a realized loss of $10,000 in the original
+scenario). Here are the accounts for the updated scenario. (The
+changes between <a href="#Table-5.1">Tables 5.1</a> and <a
+href="#Table-5.2">5.2</a> are shown in <font color=red>red</font>).
+
+<p>
+<a name="Table-5.2"><b>Table 5.2: Realized and unrealized gains and losses: second real estate example</b></a>
+<p>
+
+<table border=0 bgcolor=#000000 cellspacing=1>
+
+<tr bgcolor=#ffc0c0>
+<th width=50>Date</th>
+<th>Description</th>
+<th width=100>Canadian&nbsp;Cash<br>(asset)</th>
+<th width=100>House&nbsp;A<br>(asset)</th>
+<th width=100>House&nbsp;B<br>(asset)</th>
+<td width=0 bgcolor=#000000></td>
+<th width=100>Initial&nbsp;Capital<br>(capital)</th>
+<th width=100>House&nbsp;Trading<br>(trading)</th>
+<th width=100>Realized&nbsp;Gain<br>(income)</th>
+</tr>
+
+<tr bgcolor=#ffffc0>
+<td bgcolor=#ffffff>Jan&nbsp;1</td>
+<td>Opening balance</td>
+<td align=right>CAD 500,000</td>
+<td align=right>HOU 0</td>
+<td align=right>HOU 0</td>
+<td width=0 bgcolor=#000000></td>
+<td align=right>CAD 500,000</td>
+<td align=right>HOU 0<br>&ndash; CAD 0</td>
+<td align=right>CAD 0</td>
+</tr>
+
+<tr bgcolor=#ffffff>
+<td rowspan=2 valign=top>Feb&nbsp;1</td>
+<td>Buy House&nbsp;A</td>
+<td align=right>&ndash; CAD 100,000</td>
+<td align=right>+&nbsp;HOU&nbsp;1</td>
+<td align=right>&nbsp;</td>
+<td width=0 bgcolor=#000000></td>
+<td align=right>&nbsp;</td>
+<td align=right>+&nbsp;HOU&nbsp;1<br>&ndash;&nbsp;CAD&nbsp;100,000</td>
+<td align=right>&nbsp;</td>
+</tr>
+
+<tr bgcolor=#ffffc0>
+<td>Balance</td>
+<td align=right>CAD 400,000</td>
+<td align=right>HOU 1</td>
+<td align=right>HOU 0</td>
+<td width=0 bgcolor=#000000></td>
+<td align=right>CAD 500,000</td>
+<td align=right>HOU 1<br>&ndash; CAD 100,000</td>
+<td align=right>CAD 0</td>
+</tr>
+
+<tr bgcolor=#ffffff>
+<td rowspan=2 valign=top>Mar&nbsp;1</td>
+<td>Buy House&nbsp;B</td>
+<td align=right>&ndash; CAD 120,000</td>
+<td align=right>&nbsp;</td>
+<td align=right>+&nbsp;HOU&nbsp;1</td>
+<td width=0 bgcolor=#000000></td>
+<td align=right>&nbsp;</td>
+<td align=right>+&nbsp;HOU&nbsp;1<br>&ndash;&nbsp;CAD&nbsp;120,000</td>
+<td align=right>&nbsp;</td>
+</tr>
+
+<tr bgcolor=#ffffc0>
+<td>Balance</td>
+<td align=right>CAD 280,000</td>
+<td align=right>HOU 1</td>
+<td align=right>HOU 1</td>
+<td width=0 bgcolor=#000000></td>
+<td align=right>CAD 500,000</td>
+<td align=right>HOU 2<br>&ndash; CAD 220,000</td>
+<td align=right>CAD 0</td>
+</tr>
+
+<tr bgcolor=#ffffc0>
+<td bgcolor=#ffffff valign=top>Apr&nbsp;1</td>
+<td>Balance</td>
+<td align=right>CAD 280,000</td>
+<td align=right>HOU 1</td>
+<td align=right>HOU 1</td>
+<td width=0 bgcolor=#000000></td>
+<td align=right>CAD 500,000</td>
+<td align=right>HOU 2<br>&ndash; CAD 220,000</td>
+<td align=right>CAD 0</td>
+</tr>
+
+<tr bgcolor=#ffffff>
+<td rowspan=3 valign=top>May&nbsp;1</td>
+<td>Sell House&nbsp;A</td>
+<td align=right>+ CAD 105,000</td>
+<td align=right>&nbsp;</td>
+<td align=right><font color=red>&ndash; HOU 1</font></td>
+<td width=0 bgcolor=#000000></td>
+<td align=right>&nbsp;</td>
+<td align=right>&ndash;&nbsp;HOU&nbsp;1<br>+&nbsp;CAD&nbsp;105,000</td>
+<td align=right>&nbsp;</td>
+</tr>
+
+<tr bgcolor=#ffffff>
+<td>Realized loss</td>
+<td align=right>&nbsp;</td>
+<td align=right>&nbsp;</td>
+<td align=right>&nbsp;</td>
+<td width=0 bgcolor=#000000></td>
+<td align=right>&nbsp;</td>
+<td align=right><font color=red>+&nbsp;CAD&nbsp;15,000</font></td>
+<td align=right><font color=red>&ndash; CAD 15,000</font></td>
+</tr>
+
+<tr bgcolor=#ffffc0>
+<td>Balance</td>
+<td align=right>CAD 385,000</td>
+<td align=right><font color=red>HOU 1</font></td>
+<td align=right><font color=red>HOU 0</font></td>
+<td width=0 bgcolor=#000000></td>
+<td align=right>CAD 500,000</td>
+<td align=right><font color=red>HOU 1<br>&ndash; CAD 100,000</font></td>
+<td align=right><font color=red>&ndash; CAD 15,000</font></td>
+</tr>
+
+<tr bgcolor=#ffffff>
+<td rowspan=3 valign=top>Jun&nbsp;1</td>
+<td>Sell House&nbsp;B</td>
+<td align=right>+ CAD 110,000</td>
+<td align=right><font color=red>&ndash; HOU 1</font></td>
+<td align=right>&nbsp;</td>
+<td width=0 bgcolor=#000000></td>
+<td align=right>&nbsp;</td>
+<td align=right>&ndash;&nbsp;HOU&nbsp;1<br>+&nbsp;CAD&nbsp;110,000</td>
+<td align=right>&nbsp;</td>
+</tr>
+
+<tr bgcolor=#ffffff>
+<td>Realized gain</td>
+<td align=right>&nbsp;</td>
+<td align=right>&nbsp;</td>
+<td align=right>&nbsp;</td>
+<td width=0 bgcolor=#000000></td>
+<td align=right>&nbsp;</td>
+<td align=right><font color=red>&ndash;&nbsp;CAD&nbsp;10,000</font></td>
+<td align=right><font color=red>+ CAD 10,000</font></td>
+</tr>
+
+<tr bgcolor=#ffffc0>
+<td>Balance</td>
+<td align=right>CAD 495,000</td>
+<td align=right>HOU 0</td>
+<td align=right>HOU 0</td>
+<td width=0 bgcolor=#000000></td>
+<td align=right>CAD 500,000</td>
+<td align=right>HOU 0<br>&ndash; CAD 0</td>
+<td align=right>&ndash; CAD 5,000</td>
+</tr>
+
+</table>
+
+<p>
+
+At the end of the year, your total realized loss for the two houses is
+$5,000, regardless of which of the two scenarios you follow. So
+assuming your tax year ends on December 31, it does not matter which
+house you sold first. However, things are very different if your tax
+year ends on May 15, or if you wait several years before selling the
+second house. In this case, the difference for the outgoing tax year
+is between a gain of $5,000 (in the first scenario) and a loss of
+$15,000 (in the second scenario).
+<b>Therefore it matters which house you sold first, even if the houses
+are identical!</b>
+
+<a name="5.3"><h3>5.3. The FIFO, LIFO, and adjusted cost base methods</h3></a>
+
+Fortunately, in real estate transactions, there is never any question
+about which of several houses you sold. No matter how similar House A
+and House B are, they still have different addresses. However, things
+are not as simple if you own several units of an asset, such as shares
+of stock, that are actually indistinguishable from each other. In
+accounting terminology, such indistiguishable assets are called
+"fungible" assets.  Let us redo the above example, but using shares
+instead of houses. We will also shorten the numbers by three zeros.
+
+<p>
+
+Suppose on January 1, you have $500. On February 1, you buy one share
+of some company for $100. On March 1, you buy another share for $120.
+On April 1, you check the value of your shares, and you find that they
+are worth $115 each, so their total value is $230, or $10 more than
+you spent to buy them.  You have an unrealized capital gain of $10. On
+May 1, you decide to sell one share for $105. What is your realized
+gain at this point?
+
+<p>
+
+The answer is: it depends! This is precisely where the rules differ in
+different countries. There are three common cases.
+
+<ul>
+<li>Some countries (such as
+<a href=http://www.ato.gov.au/businesses/content.asp?doc=/content/59214.htm>Australia</a>)
+use the <i>first-in-first-out (FIFO)</i> rule. Under this rule, the
+share sold on May 1 will be considered to be the share that was bought
+the longest ago, i.e., the one that was bought on February 1. The sale
+therefore results in a realized gain of $5. This corresponds to the
+first real-estate scenario above (where the first house bought is the
+first house sold).
+
+<li>Some countries use the <i>last-in-first-out (LIFO)</i>
+rule. As the name suggests, under this rule, the share sold on May 1
+will be considered to be the share that was most recently bought,
+i.e., the one that was bought on March 1. The sale therefore results
+in a realized loss of $15. This corresponds to the second real-estate
+scenario above.
+
+<li>Some countries (such as Canada) use a method called the
+<i>adjusted cost base method</i> or the <i>weighted average
+method</i>. Under this method, the realized gain or loss is computed
+based on the average cost of all the shares currently owned. Thus, one
+would consider the total number of shares you own (2), and the total
+amount you spent on them ($220, also called the <i>cost base</i>). The
+average cost of the shares is therefore $110. The sale of one share
+for $105 on May 1 will therefore be considered to create a realized
+loss of $5. After this, the cost base of $220 is adjusted by
+subtracting the sold shares ($105) and also subtracting the realized
+losses ($5). The result is $110, which is called the new <i>adjusted
+cost base</i>. This represents the total historical cost of the
+remaining shares after the sale (not their current value!), and will
+be used as the cost base for the next sale.
+</ul>
+
+From the above descriptions of the FIFO and LIFO methods, it is clear
+that their implementation in the multi-currency accounting model looks
+almost exactly like the two real estate examples in <a
+href="#Table-5.1">Tables 5.1</a> and <a href="#Table-5.2">5.2</a>. One
+just has to replace houses by shares. Of course, there will no longer
+be separate asset accounts for "House A" and "House B", but instead a
+single asset account for this company's shares. The FIFO example is
+shown in <a href="#Table-5.3">Table 5.3</a>, and the LIFO example is
+shown in <a href="#Table-5.4">Table 5.4</a>. To complete the examples,
+I have once again assumed that the last remaining share is sold on
+June 1 for $110.
+
+<p>
+<a name="Table-5.3"><b>Table 5.3: Realized and unrealized gains and losses: FIFO</b></a>
+<p>
+
+<table border=0 bgcolor=#000000 cellspacing=1>
+
+<tr bgcolor=#ffc0c0>
+<th width=50>Date</th>
+<th>Description</th>
+<th width=100>Canadian&nbsp;Cash<br>(asset)</th>
+<th width=100>Shares<br>(asset)</th>
+<td width=0 bgcolor=#000000></td>
+<th width=100>Initial&nbsp;Capital<br>(capital)</th>
+<th width=100>Share&nbsp;Trading<br>(trading)</th>
+<th width=100>Realized&nbsp;Gain<br>(income)</th>
+</tr>
+
+<tr bgcolor=#ffffc0>
+<td bgcolor=#ffffff>Jan&nbsp;1</td>
+<td>Opening balance</td>
+<td align=right>CAD 500</td>
+<td align=right>SHA 0</td>
+<td width=0 bgcolor=#000000></td>
+<td align=right>CAD 500</td>
+<td align=right>SHA 0<br>&ndash; CAD 0</td>
+<td align=right>CAD 0</td>
+</tr>
+
+<tr bgcolor=#ffffff>
+<td rowspan=2 valign=top>Feb&nbsp;1</td>
+<td>Buy one share</td>
+<td align=right>&ndash; CAD 100</td>
+<td align=right>+ SHA 1</td>
+<td width=0 bgcolor=#000000></td>
+<td align=right>&nbsp;</td>
+<td align=right>+&nbsp;SHA&nbsp;1<br>&ndash;&nbsp;CAD&nbsp;100</td>
+<td align=right>&nbsp;</td>
+</tr>
+
+<tr bgcolor=#ffffc0>
+<td>Balance</td>
+<td align=right>CAD 400</td>
+<td align=right>SHA 1</td>
+<td width=0 bgcolor=#000000></td>
+<td align=right>CAD 500</td>
+<td align=right>SHA 1<br>&ndash; CAD 100</td>
+<td align=right>CAD 0</td>
+</tr>
+
+<tr bgcolor=#ffffff>
+<td rowspan=2 valign=top>Mar&nbsp;1</td>
+<td>Buy one share</td>
+<td align=right>&ndash; CAD 120</td>
+<td align=right>+ SHA 1</td>
+<td width=0 bgcolor=#000000></td>
+<td align=right>&nbsp;</td>
+<td align=right>+&nbsp;SHA&nbsp;1<br>&ndash;&nbsp;CAD&nbsp;120</td>
+<td align=right>&nbsp;</td>
+</tr>
+
+<tr bgcolor=#ffffc0>
+<td>Balance</td>
+<td align=right>CAD 280</td>
+<td align=right>SHA 2</td>
+<td width=0 bgcolor=#000000></td>
+<td align=right>CAD 500</td>
+<td align=right>SHA 2<br>&ndash; CAD 220</td>
+<td align=right>CAD 0</td>
+</tr>
+
+<tr bgcolor=#ffffc0>
+<td bgcolor=#ffffff valign=top>Apr&nbsp;1</td>
+<td>Balance</td>
+<td align=right>CAD 280</td>
+<td align=right>SHA 2</td>
+<td width=0 bgcolor=#000000></td>
+<td align=right>CAD 500</td>
+<td align=right>SHA 2<br>&ndash; CAD 220</td>
+<td align=right>CAD 0</td>
+</tr>
+
+<tr bgcolor=#ffffff>
+<td rowspan=3 valign=top>May&nbsp;1</td>
+<td>Sell one share</td>
+<td align=right>+ CAD 105</td>
+<td align=right>&ndash; SHA 1</td>
+<td width=0 bgcolor=#000000></td>
+<td align=right>&nbsp;</td>
+<td align=right>&ndash;&nbsp;SHA&nbsp;1<br>+&nbsp;CAD&nbsp;105</td>
+<td align=right>&nbsp;</td>
+</tr>
+
+<tr bgcolor=#ffffff>
+<td>Realized gain (FIFO)</td>
+<td align=right>&nbsp;</td>
+<td align=right>&nbsp;</td>
+<td width=0 bgcolor=#000000></td>
+<td align=right>&nbsp;</td>
+<td align=right>&ndash;&nbsp;CAD&nbsp;5</td>
+<td align=right>+ CAD 5</td>
+</tr>
+
+<tr bgcolor=#ffffc0>
+<td>Balance</td>
+<td align=right>CAD 385</td>
+<td align=right>SHA 1</td>
+<td width=0 bgcolor=#000000></td>
+<td align=right>CAD 500</td>
+<td align=right>SHA 1<br>&ndash; CAD 120</td>
+<td align=right>CAD 5</td>
+</tr>
+
+<tr bgcolor=#ffffff>
+<td rowspan=3 valign=top>Jun&nbsp;1</td>
+<td>Sell one share</td>
+<td align=right>+ CAD 110</td>
+<td align=right>&ndash; SHA 1</td>
+<td width=0 bgcolor=#000000></td>
+<td align=right>&nbsp;</td>
+<td align=right>&ndash;&nbsp;SHA&nbsp;1<br>+&nbsp;CAD&nbsp;110</td>
+<td align=right>&nbsp;</td>
+</tr>
+
+<tr bgcolor=#ffffff>
+<td>Realized loss (FIFO)</td>
+<td align=right>&nbsp;</td>
+<td align=right>&nbsp;</td>
+<td width=0 bgcolor=#000000></td>
+<td align=right>&nbsp;</td>
+<td align=right>+&nbsp;CAD&nbsp;10</td>
+<td align=right>&ndash; CAD 10</font></td>
+</tr>
+
+<tr bgcolor=#ffffc0>
+<td>Balance</td>
+<td align=right>CAD 495</td>
+<td align=right>SHA 0</td>
+<td width=0 bgcolor=#000000></td>
+<td align=right>CAD 500</td>
+<td align=right>SHA 0<br>&ndash; CAD 0</td>
+<td align=right>&ndash; CAD 5</td>
+</tr>
+
+</table>
+
+<p>
+
+<p>
+<a name="Table-5.4"><b>Table 5.4: Realized and unrealized gains and losses: LIFO</b></a>
+<p>
+
+<table border=0 bgcolor=#000000 cellspacing=1>
+
+<tr bgcolor=#ffc0c0>
+<th width=50>Date</th>
+<th>Description</th>
+<th width=100>Canadian&nbsp;Cash<br>(asset)</th>
+<th width=100>Shares<br>(asset)</th>
+<td width=0 bgcolor=#000000></td>
+<th width=100>Initial&nbsp;Capital<br>(capital)</th>
+<th width=100>Share&nbsp;Trading<br>(trading)</th>
+<th width=100>Realized&nbsp;Gain<br>(income)</th>
+</tr>
+
+<tr bgcolor=#ffffc0>
+<td bgcolor=#ffffff>Jan&nbsp;1</td>
+<td>Opening balance</td>
+<td align=right>CAD 500</td>
+<td align=right>SHA 0</td>
+<td width=0 bgcolor=#000000></td>
+<td align=right>CAD 500</td>
+<td align=right>SHA 0<br>&ndash; CAD 0</td>
+<td align=right>CAD 0</td>
+</tr>
+
+<tr bgcolor=#ffffff>
+<td rowspan=2 valign=top>Feb&nbsp;1</td>
+<td>Buy one share</td>
+<td align=right>&ndash; CAD 100</td>
+<td align=right>+ SHA 1</td>
+<td width=0 bgcolor=#000000></td>
+<td align=right>&nbsp;</td>
+<td align=right>+&nbsp;SHA&nbsp;1<br>&ndash;&nbsp;CAD&nbsp;100</td>
+<td align=right>&nbsp;</td>
+</tr>
+
+<tr bgcolor=#ffffc0>
+<td>Balance</td>
+<td align=right>CAD 400</td>
+<td align=right>SHA 1</td>
+<td width=0 bgcolor=#000000></td>
+<td align=right>CAD 500</td>
+<td align=right>SHA 1<br>&ndash; CAD 100</td>
+<td align=right>CAD 0</td>
+</tr>
+
+<tr bgcolor=#ffffff>
+<td rowspan=2 valign=top>Mar&nbsp;1</td>
+<td>Buy one share</td>
+<td align=right>&ndash; CAD 120</td>
+<td align=right>+ SHA 1</td>
+<td width=0 bgcolor=#000000></td>
+<td align=right>&nbsp;</td>
+<td align=right>+&nbsp;SHA&nbsp;1<br>&ndash;&nbsp;CAD&nbsp;120</td>
+<td align=right>&nbsp;</td>
+</tr>
+
+<tr bgcolor=#ffffc0>
+<td>Balance</td>
+<td align=right>CAD 280</td>
+<td align=right>SHA 2</td>
+<td width=0 bgcolor=#000000></td>
+<td align=right>CAD 500</td>
+<td align=right>SHA 2<br>&ndash; CAD 220</td>
+<td align=right>CAD 0</td>
+</tr>
+
+<tr bgcolor=#ffffc0>
+<td bgcolor=#ffffff valign=top>Apr&nbsp;1</td>
+<td>Balance</td>
+<td align=right>CAD 280</td>
+<td align=right>SHA 2</td>
+<td width=0 bgcolor=#000000></td>
+<td align=right>CAD 500</td>
+<td align=right>SHA 2<br>&ndash; CAD 220</td>
+<td align=right>CAD 0</td>
+</tr>
+
+<tr bgcolor=#ffffff>
+<td rowspan=3 valign=top>May&nbsp;1</td>
+<td>Sell one share</td>
+<td align=right>+ CAD 105</td>
+<td align=right>&ndash; SHA 1</td>
+<td width=0 bgcolor=#000000></td>
+<td align=right>&nbsp;</td>
+<td align=right>&ndash;&nbsp;SHA&nbsp;1<br>+&nbsp;CAD&nbsp;105</td>
+<td align=right>&nbsp;</td>
+</tr>
+
+<tr bgcolor=#ffffff>
+<td>Realized loss (LIFO)</td>
+<td align=right>&nbsp;</td>
+<td align=right>&nbsp;</td>
+<td width=0 bgcolor=#000000></td>
+<td align=right>&nbsp;</td>
+<td align=right>+&nbsp;CAD&nbsp;15</td>
+<td align=right>&ndash; CAD 15</td>
+</tr>
+
+<tr bgcolor=#ffffc0>
+<td>Balance</td>
+<td align=right>CAD 385</td>
+<td align=right>SHA 1</td>
+<td width=0 bgcolor=#000000></td>
+<td align=right>CAD 500</td>
+<td align=right>SHA 1<br>&ndash; CAD 100</td>
+<td align=right>&ndash; CAD 15</td>
+</tr>
+
+<tr bgcolor=#ffffff>
+<td rowspan=3 valign=top>Jun&nbsp;1</td>
+<td>Sell one share</td>
+<td align=right>+ CAD 110</td>
+<td align=right>&ndash; SHA 1</td>
+<td width=0 bgcolor=#000000></td>
+<td align=right>&nbsp;</td>
+<td align=right>&ndash;&nbsp;SHA&nbsp;1<br>+&nbsp;CAD&nbsp;110</td>
+<td align=right>&nbsp;</td>
+</tr>
+
+<tr bgcolor=#ffffff>
+<td>Realized gain (LIFO)</td>
+<td align=right>&nbsp;</td>
+<td align=right>&nbsp;</td>
+<td width=0 bgcolor=#000000></td>
+<td align=right>&nbsp;</td>
+<td align=right>&ndash;&nbsp;CAD&nbsp;10</td>
+<td align=right>+ CAD 10</font></td>
+</tr>
+
+<tr bgcolor=#ffffc0>
+<td>Balance</td>
+<td align=right>CAD 495</td>
+<td align=right>SHA 0</td>
+<td width=0 bgcolor=#000000></td>
+<td align=right>CAD 500</td>
+<td align=right>SHA 0<br>&ndash; CAD 0</td>
+<td align=right>&ndash; CAD 5</td>
+</tr>
+
+</table>
+
+<p>
+
+For both the FIFO and LIFO methods, there is a non-trivial overhead
+involved in calculating realized gains and losses. These calculations
+require looking back at the history of shares acquired, figuring out
+which ones have already been sold, and then figuring out which of the
+remaining shares was the "first in" or "last in", respectively. A
+transaction for the realized gains or losses then needs to be created
+for each sale. There does not seem to be a convenient way to reduce
+this overhead in the FIFO and LIFO methods.
+
+<p>
+
+It turns out that the adjusted cost base method does not have such
+overhead. If we account for the above example by the adjusted cost
+base method, we end up with the following:
+
+<p>
+<a name="Table-5.5"><b>Table 5.5: Realized and unrealized gains and losses: adjusted cost base</b></a>
+<p>
+
+<table border=0 bgcolor=#000000 cellspacing=1>
+
+<tr bgcolor=#ffc0c0>
+<th width=50>Date</th>
+<th>Description</th>
+<th width=100>Canadian&nbsp;Cash<br>(asset)</th>
+<th width=100>Shares<br>(asset)</th>
+<td width=0 bgcolor=#000000></td>
+<th width=100>Initial&nbsp;Capital<br>(capital)</th>
+<th width=100>Share&nbsp;Trading<br>(trading)</th>
+<th width=100>Realized&nbsp;Gain<br>(income)</th>
+</tr>
+
+<tr bgcolor=#ffffc0>
+<td bgcolor=#ffffff>Jan&nbsp;1</td>
+<td>Opening balance</td>
+<td align=right>CAD 500</td>
+<td align=right>SHA 0</td>
+<td width=0 bgcolor=#000000></td>
+<td align=right>CAD 500</td>
+<td align=right>SHA 0<br>&ndash; CAD 0</td>
+<td align=right>CAD 0</td>
+</tr>
+
+<tr bgcolor=#ffffff>
+<td rowspan=2 valign=top>Feb&nbsp;1</td>
+<td>Buy one share</td>
+<td align=right>&ndash; CAD 100</td>
+<td align=right>+ SHA 1</td>
+<td width=0 bgcolor=#000000></td>
+<td align=right>&nbsp;</td>
+<td align=right>+&nbsp;SHA&nbsp;1<br>&ndash;&nbsp;CAD&nbsp;100</td>
+<td align=right>&nbsp;</td>
+</tr>
+
+<tr bgcolor=#ffffc0>
+<td>Balance</td>
+<td align=right>CAD 400</td>
+<td align=right>SHA 1</td>
+<td width=0 bgcolor=#000000></td>
+<td align=right>CAD 500</td>
+<td align=right>SHA 1<br>&ndash; CAD 100</td>
+<td align=right>CAD 0</td>
+</tr>
+
+<tr bgcolor=#ffffff>
+<td rowspan=2 valign=top>Mar&nbsp;1</td>
+<td>Buy one share</td>
+<td align=right>&ndash; CAD 120</td>
+<td align=right>+ SHA 1</td>
+<td width=0 bgcolor=#000000></td>
+<td align=right>&nbsp;</td>
+<td align=right>+&nbsp;SHA&nbsp;1<br>&ndash;&nbsp;CAD&nbsp;120</td>
+<td align=right>&nbsp;</td>
+</tr>
+
+<tr bgcolor=#ffffc0>
+<td>Balance</td>
+<td align=right>CAD 280</td>
+<td align=right>SHA 2</td>
+<td width=0 bgcolor=#000000></td>
+<td align=right>CAD 500</td>
+<td align=right>SHA 2<br>&ndash; CAD 220</td>
+<td align=right>CAD 0</td>
+</tr>
+
+<tr bgcolor=#ffffc0>
+<td bgcolor=#ffffff valign=top>Apr&nbsp;1</td>
+<td>Balance</td>
+<td align=right>CAD 280</td>
+<td align=right>SHA 2</td>
+<td width=0 bgcolor=#000000></td>
+<td align=right>CAD 500</td>
+<td align=right>SHA 2<br>&ndash; CAD 220</td>
+<td align=right>CAD 0</td>
+</tr>
+
+<tr bgcolor=#ffffff>
+<td rowspan=3 valign=top>May&nbsp;1</td>
+<td>Sell one share</td>
+<td align=right>+ CAD 105</td>
+<td align=right>&ndash; SHA 1</td>
+<td width=0 bgcolor=#000000></td>
+<td align=right>&nbsp;</td>
+<td align=right>&ndash;&nbsp;SHA&nbsp;1<br>+&nbsp;CAD&nbsp;105</td>
+<td align=right>&nbsp;</td>
+</tr>
+
+<tr bgcolor=#ffffff>
+<td>Realized loss (ACB)</td>
+<td align=right>&nbsp;</td>
+<td align=right>&nbsp;</td>
+<td width=0 bgcolor=#000000></td>
+<td align=right>&nbsp;</td>
+<td align=right>+&nbsp;CAD&nbsp;5</td>
+<td align=right>&ndash; CAD 5</td>
+</tr>
+
+<tr bgcolor=#ffffc0>
+<td>Balance</td>
+<td align=right>CAD 385</td>
+<td align=right>SHA 1</td>
+<td width=0 bgcolor=#000000></td>
+<td align=right>CAD 500</td>
+<td align=right>SHA 1<br>&ndash; CAD 110</td>
+<td align=right>&ndash; CAD 5</td>
+</tr>
+
+<tr bgcolor=#ffffff>
+<td rowspan=3 valign=top>Jun&nbsp;1</td>
+<td>Sell one share</td>
+<td align=right>+ CAD 110</td>
+<td align=right>&ndash; SHA 1</td>
+<td width=0 bgcolor=#000000></td>
+<td align=right>&nbsp;</td>
+<td align=right>&ndash;&nbsp;SHA&nbsp;1<br>+&nbsp;CAD&nbsp;110</td>
+<td align=right>&nbsp;</td>
+</tr>
+
+<tr bgcolor=#ffffff>
+<td>No realized gain (ACB)</td>
+<td align=right>&nbsp;</td>
+<td align=right>&nbsp;</td>
+<td width=0 bgcolor=#000000></td>
+<td align=right>&nbsp;</td>
+<td align=right>CAD&nbsp;0</td>
+<td align=right>CAD 0</font></td>
+</tr>
+
+<tr bgcolor=#ffffc0>
+<td>Balance</td>
+<td align=right>CAD 495</td>
+<td align=right>SHA 0</td>
+<td width=0 bgcolor=#000000></td>
+<td align=right>CAD 500</td>
+<td align=right>SHA 0<br>&ndash; CAD 0</td>
+<td align=right>&ndash; CAD 5</td>
+</tr>
+
+</table>
+
+<p>
+
+Note that, just like for FIFO and LIFO, each realized gain or loss has
+an associated transaction. However, in the adjusted cost base system,
+it is possible to calculate the amount of the realized gain or loss
+without looking at the entire history of purchases and sales. If you
+check the example carefully, you will discover that the adjusted cost
+base at any given time is exactly equal to the CAD portion of the
+trading account. This is not a coincidence, as the trading account
+precisely mirrors the historical cost of shares.  The realized gain or
+loss of a sales transaction can therefore be calculated simply by
+looking at the trading account balance just prior to the sale. Of
+course, this only works if there is a separate trading account for
+each kind of shares owned.
+
+<p>
+
+Of course, I am not trying to convince you to use the adjusted cost
+base method of accounting. You have to use whichever method is
+prescribed by the laws in your country!
+
+<p>
+
+In some countries, realized capital gains are taxed at different rates
+depending on how long you have held the asset. In such countries, you
+should have more than one income account for realized gains, for
+example, one for realized gains taxable at the lower rate, and the
+other for realized gains taxable at the higher rate. It is clear that
+one cannot use the adjusted cost base method in such situations,
+because there would be no notion of "how long" you have held the asset
+that you are selling. Instead, you should probably be using the FIFO
+method. 
+
+<p>
+
+To further illustrate the adjusted cost base method, it may be useful
+to consider a more complicated example. Suppose you start with $1000
+on January 1.  On January 2, you buy 100 shares of some stock at $8
+per share. On January 3, you sell 50 shares at $9 per share. On
+January 4, you buy 50 shares at $10 per share. On January 5, you 
+sell 80 shares at $11 per share. Using the adjusted cost base method,
+the realized gains and losses are computed on a daily basis as
+follows:
+
+<p>
+<a name="Table-5.6"><b>Table 5.6: Realized and unrealized gains and losses: second ACB example</b></a>
+<p>
+
+<table border=0 bgcolor=#000000 cellspacing=1>
+
+<tr bgcolor=#ffc0c0>
+<th width=50>Date</th>
+<th>Description</th>
+<th width=100>Canadian&nbsp;Cash<br>(asset)</th>
+<th width=100>Shares<br>(asset)</th>
+<td width=0 bgcolor=#000000></td>
+<th width=100>Initial&nbsp;Capital<br>(capital)</th>
+<th width=100>Share&nbsp;Trading<br>(trading)</th>
+<th width=100>Realized&nbsp;Gain<br>(income)</th>
+</tr>
+
+<tr bgcolor=#ffffc0>
+<td bgcolor=#ffffff>Jan&nbsp;1</td>
+<td>Opening balance</td>
+<td align=right>CAD 1,000</td>
+<td align=right>SHA 0</td>
+<td width=0 bgcolor=#000000></td>
+<td align=right>CAD 1,000</td>
+<td align=right>SHA 0<br>&ndash; CAD 0</td>
+<td align=right>CAD 0</td>
+</tr>
+
+<tr bgcolor=#ffffff>
+<td rowspan=2 valign=top>Jan&nbsp;2</td>
+<td>Buy 100 shares ($8/share)</td>
+<td align=right>&ndash; CAD 800</td>
+<td align=right>+ SHA 100</td>
+<td width=0 bgcolor=#000000></td>
+<td align=right>&nbsp;</td>
+<td align=right>+&nbsp;SHA&nbsp;100<br>&ndash;&nbsp;CAD&nbsp;800</td>
+<td align=right>&nbsp;</td>
+</tr>
+
+<tr bgcolor=#ffffc0>
+<td>Balance</td>
+<td align=right>CAD 200</td>
+<td align=right>SHA 100</td>
+<td width=0 bgcolor=#000000></td>
+<td align=right>CAD 1,000</td>
+<td align=right>SHA 100<br>&ndash; CAD 800</td>
+<td align=right>CAD 0</td>
+</tr>
+
+<tr bgcolor=#ffffff>
+<td rowspan=3 valign=top>Jan&nbsp;3</td>
+<td>Sell 50 shares ($9/share)</td>
+<td align=right>+ CAD 450</td>
+<td align=right>&ndash; SHA 50</td>
+<td width=0 bgcolor=#000000></td>
+<td align=right>&nbsp;</td>
+<td align=right>&ndash;&nbsp;SHA&nbsp;50<br>+&nbsp;CAD&nbsp;450</td>
+<td align=right>&nbsp;</td>
+</tr>
+
+<tr bgcolor=#ffffff>
+<td>Realized gain (ACB)</td>
+<td align=right>&nbsp;</td>
+<td align=right>&nbsp;</td>
+<td width=0 bgcolor=#000000></td>
+<td align=right>&nbsp;</td>
+<td align=right>&ndash;&nbsp;CAD&nbsp;50</td>
+<td align=right>+ CAD 50</td>
+</tr>
+
+<tr bgcolor=#ffffc0>
+<td>Balance</td>
+<td align=right>CAD 650</td>
+<td align=right>SHA 50</td>
+<td width=0 bgcolor=#000000></td>
+<td align=right>CAD 1,000</td>
+<td align=right>SHA 50<br>&ndash; CAD 400</td>
+<td align=right>CAD 50</td>
+</tr>
+
+<tr bgcolor=#ffffff>
+<td rowspan=2 valign=top>Jan&nbsp;4</td>
+<td>Buy 50 shares ($10/share)</td>
+<td align=right>&ndash; CAD 500</td>
+<td align=right>+ SHA 50</td>
+<td width=0 bgcolor=#000000></td>
+<td align=right>&nbsp;</td>
+<td align=right>+&nbsp;SHA&nbsp;50<br>&ndash;&nbsp;CAD&nbsp;500</td>
+<td align=right>&nbsp;</td>
+</tr>
+
+<tr bgcolor=#ffffc0>
+<td>Balance</td>
+<td align=right>CAD 150</td>
+<td align=right>SHA 100</td>
+<td width=0 bgcolor=#000000></td>
+<td align=right>CAD 1,000</td>
+<td align=right>SHA 100<br>&ndash; CAD 900</td>
+<td align=right>CAD 50</td>
+</tr>
+
+<tr bgcolor=#ffffff>
+<td rowspan=3 valign=top>Jan&nbsp;5</td>
+<td>Sell 80 shares ($11/share)</td>
+<td align=right>+ CAD 880</td>
+<td align=right>&ndash; SHA 80</td>
+<td width=0 bgcolor=#000000></td>
+<td align=right>&nbsp;</td>
+<td align=right>&ndash;&nbsp;SHA&nbsp;80<br>+&nbsp;CAD&nbsp;880</td>
+<td align=right>&nbsp;</td>
+</tr>
+
+<tr bgcolor=#ffffff>
+<td>Realized gain (ACB)</td>
+<td align=right>&nbsp;</td>
+<td align=right>&nbsp;</td>
+<td width=0 bgcolor=#000000></td>
+<td align=right>&nbsp;</td>
+<td align=right>&ndash;&nbsp;CAD&nbsp;160</td>
+<td align=right>+ CAD 160</td>
+</tr>
+
+<tr bgcolor=#ffffc0>
+<td>Balance</td>
+<td align=right>CAD 1030</td>
+<td align=right>SHA 20</td>
+<td width=0 bgcolor=#000000></td>
+<td align=right>CAD 1,000</td>
+<td align=right>SHA 20<br>&ndash; CAD 180</td>
+<td align=right>CAD 210</td>
+</tr>
+
+</table>
+
+<p>
+
+Therefore, under the adjusted cost base system, at the end of January
+5, you have had $210 in realized gains for the year, and you will
+still own 20 shares at an adjusted cost base of $180.
+
+<p>
+
+It should be remarked that the discussion of accounting rules such as
+FIFO, LIFO, and adjusted cost base not only applies to shares, but
+also to other types of assets, most notably inventory. When a company
+sells its oldest inventory first (or assumes to do so for accounting
+purposes), it is effectively using FIFO. When it sells its newest
+inventory first, it is using LIFO. If overall prices are rising, then
+the LIFO method will result in less reportable income (and therefore
+lower taxes). However, according to <a
+href=http://www.fool.com/news/2003/03/20/inventory-ins-and-outs.aspx>this
+article</a>, the LIFO method is frowned upon outside of the U.S.,
+because it rarely makes sense to hoard old inventory.
+
+<p>
+
+While I have discussed capital gains and losses in the context of
+variably-priced <i>assets</i>, a similar discussion also applies to
+variable-priced <i>liabilities</i>.  For example, suppose that you
+need to pay an invoice in a foreign currency. If that currency
+decreases in value, then the amount you have to pay also decreases (in
+terms of your own currency), and therefore you experience an
+unrealized gain. This turns into a realized gain when you actually pay
+the invoice. In some countries, like
+<a href=http://www.ato.gov.au/businesses/content.asp?doc=/content/59214.htm>Australia</a>,
+gains and losses from assets must be reported separately from gains
+and losses from liabilities (in Australia, these are called "forex
+realisation events" of type 2 and 4, respectively). In such cases, one
+should have a separate income account for each type of realized gains
+and losses.
+
+<p>
+
+In conclusion, we can say that the multi-currency accounting model can
+be used to track realized gains and losses under a variety of
+accounting rules. Because realized gains and losses are entered as
+transactions, any specific rule, such as FIFO, LIFO, or adjusted cost
+base, can be implemented. Each of the systems requires a slightly
+different calculation to be done.
+
+<p>
+
+<a name="6"><h2>6. Translation issues</h2></a>
+
+<a name="6.1"><h3>6.1. Independence of viewpoint</h3></a>
+
+In <a href="#2.3">Section 2.3</a>, we had briefly mentioned that the
+concept of a foreign exchange gain or loss apparently depends on one's
+choice of reference currency. A Canadian person who has assets of CAD
+150 and USD 100 will perceive a shift in exchange rates from 1.20
+CAD/USD to 1.25 CAD/USD as a gain, whereas an American person in the
+same situation will perceive such a shift as a loss.
+
+<p>
+
+In international business, such differences of viewpoint are more than
+just "perceptions"; they have real and important financial
+implications (for example, gains are taxed, but losses are not). 
+
+<p>
+
+As an example, suppose that a Canadian company has a
+U.S. subsidiary. Suppose that the U.S. subsidiary has assets of CAD
+150 and USD 100. For simplicity, also assume that the subsidiary has
+no transactions throughout the year, that the exchange rate on January
+1 was 1.20 CAD/USD, and that the exchange rate on December 31 was 1.25
+CAD/USD. Since the subsidiary company is American, its books are
+naturally kept in U.S. dollars. Here is what the books would look
+like, using the accounting method with a currency trading account:
+
+<p>
+<a name="Table-6.1"><b>Table 6.1: Books of the U.S. subsidiary company</b></a>
+<p>
+
+<table border=0 bgcolor=#000000 cellspacing=1>
+
+<tr bgcolor=#ffc0c0>
+<th width=50>Date</th>
+<th>Description</th>
+<th width=100>CAD&nbsp;Cash<br>(asset)</th>
+<th width=100>USD&nbsp;Cash<br>(asset)</th>
+<td width=0 bgcolor=#000000></td>
+<th width=100>Initial&nbsp;Capital<br>(capital)</th>
+<th width=100>CAD&nbsp;Trading<br>(trading)</th>
+</tr>
+
+<tr bgcolor=#ffffc0>
+<td bgcolor=#ffffff>Jan 1</td>
+<td>Opening balance</td>
+<td align=right><nobr>CAD 150</nobr></td>
+<td align=right><nobr>USD 100</nobr></td>
+<td width=0 bgcolor=#000000></td>
+<td align=right><nobr>USD 225</nobr></td>
+<td align=right><nobr>CAD 150<br>&ndash;&nbsp;USD&nbsp;125</nobr></td>
+</tr>
+
+<tr bgcolor=#ffffc0>
+<td bgcolor=#ffffff>Dec 31</td>
+<td>Closing balance</td>
+<td align=right><nobr>CAD 150</nobr></td>
+<td align=right><nobr>USD 100</nobr></td>
+<td width=0 bgcolor=#000000></td>
+<td align=right><nobr>USD 225</nobr></td>
+<td align=right><nobr>CAD 150<br>&ndash;&nbsp;USD&nbsp;125</nobr></td>
+</tr>
+
+</table>
+
+<p>
+
+When preparing its financial statement for the fiscal year, the
+U.S. subsidiary "translates" the opening and closing balances
+into USD, using the exchange rate of 1.20 CAD/USD for January 1, and
+the rate of 1.25 CAD/USD for December 31. Here is the translation:
+
+<p>
+<a name="Table-6.2"><b>Table 6.2: Books of the U.S. subsidiary company, translated to USD</b></a>
+<p>
+
+<table border=0 bgcolor=#000000 cellspacing=1>
+
+<tr bgcolor=#ffc0c0>
+<th width=50>Date</th>
+<th>Description</th>
+<th width=100>CAD&nbsp;Cash<br>(asset)</th>
+<th width=100>USD&nbsp;Cash<br>(asset)</th>
+<td width=0 bgcolor=#000000></td>
+<th width=100>Initial&nbsp;Capital<br>(capital)</th>
+<th width=100>CAD&nbsp;Trading<br>(trading)</th>
+</tr>
+
+<tr bgcolor=#ffffc0>
+<td bgcolor=#ffffff>Jan 1</td>
+<td>Opening balance</td>
+<td align=right><nobr>USD 125</nobr></td>
+<td align=right><nobr>USD 100</nobr></td>
+<td width=0 bgcolor=#000000></td>
+<td align=right><nobr>USD 225</nobr></td>
+<td align=right><nobr>USD 0</nobr></td>
+</tr>
+
+<tr bgcolor=#ffffc0>
+<td bgcolor=#ffffff>Dec 31</td>
+<td>Closing balance</td>
+<td align=right><nobr>USD 120</nobr></td>
+<td align=right><nobr>USD 100</nobr></td>
+<td width=0 bgcolor=#000000></td>
+<td align=right><nobr>USD 225</nobr></td>
+<td align=right><nobr>&ndash; USD 5</nobr></td>
+</tr>
+
+</table>
+
+<p>
+
+The U.S. subsidiary has therefore suffered an (unrealized) loss of USD
+5, and will report this to the Canadian parent company. Here is what
+the financial report of the subsidiary might look like:
+
+<p>
+
+<table border=0 cellspacing=1>
+
+<tr>
+<td><b>Initial capital (Jan 1):</b></td>
+<td align=right>USD 225</td>
+</tr>
+
+<tr>
+<td><b>Minus Losses:</b></td>
+<td align=right>&ndash; USD 5</td>
+</tr>
+
+<tr>
+<td height=0></td>
+<td height=0 bgcolor=#000000></td>
+</tr>
+
+<tr>
+<td><b>Final capital (Dec 31):</b></td>
+<td align=right>USD 220</td>
+</tr>
+
+</table>
+
+<p> 
+
+The parent company then has to incorporate its subsidiary's financial
+statement into its own books. To do so, SSAP 20 requires that the
+parent company translates the subsidiary's statement into its own
+reference currency, which is CAD. The parent company will use the
+exchange rate of January 1 to translate the initial capital, but will
+use the exchange rate of December 31 to translate all income,
+expenses, and the final capital. Here is how the parent company might
+translate the subsidiary's financial statement:
+
+<p>
+
+<table border=0 cellspacing=1>
+
+<tr>
+<td><b>Initial capital (Jan 1):</b></td>
+<td align=right>USD 225</td>
+<td width=40 align=center>*</td>
+<td align=right>1.20 CAD/USD</td>
+<td width=40 align=center>=</td>
+<td align=right>CAD 270.00</td>
+</tr>
+
+<tr>
+<td><b>Minus Losses:</b></td>
+<td align=right>&ndash; USD 5</td>
+<td width=40 align=center>*</td>
+<td align=right>1.25 CAD/USD</td>
+<td width=40 align=center>=</td>
+<td align=right>&ndash; CAD 6.25</td>
+</tr>
+
+<tr>
+<td height=0></td>
+<td height=0 bgcolor=#000000></td>
+<td width=40></td>
+<td height=0></td>
+<td width=40></td>
+<td height=0></td>
+</tr>
+
+<tr>
+<td><b>Final capital (Dec 31):</b></td>
+<td align=right>USD 220</td>
+<td width=40 align=center>*</td>
+<td align=right>1.25 CAD/USD</td>
+<td width=40 align=center>=</td>
+<td align=right>CAD 275.00</td>
+</tr>
+
+</table>
+
+<p> 
+
+Note that the addition is correct in U.S. dollars, but not in Canadian
+dollars. To fix this, the parent company will now have to add to its
+own books a capital gain, because the initial capital of USD 225 of
+the subsidiary company, which represents an investment from the point
+of view of the parent company, has risen in value from CAD 270 to CAD
+281.25 during the accounting period, due to the rise in the value of
+the U.S. dollar from CAD 1.20 to CAD 1.25. The parent company must
+therefore adjust the translated books of the subsidiary by a capital
+gain of CAD 11.25.
+
+<p>
+
+<table border=0 cellspacing=1>
+
+<tr>
+<td><b>Initial capital (Jan 1):</b></td>
+<td align=right>USD 225</td>
+<td width=40 align=center>*</td>
+<td align=right>1.20 CAD/USD</td>
+<td width=40 align=center>=</td>
+<td align=right>CAD 270.00</td>
+</tr>
+
+<tr>
+<td><b>Plus capital gain:</b></td>
+<td align=right></td>
+<td width=40 align=center></td>
+<td align=right></td>
+<td width=40 align=center></td>
+<td align=right>+ CAD 11.25</td>
+</tr>
+
+<tr>
+<td><b>Minus Losses:</b></td>
+<td align=right>&ndash; USD 5</td>
+<td width=40 align=center>*</td>
+<td align=right>1.25 CAD/USD</td>
+<td width=40 align=center>=</td>
+<td align=right>&ndash; CAD 6.25</td>
+</tr>
+
+<tr>
+<td height=0></td>
+<td height=0 bgcolor=#000000></td>
+<td width=40></td>
+<td height=0></td>
+<td width=40></td>
+<td height=0 bgcolor=#000000></td>
+</tr>
+
+<tr>
+<td><b>Final capital (Dec 31):</b></td>
+<td align=right>USD 220</td>
+<td width=40 align=center>*</td>
+<td align=right>1.25 CAD/USD</td>
+<td width=40 align=center>=</td>
+<td align=right>CAD 275.00</td>
+</tr>
+
+</table>
+
+<p> 
+
+We note that this capital gain of CAD 11.25 is calculated based only
+on the <i>initial</i> capital of the subsidiary company. Also note
+that the numbers now add up correctly, both on the subsidiary's side
+(where there is no capital gain) and on the parent's side (where there
+is a capital gain). The capital gain only exists from the point of
+view of the parent company, whose reference currency is CAD. From the
+point of view of the subsidiary company, whose reference currency is
+USD, there is no visible capital gain. Finally, we note that to do
+this translation, the parent company only needs the year-end financial
+statement of the subsidiary. It does not need detailed information
+about the subsidiary's transactions.
+
+<p>
+
+Now suppose that the Canadian parent company also has a Canadian
+subsidiary. Assume, for comparison, that the Canadian subsidiary had
+exactly the same amount and type of assets as the American subsidiary,
+and that it too did not have any transactions. This second subsidiary
+is financially identical to the first one, except that it accounts for
+its equity in CAD.  Therefore its books look like this:
+
+<p>
+<a name="Table-6.3"><b>Table 6.3: Books of the Canadian subsidiary company</b></a>
+<p>
+
+<table border=0 bgcolor=#000000 cellspacing=1>
+
+<tr bgcolor=#ffc0c0>
+<th width=50>Date</th>
+<th>Description</th>
+<th width=100>CAD&nbsp;Cash<br>(asset)</th>
+<th width=100>USD&nbsp;Cash<br>(asset)</th>
+<td width=0 bgcolor=#000000></td>
+<th width=100>Initial&nbsp;Capital<br>(capital)</th>
+<th width=100>CAD&nbsp;Trading<br>(trading)</th>
+</tr>
+
+<tr bgcolor=#ffffc0>
+<td bgcolor=#ffffff>Jan 1</td>
+<td>Opening balance</td>
+<td align=right>CAD 150</td>
+<td align=right>USD 100</td>
+<td width=0 bgcolor=#000000></td>
+<td align=right>CAD 270</td>
+<td align=right>USD&nbsp;100<br>&ndash;&nbsp;CAD&nbsp;120</td>
+</tr>
+
+<tr bgcolor=#ffffc0>
+<td bgcolor=#ffffff>Dec 31</td>
+<td>Closing balance</td>
+<td align=right>CAD 150</td>
+<td align=right>USD 100</td>
+<td width=0 bgcolor=#000000></td>
+<td align=right>CAD 270</td>
+<td align=right>USD&nbsp;100<br>&ndash;&nbsp;CAD&nbsp;120</td>
+</tr>
+
+</table>
+
+<p>
+
+Note that the main difference between <a href="#Table-6.1">Tables
+6.1</a> and <a href="#Table-6.3">6.3</a> is that the initial capital is
+carried in a different currency.  This also affects the initial
+balance in the trading account. When it comes to preparing the
+year-end financial report, the Canadian subsidiary will translate its
+opening and closing balances to CAD:
+
+<p>
+<a name="Table-6.4"><b>Table 6.4: Books of the Canadian subsidiary company, translated to CAD</b></a>
+<p>
+
+<table border=0 bgcolor=#000000 cellspacing=1>
+
+<tr bgcolor=#ffc0c0>
+<th width=50>Date</th>
+<th>Description</th>
+<th width=100>CAD&nbsp;Cash<br>(asset)</th>
+<th width=100>USD&nbsp;Cash<br>(asset)</th>
+<td width=0 bgcolor=#000000></td>
+<th width=100>Initial&nbsp;Capital<br>(capital)</th>
+<th width=100>CAD&nbsp;Trading<br>(trading)</th>
+</tr>
+
+<tr bgcolor=#ffffc0>
+<td bgcolor=#ffffff>Jan 1</td>
+<td>Opening balance</td>
+<td align=right>CAD 150</td>
+<td align=right>CAD 120</td>
+<td width=0 bgcolor=#000000></td>
+<td align=right>CAD 270</td>
+<td align=right>CAD 0</td>
+</tr>
+
+<tr bgcolor=#ffffc0>
+<td bgcolor=#ffffff>Dec 31</td>
+<td>Closing balance</td>
+<td align=right>CAD 150</td>
+<td align=right>CAD 125</td>
+<td width=0 bgcolor=#000000></td>
+<td align=right>CAD 270</td>
+<td align=right>CAD 5</td>
+</tr>
+
+</table>
+
+<p>
+
+The financial report of the Canadian subsidiary will look like this:
+
+<p>
+
+<table border=0 cellspacing=1>
+
+<tr>
+<td><b>Initial capital (Jan 1):</b></td>
+<td align=right>CAD 270</td>
+</tr>
+
+<tr>
+<td><b>Plus Gains:</b></td>
+<td align=right>+ CAD 5</td>
+</tr>
+
+<tr>
+<td height=0></td>
+<td height=0 bgcolor=#000000></td>
+</tr>
+
+<tr>
+<td><b>Final capital (Dec 31):</b></td>
+<td align=right>CAD 275</td>
+</tr>
+
+</table>
+
+<p> 
+
+The parent company can incorporate this statement directly into its
+books, since it is already in Canadian dollars. 
+
+<p>
+
+What this example illustrates is <i>independence of viewpoint</i>, an
+important accounting principle. The end result, from the point of view
+of the parent company, is the same, no matter whether the subsidiary
+keeps track of its equity in USD or in CAD. In the first case, the
+parent will report capital gains of CAD 11.25, which are partially
+offset by currency exchange losses of CAD 6.25. In the second case,
+the parent will report currency exchange gains of CAD 5.00. The net
+gain, in each case, is the same. 
+
+<p>
+
+In summary, it does not matter whether one first translates the books
+to a new currency and then prepares a financial report, or whether one
+first prepares a report and then translates the report to a new
+currency, adding a capital gain or loss on the initial capital.
+
+<p>
+
+In practice, the nationality of a subsidiary can of course make a
+difference, for example in the area of taxation.  In the above
+example, the U.S. subsidiary reports a net loss, and is therefore not
+taxed in the U.S. (however, its Canadian parent is taxed in Canada).
+The Canadian subsidiary reports a gain, and it is therefore
+potentially taxed in Canada (although in the case we considered here,
+it probably won't be taxed, as the gain is unrealized). Any such taxes
+are partially offset by lower taxes for the Canadian parent.
+
+<a name="6.2"><h3>6.2. Reference currency vs. Equity currency</h3></a>
+
+Note that <a href="#Table-6.1">Tables 6.1</a> and <a
+href="#Table-6.3">6.3</a> make use of trading accounts, and thus, they
+use an accounting method that treats multiple currencies in a
+symmetric way. There is no "reference currency" in the sense of SSAP
+20, because not all accounts are kept in a single currency.
+
+<p>
+
+Nevertheless, there is of course a difference between <a
+href="#Table-6.1">Table 6.1</a> and <a href="#Table-6.3">6.3</a>. An
+American company will typically record its equity (capital, income,
+and expenses) in USD, while a Canadian company will do so in
+CAD. Therefore, each company will favor a particular currency.
+
+<p>
+
+However, this particular asymmetry is caused by the way companies
+choose to denominate their accounts, and is not built into the
+accounting <i>system</i>. There is no reason why, in principle, some
+company could not keep some of its income, expense, or capital accounts
+in USD and others in CAD. The accounting method with currency trading
+accounts would have no problem accommodating this. However, the
+preparation of single-currency financial reports would be somewhat
+trickier in this case, as capital gains and losses would have to be
+added to the reports for foreign-denominated capital accounts (this
+can be done by the method shown in <a href="#6.1">Section 6.1</a>).
+
+<a name="7"><h2>7. Specific software</h2></a>
+
+This section provides some pointers to multiple currency accounting
+support in specific accounting software packages.
+
+<a name="7.1"><h3>7.1. GnuCash</h3></a>
+
+GnuCash has built-in support for multiple currencies, but prior to
+version 2.3.9, its double-entry accounting followed the method
+described in <a href="#2.2">Section 2.2</a> ("the wrong way"), with
+currency gains and losses calculated by the reporting system. Proper
+currency trading accounts could be set up manually, but were not
+supported by the exchange rate system, so each transaction had to be
+calculated by hand. As of version 2.3.9, support of currency trading
+accounts has been added, but is not enabled by default. See
+<a href=gnucash.html>Multiple currency accounting in GnuCash</a> for
+information on how to enable it, and also for information on the older
+"manual" method. 
+

@@ -27,4 +27,9 @@ Gains are income, losses are expenses.
 `Adjusted cost base`
 ISO 4217 currency codes
 
+Design Thoughts
+===============
+
+Consider 1 SQLite db per account, then attach base tables db.
+
 ..  _Tutorial on multiple currency accounting: http://www.mscs.dal.ca/~selinger/accounting/
