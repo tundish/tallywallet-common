@@ -90,6 +90,16 @@ class Ledger(object):
             print("trade: ", trade)
         return (self._rates, kwargs, Status.ok)
 
+    def exchange_trades(self, exchange, cols=None, **kwargs):
+        cols = cols or [i for i in self.columns if not i.role is Role.trading]
+        accounts = {i.currency: i for i in self._cols if i.role is Role.trading}
+        for c in cols:
+            account = accounts[c.currency]
+            trade = exchange.trade(self._tally[c],
+                path=TradePath(c.currency, self.ref, self.ref),
+                prior=self._rates[c])
+            yield (c, exchange, trade, kwargs)
+
     def add_entry(self, *args, **kwargs):
         for k, v in zip(self._cols, args):
             self._tally[k] += v
@@ -168,7 +178,7 @@ class CurrencyTests(unittest.TestCase):
             computation.prec = 10
             print(ldgr.columns)
             usC = next(i for i in ldgr.columns if i.name == "US cash")
-            txn = ldgr.set_exchange(
+            txn = ldgr.exchange_trades(
                 Exchange({
                     (Cy.CAD, Cy.CAD): 1,
                     (Cy.USD, Cy.CAD): Dl("1.2")
@@ -178,19 +188,20 @@ class CurrencyTests(unittest.TestCase):
             txn = ldgr.add_entry(
                 Dl(60), Dl(100), Dl(180),
                 ts=datetime.date(2013, 1, 1), note="Initial balance")
-            txn = ldgr.set_exchange(
+            txn = ldgr.exchange_trades(
                 Exchange({
                     (Cy.CAD, Cy.CAD): 1,
                     (Cy.USD, Cy.CAD): Dl("1.3")
                 }),
                 ts=datetime.date(2013, 1, 2), note="1 USD = 1.30 CAD")
-            txn = ldgr.set_exchange(
+            print(*txn, sep='\n')
+            txn = ldgr.exchange_trades(
                 Exchange({
                     (Cy.CAD, Cy.CAD): 1,
                     (Cy.USD, Cy.CAD): Dl("1.25")
                 }),
                 ts=datetime.date(2013, 1, 3), note="1 USD = 1.25 CAD")
-            txn = ldgr.set_exchange(
+            txn = ldgr.exchange_trades(
                 Exchange({
                     (Cy.CAD, Cy.CAD): 1,
                     (Cy.USD, Cy.CAD): Dl("1.15")
