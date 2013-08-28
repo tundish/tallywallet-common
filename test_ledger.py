@@ -73,20 +73,12 @@ class Ledger(object):
     def __iter__(self):
         return iter(self._transactions)
 
-    def set_exchange(self, src, dst, fn, **kwargs):
-        preFn = self._exchange.get((src, dst), lambda x: decimal.Decimal(0))
-        self._exchange[(src, dst)] = fn
-        assetCols = (i for i in self._cols if i.currency is src and
-            i.role is Role.asset)
-        tradeCol = next(i for i in self._cols
-            if i.currency is src and i.role is Role.trading)
-        preVals = [preFn(self._tally[i]) for i in assetCols]
-        return (self._exchange, kwargs, Status.ok)
-    
     def set_exchange(self, exchange, **kwargs):
-        self._rates.appendleft(exchange)
         if len(self._rates) < 2:
+            self._rates.appendleft(exchange)
             return (self._rates, kwargs, Status.stopped)
+        else:
+            self._rates[0] = exchange
         varying = {c for k in exchange
             if self._rates[0][k] != self._rates[-1][k] for c in k}
         varying.discard(self.ref)
