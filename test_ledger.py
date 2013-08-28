@@ -93,6 +93,7 @@ class Ledger(object):
     def speculate(self, exchange, cols=None, **kwargs):
         cols = cols or [i for i in self.columns if not i.role is Role.trading]
         accounts = {i.currency: i for i in self._cols if i.role is Role.trading}
+        exchange.update({(c, c): Dl(1.0) for c in accounts})
         for c in cols:
             account = accounts[c.currency]
             trade = exchange.trade(self._tally[c],
@@ -190,21 +191,18 @@ class CurrencyTests(unittest.TestCase):
                 ts=datetime.date(2013, 1, 1), note="Initial balance")
             txn = ldgr.set_exchange(
                 Exchange({
-                    (Cy.CAD, Cy.CAD): 1,
                     (Cy.USD, Cy.CAD): Dl("1.3")
                 }),
                 [usC],
                 ts=datetime.date(2013, 1, 2), note="1 USD = 1.30 CAD")
             txn = ldgr.set_exchange(
                 Exchange({
-                    (Cy.CAD, Cy.CAD): 1,
                     (Cy.USD, Cy.CAD): Dl("1.25")
                 }),
                 [usC],
                 ts=datetime.date(2013, 1, 3), note="1 USD = 1.25 CAD")
             txn = ldgr.set_exchange(
                 Exchange({
-                    (Cy.CAD, Cy.CAD): 1,
                     (Cy.USD, Cy.CAD): Dl("1.15")
                 }),
                 [usC],
