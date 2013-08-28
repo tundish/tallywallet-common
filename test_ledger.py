@@ -77,14 +77,8 @@ class Ledger(object):
     def columns(self):
         return self._cols[:]
 
-    def set_exchange(self, exchange, cols=[], **kwargs):
-
-        #varying = {c for k in exchange
-        #    if self._rates[0][k] != self._rates[-1][k] for c in k}
-        #varying.discard(self.ref)
-
-        #cols = (i for i in self._cols if i.currency in varying and
-        #    i.role in (Role.asset,))
+    def set_exchange(self, exchange, cols=None, **kwargs):
+        cols = cols or [i for i in self.columns if not i.role is Role.trading]
         accounts = {i.currency: i for i in self._cols if i.role is Role.trading}
         for c in cols:
             account = accounts[c.currency]
