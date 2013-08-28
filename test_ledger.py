@@ -1,8 +1,8 @@
 #!/usr/bin/env python3.4
 #   encoding: UTF-8
 
-from collections import defaultdict
 from collections import namedtuple
+from collections import OrderedDict
 import datetime
 import decimal
 import enum
@@ -15,7 +15,7 @@ class Currency(enum.Enum):
     canadian = "CAD"
     dollar = "USD"
     pound = "GBP"
-    wellmet = "XWM"
+    tallywallet = "XTW"
 
 @enum.unique
 class Role(enum.Enum):
@@ -38,9 +38,9 @@ class Ledger(object):
 
     def __init__(self, *args):
         self._cols = args
-        self._tally = defaultdict(decimal.Decimal)
+        self._tally = OrderedDict((i, decimal.Decimal(0)) for i in args)
         self._transactions = []
-        self._rates = {}
+        self._exchange = {} # Dict of (currency, currency): function
 
     def __enter__(self, *args):
         return self
@@ -51,14 +51,21 @@ class Ledger(object):
     def __iter__(self):
         return iter(self._transactions)
 
-    def exchange(self, src, dst, val, **kwargs):
-        self._rates[(src, dst)] = val
+    def set_exchange(self, src, dst, fn, **kwargs):
+        preFn = self._exchange.get((src, dst), lambda x: decimal.Decimal(0))
+        self._exchange[(src, dst)] = fn
+        assetCols = (i for i in self._cols if i.currency is src and
+            i.role is Role.asset)
+        tradeCol = next(i for i in self._cols
+            if i.currency is src and i.role is Role.trading)
+        preVals = [preFn(self._tally[i]) for i in assetCols]
+        
 
     def trade(self, src, dst, val=None, **kwargs):
         src = next(i for i in self._cols if i.name == src)
         dst = next(i for i in self._cols if i.name == dst)
         val = val if val is not None else 0
-        rate = self._rates[(src.currency, dst.currency)]
+        fn = self._exchange[(src.currency, dst.currency)]
         try:
             tallyCol = next(i for i in self._cols
                 if i.currency is src.currency and i.role is Role.trading)
@@ -67,7 +74,7 @@ class Ledger(object):
                 "Ledger lacks a trading column for {}".format(
                     src.currency.name.capitalize()))
         else:
-            self._tally[tallyCol] += val * rate
+            self._tally[tallyCol] += fn(val)
 
 
 class CurrencyTests(unittest.TestCase):
@@ -90,14 +97,10 @@ class CurrencyTests(unittest.TestCase):
             Column("Gain", Cy.dollar, Role.trading)
         ) as ldgr:
             computation.prec = 10
-            ldgr.exchange(
-                Cy.dollar, Cy.canadian, Dl(1.2),
-                ts=datetime.date(2013, 1, 1))
-            ldgr.trade(
-                "US cash", "Canadian cash",
-                ts=datetime.date(2013, 1, 1))
+            txn = ldgr.set_exchange(
+                Cy.dollar, Cy.canadian, lambda x: Dl(1.2) * x,
+                ts=datetime.date(2013, 1, 1), note="1 USD = 1.20 CAD")
         print(ldgr._tally)
-        print(list(ldgr))
         self.assertEqual(-5, list(ldgr)[-1][-1])
 
 if __name__ == "__main__":
