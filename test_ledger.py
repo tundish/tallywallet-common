@@ -176,7 +176,6 @@ class CurrencyTests(unittest.TestCase):
             usC = next(i for i in ldgr.columns if i.name == "US cash")
             txn = ldgr.commit(
                 Exchange({
-                    (Cy.CAD, Cy.CAD): 1,
                     (Cy.USD, Cy.CAD): Dl("1.2")
                 }),
                 [usC],
@@ -232,21 +231,18 @@ class CurrencyTests(unittest.TestCase):
                 ts=datetime.date(2013, 1, 1), note="Initial balance")
             txn = ldgr.speculate(
                 Exchange({
-                    (Cy.CAD, Cy.CAD): 1,
                     (Cy.USD, Cy.CAD): Dl("1.3")
                 }),
                 [usC],
                 ts=datetime.date(2013, 1, 2), note="1 USD = 1.30 CAD")
             txn = ldgr.speculate(
                 Exchange({
-                    (Cy.CAD, Cy.CAD): 1,
                     (Cy.USD, Cy.CAD): Dl("1.25")
                 }),
                 [usC],
                 ts=datetime.date(2013, 1, 3), note="1 USD = 1.25 CAD")
             txn = ldgr.speculate(
                 Exchange({
-                    (Cy.CAD, Cy.CAD): 1,
                     (Cy.USD, Cy.CAD): Dl("1.15")
                 }),
                 [usC],
