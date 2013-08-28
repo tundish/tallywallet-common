@@ -24,11 +24,11 @@ class Status(enum.Enum):
 
 @enum.unique
 class Currency(enum.Enum):
-    bitcoin = "XBC"
-    canadian = "CAD"
-    dollar = "USD"
-    pound = "GBP"
-    tallywallet = "XTW"
+    CAD = 124
+    USD = 840
+    GBP = 826 
+    XBC = "bitcoin"
+    XTW = "tallywallet"
 Cy = Currency
 
 @enum.unique
@@ -57,11 +57,11 @@ class Ledger(object):
     def __init__(self, *args):
         self._cols = list(args)
         self._cols.extend(
-            Column("{} trading account".format(c.value), c, Role.trading)
+            Column("{} trading account".format(c.name), c, Role.trading)
             for c in set(i.currency for i in args))
+        self._rates = deque([], maxlen=2)
         self._tally = OrderedDict((i, decimal.Decimal(0)) for i in args)
         self._transactions = []
-        self._rates = deque([], maxlen=2)
 
     def __enter__(self, *args):
         return self
@@ -109,18 +109,18 @@ class ExchangeTests(unittest.TestCase):
 
     def test_conversion(self):
         exchng = Exchange({
-            (Cy.pound, Cy.pound): 1,
-            (Cy.pound, Cy.dollar): 2
+            (Cy.GBP, Cy.GBP): 1,
+            (Cy.GBP, Cy.USD): 2
         })
         self.assertEqual(3.0,
-            exchng.convert(1.5, path=TradePath(Cy.pound, Cy.pound, Cy.dollar)))
+            exchng.convert(1.5, path=TradePath(Cy.GBP, Cy.GBP, Cy.USD)))
         
     def test_null_currency_trade(self):
         exchange = Exchange({
-            (Cy.pound, Cy.pound): Dl(1)
+            (Cy.GBP, Cy.GBP): Dl(1)
         })
         trader = functools.partial(
-            exchange.trade, path=TradePath(Cy.pound, Cy.pound, Cy.pound))
+            exchange.trade, path=TradePath(Cy.GBP, Cy.GBP, Cy.GBP))
 
         rv = trader(Dl(0))
         self.assertIsInstance(rv, TradeGain)
@@ -129,17 +129,17 @@ class ExchangeTests(unittest.TestCase):
          
     def test_reference_currency_trade(self):
         then = Exchange({
-            (Currency.pound, Currency.pound): 1,
-            (Currency.pound, Currency.dollar): Dl("1.55")
+            (Currency.GBP, Currency.GBP): 1,
+            (Currency.GBP, Currency.USD): Dl("1.55")
         })
         
         now = Exchange({
-            (Currency.pound, Currency.pound): 1,
-            (Currency.pound, Currency.dollar): Dl("1.90")
+            (Currency.GBP, Currency.GBP): 1,
+            (Currency.GBP, Currency.USD): Dl("1.90")
         })
         
         trade = now.trade(
-            10, path=TradePath(Cy.pound, Cy.pound, Cy.dollar), prior=then)
+            10, path=TradePath(Cy.GBP, Cy.GBP, Cy.USD), prior=then)
         self.assertEqual(10, trade.rcv)
         self.assertEqual(3.5, trade.gain)
         self.assertEqual(19, trade.out)
@@ -156,16 +156,16 @@ class CurrencyTests(unittest.TestCase):
         Jan 4 Balance (1 USD = 1.15 CAD) CAD 60 USD 100 CAD 180 – CAD 5
         """
         with decimal.localcontext() as computation, Ledger(
-            Column("Canadian cash", Cy.canadian, Role.asset),
-            Column("US cash", Cy.dollar, Role.asset),
-            Column("Capital", Cy.canadian, Role.capital),
+            Column("Canadian cash", Cy.CAD, Role.asset),
+            Column("US cash", Cy.USD, Role.asset),
+            Column("Capital", Cy.CAD, Role.capital),
         ) as ldgr:
             computation.prec = 10
             print(ldgr._cols)
             txn = ldgr.set_exchange(
                 Exchange({
-                    (Cy.canadian, Cy.canadian): 1,
-                    (Cy.canadian, Cy.dollar): Dl("1.2")
+                    (Cy.CAD, Cy.CAD): 1,
+                    (Cy.CAD, Cy.USD): Dl("1.2")
                 }),
                 ts=datetime.date(2013, 1, 1), note="1 USD = 1.20 CAD")
             txn = ldgr.add_entry(
@@ -173,20 +173,20 @@ class CurrencyTests(unittest.TestCase):
                 ts=datetime.date(2013, 1, 1), note="Initial balance")
             txn = ldgr.set_exchange(
                 Exchange({
-                    (Cy.canadian, Cy.canadian): 1,
-                    (Cy.canadian, Cy.dollar): Dl("1.3")
+                    (Cy.CAD, Cy.CAD): 1,
+                    (Cy.CAD, Cy.USD): Dl("1.3")
                 }),
                 ts=datetime.date(2013, 1, 2), note="1 USD = 1.30 CAD")
             txn = ldgr.set_exchange(
                 Exchange({
-                    (Cy.canadian, Cy.canadian): 1,
-                    (Cy.canadian, Cy.dollar): Dl("1.25")
+                    (Cy.CAD, Cy.CAD): 1,
+                    (Cy.CAD, Cy.USD): Dl("1.25")
                 }),
                 ts=datetime.date(2013, 1, 3), note="1 USD = 1.25 CAD")
             txn = ldgr.set_exchange(
                 Exchange({
-                    (Cy.canadian, Cy.canadian): 1,
-                    (Cy.canadian, Cy.dollar): Dl("1.25")
+                    (Cy.CAD, Cy.CAD): 1,
+                    (Cy.CAD, Cy.USD): Dl("1.25")
                 }),
                 ts=datetime.date(2013, 1, 4), note="1 USD = 1.15 CAD")
 
