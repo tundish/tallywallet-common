@@ -97,8 +97,16 @@ def trade(self, val, path, prior=None, fees=TradeFees(0, 0)):
 
 Exchange = type("Exchange", (dict,), {"convert": convert, "trade": trade})
 
-class TradeTests(unittest.TestCase):
+class ExchangeTests(unittest.TestCase):
 
+    def test_conversion(self):
+        exchng = Exchange({
+            (Cy.pound, Cy.pound): 1,
+            (Cy.pound, Cy.dollar): 2
+        })
+        self.assertEqual(3.0,
+            exchng.convert(1.5, path=TradePath(Cy.pound, Cy.pound, Cy.dollar)))
+        
     def test_null_currency_trade(self):
         exchange = Exchange({
             (Cy.pound, Cy.pound): Dl(1)
@@ -109,13 +117,23 @@ class TradeTests(unittest.TestCase):
         rv = trader(Dl(0))
         self.assertIsInstance(rv, TradeGain)
 
-        self.assertEqual(trader(Dl(1)), (Dl(1), Dl(1), Dl(0)))
+        self.assertEqual(trader(Dl(1)), (Dl(1), Dl(0), Dl(1)))
          
     def test_reference_currency_trade(self):
-        exchange = {
-            (Currency.pound, Currency.dollar): decimal.Decimal("1.55")
-        }
+        then = Exchange({
+            (Currency.pound, Currency.pound): 1,
+            (Currency.pound, Currency.dollar): Dl("1.55")
+        })
         
+        now = Exchange({
+            (Currency.pound, Currency.pound): 1,
+            (Currency.pound, Currency.dollar): Dl("1.90")
+        })
+        
+        trade = now.trade(
+            10, path=TradePath(Cy.pound, Cy.pound, Cy.dollar), prior=then)
+        self.assertEqual(3.5, trade.gain)
+
 class CurrencyTests(unittest.TestCase):
 
     def test_exchange_gain_with_fixed_assets(self):
@@ -150,7 +168,6 @@ class CurrencyTests(unittest.TestCase):
             txn = ldgr.set_exchange(
                 Cy.dollar, Cy.canadian, lambda x: Dl("1.15") * x,
                 ts=datetime.date(2013, 1, 4), note="1 USD = 1.15 CAD")
-        self.assertEqual(-5, list(ldgr)[-1][-1])
 
 if __name__ == "__main__":
     unittest.main()
