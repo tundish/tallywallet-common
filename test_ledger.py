@@ -54,7 +54,8 @@ TradeGain = namedtuple("TradeGain", ["rcv", "gain", "out"])
 
 class Ledger(object):
 
-    def __init__(self, *args):
+    def __init__(self, *args, ref=Currency.XTW):
+        self.ref = ref
         self._cols = list(args)
         self._cols.extend(
             Column("{} trading account".format(c.name), c, Role.trading)
@@ -84,6 +85,21 @@ class Ledger(object):
     
     def set_exchange(self, exchange, **kwargs):
         self._rates.appendleft(exchange)
+        if len(self._rates) < 2:
+            return (self._rates, kwargs, Status.stopped)
+        varying = {c for k in exchange
+            if self._rates[0][k] != self._rates[-1][k] for c in k}
+        varying.discard(self.ref)
+        cols = (i for i in self._cols if i.currency in varying and
+            i.role in (Role.asset,))
+        accounts = {i.currency:i for i in self._cols if i.role is Role.trading}
+        for c in cols:
+            account = accounts[c.currency]
+            trade = self._rates[0].trade(self._tally[c],
+                path=TradePath(c.currency, self.ref, self.ref),
+                prior=self._rates[1])
+            self._tally[account] = trade.gain
+            print("trade: ", trade)
         return (self._rates[0], kwargs, Status.ok)
 
     def add_entry(self, *args, **kwargs):
@@ -159,13 +175,14 @@ class CurrencyTests(unittest.TestCase):
             Column("Canadian cash", Cy.CAD, Role.asset),
             Column("US cash", Cy.USD, Role.asset),
             Column("Capital", Cy.CAD, Role.capital),
+            ref=Cy.CAD
         ) as ldgr:
             computation.prec = 10
             print(ldgr._cols)
             txn = ldgr.set_exchange(
                 Exchange({
                     (Cy.CAD, Cy.CAD): 1,
-                    (Cy.CAD, Cy.USD): Dl("1.2")
+                    (Cy.USD, Cy.CAD): Dl("1.2")
                 }),
                 ts=datetime.date(2013, 1, 1), note="1 USD = 1.20 CAD")
             txn = ldgr.add_entry(
@@ -174,19 +191,19 @@ class CurrencyTests(unittest.TestCase):
             txn = ldgr.set_exchange(
                 Exchange({
                     (Cy.CAD, Cy.CAD): 1,
-                    (Cy.CAD, Cy.USD): Dl("1.3")
+                    (Cy.USD, Cy.CAD): Dl("1.3")
                 }),
                 ts=datetime.date(2013, 1, 2), note="1 USD = 1.30 CAD")
             txn = ldgr.set_exchange(
                 Exchange({
                     (Cy.CAD, Cy.CAD): 1,
-                    (Cy.CAD, Cy.USD): Dl("1.25")
+                    (Cy.USD, Cy.CAD): Dl("1.25")
                 }),
                 ts=datetime.date(2013, 1, 3), note="1 USD = 1.25 CAD")
             txn = ldgr.set_exchange(
                 Exchange({
                     (Cy.CAD, Cy.CAD): 1,
-                    (Cy.CAD, Cy.USD): Dl("1.25")
+                    (Cy.USD, Cy.CAD): Dl("1.15")
                 }),
                 ts=datetime.date(2013, 1, 4), note="1 USD = 1.15 CAD")
 
