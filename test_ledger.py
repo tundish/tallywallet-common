@@ -63,6 +63,8 @@ class Ledger(object):
         self._cols.extend(
             Column("{} trading account".format(c.name), c, Role.trading)
             for c in set(i.currency for i in args))
+        self._tradingAccounts = {
+            i.currency: i for i in self._cols if i.role is Role.trading}
         self._rates = {i: Exchange({}) for i in args}
         self._tally = OrderedDict((i, decimal.Decimal(0)) for i in self._cols)
         self._transactions = deque([], maxlen=200)
@@ -74,24 +76,21 @@ class Ledger(object):
     def columns(self):
         return self._cols[:]
 
-    def speculate(self, exchange, cols=None, **kwargs):
+    def speculate(self, exchange, cols=None):
         cols = cols or [i for i in self.columns if not i.role is Role.trading]
-        accnts = {i.currency: i for i in self._cols if i.role is Role.trading}
-        exchange.update({(c, c): Dl(1.0) for c in accnts})
+        exchange.update({(c, c): Dl(1.0) for c in self._tradingAccounts})
         for c in cols:
-            account = accnts[c.currency]
+            account = self._tradingAccounts[c.currency]
             trade = exchange.trade(
                 self._tally[c],
                 path=TradePath(c.currency, self.ref, self.ref),
                 prior=self._rates[c])
-            yield (c, exchange, trade, kwargs)
+            yield (trade, c, exchange)
 
-    def commit(self, exchange, cols=None, **kwargs):
-        accnts = {i.currency: i for i in self._cols if i.role is Role.trading}
-        for c, xchg, trade, kwgs in self.speculate(exchange, cols, **kwargs):
-            account = accnts[c.currency]
-            self._tally[account] += trade.gain
-            self._rates[c] = exchange
+    def commit(self, trade, col, exchange, **kwargs):
+        account = self._tradingAccounts[col.currency]
+        self._tally[account] += trade.gain
+        self._rates[col] = exchange
         return (self._rates, kwargs, Status.ok)
 
     def add_entry(self, *args, **kwargs):
@@ -158,51 +157,6 @@ class ExchangeTests(unittest.TestCase):
 
 class CurrencyTests(unittest.TestCase):
 
-    def test_make_exchange_gain_with_fixed_assets(self):
-        """
-        From Selinger table 4.1
-        date                             asset  asset   capital gain
-        Jan 1 Balance (1 USD = 1.20 CAD) CAD 60 USD 100 CAD 180 CAD 0
-        Jan 2 Balance (1 USD = 1.30 CAD) CAD 60 USD 100 CAD 180 CAD 10
-        Jan 3 Balance (1 USD = 1.25 CAD) CAD 60 USD 100 CAD 180 CAD 5
-        Jan 4 Balance (1 USD = 1.15 CAD) CAD 60 USD 100 CAD 180 – CAD 5
-        """
-        with decimal.localcontext() as computation:
-            computation.prec = 10
-            ldgr = Ledger(
-                Column("Canadian cash", Cy.CAD, Role.asset),
-                Column("US cash", Cy.USD, Role.asset),
-                Column("Capital", Cy.CAD, Role.capital),
-                ref=Cy.CAD)
-            usC = next(i for i in ldgr.columns if i.name == "US cash")
-            txn = ldgr.commit(
-                Exchange({
-                    (Cy.USD, Cy.CAD): Dl("1.2")
-                }),
-                [usC],
-                ts=datetime.date(2013, 1, 1), note="1 USD = 1.20 CAD")
-            txn = ldgr.add_entry(
-                Dl(60), Dl(100), Dl(180),
-                ts=datetime.date(2013, 1, 1), note="Initial balance")
-            txn = ldgr.commit(
-                Exchange({
-                    (Cy.USD, Cy.CAD): Dl("1.3")
-                }),
-                [usC],
-                ts=datetime.date(2013, 1, 2), note="1 USD = 1.30 CAD")
-            txn = ldgr.commit(
-                Exchange({
-                    (Cy.USD, Cy.CAD): Dl("1.25")
-                }),
-                [usC],
-                ts=datetime.date(2013, 1, 3), note="1 USD = 1.25 CAD")
-            txn = ldgr.commit(
-                Exchange({
-                    (Cy.USD, Cy.CAD): Dl("1.15")
-                }),
-                [usC],
-                ts=datetime.date(2013, 1, 4), note="1 USD = 1.15 CAD")
-
     def test_track_exchange_gain_with_fixed_assets(self):
         """
         From Selinger table 4.1
@@ -220,39 +174,40 @@ class CurrencyTests(unittest.TestCase):
                 Column("Capital", Cy.CAD, Role.capital),
                 ref=Cy.CAD)
             usC = next(i for i in ldgr.columns if i.name == "US cash")
-            txn = ldgr.commit(
+            for args in ldgr.speculate(
                 Exchange({
-                    (Cy.CAD, Cy.CAD): 1,
                     (Cy.USD, Cy.CAD): Dl("1.2")
-                }),
-                [usC],
-                ts=datetime.date(2013, 1, 1), note="1 USD = 1.20 CAD")
+                    })):
+                ldgr.commit(
+                    *args, ts=datetime.date(2013, 1, 1),
+                    note="1 USD = 1.20 CAD")
+
             txn = ldgr.add_entry(
                 Dl(60), Dl(100), Dl(180),
                 ts=datetime.date(2013, 1, 1), note="Initial balance")
-            txn = ldgr.speculate(
+
+            trade, col, exchange = next(ldgr.speculate(
                 Exchange({
                     (Cy.USD, Cy.CAD): Dl("1.3")
                 }),
-                [usC],
-                ts=datetime.date(2013, 1, 2), note="1 USD = 1.30 CAD")
-            trade = next(txn)[2]
+                [usC]))
+            self.assertIs(col, usC)
             self.assertEqual(10, trade.gain)
-            txn = ldgr.speculate(
+
+            trade, col, exchange = next(ldgr.speculate(
                 Exchange({
                     (Cy.USD, Cy.CAD): Dl("1.25")
                 }),
-                [usC],
-                ts=datetime.date(2013, 1, 3), note="1 USD = 1.25 CAD")
-            trade = next(txn)[2]
+                [usC]))
+            self.assertIs(col, usC)
             self.assertEqual(5, trade.gain)
-            txn = ldgr.speculate(
+
+            trade, col, exchange = next(ldgr.speculate(
                 Exchange({
                     (Cy.USD, Cy.CAD): Dl("1.15")
                 }),
-                [usC],
-                ts=datetime.date(2013, 1, 4), note="1 USD = 1.15 CAD")
-            trade = next(txn)[2]
+                [usC]))
+            self.assertIs(col, usC)
             self.assertEqual(-5, trade.gain)
 
 if __name__ == "__main__":
