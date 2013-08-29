@@ -195,52 +195,41 @@ class CurrencyTests(unittest.TestCase):
         Jan 3 Balance (1 USD = 1.25 CAD) CAD 60 USD 100 CAD 180 CAD 5
         Jan 4 Balance (1 USD = 1.15 CAD) CAD 60 USD 100 CAD 180 – CAD 5
         """
-        with decimal.localcontext() as computation:
-            computation.prec = 10
-            ldgr = Ledger(
-                Column("Canadian cash", Cy.CAD, Role.asset),
-                Column("US cash", Cy.USD, Role.asset),
-                Column("Capital", Cy.CAD, Role.capital),
-                ref=Cy.CAD)
-            usC = next(i for i in ldgr.columns if i.name == "US cash")
-            for args in ldgr.speculate(
-                Exchange({
-                    (Cy.USD, Cy.CAD): Dl("1.2")
-                    })):
-                ldgr.commit(
-                    *args, ts=datetime.date(2013, 1, 1),
-                    note="1 USD = 1.20 CAD")
+        ldgr = Ledger(
+            Column("Canadian cash", Cy.CAD, Role.asset),
+            Column("US cash", Cy.USD, Role.asset),
+            Column("Capital", Cy.CAD, Role.capital),
+            ref=Cy.CAD)
+        usC = next(i for i in ldgr.columns if i.name == "US cash")
+        for args in ldgr.speculate(
+            Exchange({(Cy.USD, Cy.CAD): Dl("1.2")})
+        ):
+            ldgr.commit(
+                *args, ts=datetime.date(2013, 1, 1),
+                note="1 USD = 1.20 CAD")
 
-            for trade, col in zip(
-                (Dl(60), Dl(100), Dl(180)), ldgr.columns
-            ):
-                ldgr.commit(
-                    trade, col,
-                    ts=datetime.date(2013, 1, 1), note="Initial balance")
+        for deposit, col in zip((Dl(60), Dl(100), Dl(180)), ldgr.columns):
+            ldgr.commit(
+                deposit, col,
+                ts=datetime.date(2013, 1, 1), note="Initial balance")
 
-            trade, col, exchange = next(ldgr.speculate(
-                Exchange({
-                    (Cy.USD, Cy.CAD): Dl("1.3")
-                }),
-                [usC]))
-            self.assertIs(col, usC)
-            self.assertEqual(10, trade.gain)
+        trade, col, exchange = next(ldgr.speculate(
+            Exchange({(Cy.USD, Cy.CAD): Dl("1.3")}),
+            [usC]))
+        self.assertIs(col, usC)
+        self.assertEqual(10, trade.gain)
 
-            trade, col, exchange = next(ldgr.speculate(
-                Exchange({
-                    (Cy.USD, Cy.CAD): Dl("1.25")
-                }),
-                [usC]))
-            self.assertIs(col, usC)
-            self.assertEqual(5, trade.gain)
+        trade, col, exchange = next(ldgr.speculate(
+            Exchange({(Cy.USD, Cy.CAD): Dl("1.25")}),
+            [usC]))
+        self.assertIs(col, usC)
+        self.assertEqual(5, trade.gain)
 
-            trade, col, exchange = next(ldgr.speculate(
-                Exchange({
-                    (Cy.USD, Cy.CAD): Dl("1.15")
-                }),
-                [usC]))
-            self.assertIs(col, usC)
-            self.assertEqual(-5, trade.gain)
+        trade, col, exchange = next(ldgr.speculate(
+            Exchange({(Cy.USD, Cy.CAD): Dl("1.15")}),
+            [usC]))
+        self.assertIs(col, usC)
+        self.assertEqual(-5, trade.gain)
 
 if __name__ == "__main__":
     unittest.main()
