@@ -56,6 +56,21 @@ TradePath = namedtuple("TradePath", ["rcv", "work", "out"])
 TradeGain = namedtuple("TradeGain", ["rcv", "gain", "out"])
 
 
+def convert(self, val, path, fees=TradeFees(0, 0)):
+    work = (val - fees.rcv) * self[(path.rcv, path.work)]
+    rv = work * self[(path.work, path.out)] - fees.out
+    return rv
+
+
+def trade(self, val, path, prior=None, fees=TradeFees(0, 0)):
+    prior = prior or self
+    this = self.convert(val, path, fees)
+    that = prior.convert(val, path, fees)
+    return TradeGain(val, this - that, this)
+
+Exchange = type("Exchange", (dict,), {"convert": convert, "trade": trade})
+
+
 class Ledger(object):
 
     def __init__(self, *args, ref=Currency.XTW):
@@ -126,21 +141,6 @@ class Ledger(object):
             else:
                 st = Status.error
         return (trade, col, exchange, kwargs, st)
-
-
-def convert(self, val, path, fees=TradeFees(0, 0)):
-    work = (val - fees.rcv) * self[(path.rcv, path.work)]
-    rv = work * self[(path.work, path.out)] - fees.out
-    return rv
-
-
-def trade(self, val, path, prior=None, fees=TradeFees(0, 0)):
-    prior = prior or self
-    this = self.convert(val, path, fees)
-    that = prior.convert(val, path, fees)
-    return TradeGain(val, this - that, this)
-
-Exchange = type("Exchange", (dict,), {"convert": convert, "trade": trade})
 
 
 class ExchangeTests(unittest.TestCase):
