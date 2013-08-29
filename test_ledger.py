@@ -9,6 +9,7 @@ import decimal
 from decimal import Decimal as Dl
 import enum
 import functools
+from numbers import Number
 import unittest
 import warnings
 
@@ -77,6 +78,21 @@ class Ledger(object):
         return self._cols[:]
 
     def speculate(self, exchange, cols=None):
+        """
+        Calculates the effect of a change in exchange rates.
+
+        Supply an Exchange object and an optional sequence of columns.
+        If no columns are specified then all are assumed.
+
+        The columns are recalculated (but not committed) against the new
+        exchange rates.
+
+        This method with generate a sequence of 3-tuples;
+        `(TradeGain, Column, Exchange)`.
+
+        This output is compatible with the arguments accepted by the `commit`
+        method.
+        """
         cols = cols or [i for i in self.columns if not i.role is Role.trading]
         exchange.update({(c, c): Dl(1.0) for c in self._tradingAccounts})
         for c in cols:
@@ -87,16 +103,29 @@ class Ledger(object):
                 prior=self._rates[c])
             yield (trade, c, exchange)
 
-    def commit(self, trade, col, exchange, **kwargs):
-        account = self._tradingAccounts[col.currency]
-        self._tally[account] += trade.gain
-        self._rates[col] = exchange
-        return (self._rates, kwargs, Status.ok)
+    def commit(self, trade, col, exchange=None, **kwargs):
+        """
+        Applies a trade to the ledger.
 
-    def add_entry(self, *args, **kwargs):
-        for k, v in zip(self._cols, args):
-            self._tally[k] += v
-        return (args, kwargs, Status.ok)
+        If you supply an exchange rate, `trade` may be a TradeGain object.
+        In this usage, a trading account in the currency of the ledger
+        column will accept any exchange gain or loss.
+
+        Otherwise, `trade` should be a number. It will be added to the
+        specified column in the ledger.
+        """
+        exchange = exchange or self._rates[col]
+        st = Status.ok
+        try:
+            account = self._tradingAccounts[col.currency]
+            self._tally[account] += trade.gain
+            self._rates[col] = exchange
+        except AttributeError:
+            if isinstance(trade, Number):
+                self._tally[col] += trade
+            else:
+                st = Status.error
+        return (trade, col, exchange, kwargs, st)
 
 
 def convert(self, val, path, fees=TradeFees(0, 0)):
@@ -182,9 +211,12 @@ class CurrencyTests(unittest.TestCase):
                     *args, ts=datetime.date(2013, 1, 1),
                     note="1 USD = 1.20 CAD")
 
-            txn = ldgr.add_entry(
-                Dl(60), Dl(100), Dl(180),
-                ts=datetime.date(2013, 1, 1), note="Initial balance")
+            for trade, col in zip(
+                (Dl(60), Dl(100), Dl(180)), ldgr.columns
+            ):
+                ldgr.commit(
+                    trade, col,
+                    ts=datetime.date(2013, 1, 1), note="Initial balance")
 
             trade, col, exchange = next(ldgr.speculate(
                 Exchange({
