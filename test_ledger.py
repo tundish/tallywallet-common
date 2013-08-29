@@ -67,12 +67,6 @@ class Ledger(object):
         self._tally = OrderedDict((i, decimal.Decimal(0)) for i in self._cols)
         self._transactions = deque([], maxlen=200)
 
-    def __enter__(self, *args):
-        return self
-
-    def __exit__(self, exc_type, exc_value, traceback):
-        return False
-
     def __iter__(self):
         return iter(self._transactions)
 
@@ -173,13 +167,13 @@ class CurrencyTests(unittest.TestCase):
         Jan 3 Balance (1 USD = 1.25 CAD) CAD 60 USD 100 CAD 180 CAD 5
         Jan 4 Balance (1 USD = 1.15 CAD) CAD 60 USD 100 CAD 180 – CAD 5
         """
-        with decimal.localcontext() as computation, Ledger(
-            Column("Canadian cash", Cy.CAD, Role.asset),
-            Column("US cash", Cy.USD, Role.asset),
-            Column("Capital", Cy.CAD, Role.capital),
-            ref=Cy.CAD
-        ) as ldgr:
+        with decimal.localcontext() as computation:
             computation.prec = 10
+            ldgr = Ledger(
+                Column("Canadian cash", Cy.CAD, Role.asset),
+                Column("US cash", Cy.USD, Role.asset),
+                Column("Capital", Cy.CAD, Role.capital),
+                ref=Cy.CAD)
             usC = next(i for i in ldgr.columns if i.name == "US cash")
             txn = ldgr.commit(
                 Exchange({
@@ -218,13 +212,13 @@ class CurrencyTests(unittest.TestCase):
         Jan 3 Balance (1 USD = 1.25 CAD) CAD 60 USD 100 CAD 180 CAD 5
         Jan 4 Balance (1 USD = 1.15 CAD) CAD 60 USD 100 CAD 180 – CAD 5
         """
-        with decimal.localcontext() as computation, Ledger(
-            Column("Canadian cash", Cy.CAD, Role.asset),
-            Column("US cash", Cy.USD, Role.asset),
-            Column("Capital", Cy.CAD, Role.capital),
-            ref=Cy.CAD
-        ) as ldgr:
+        with decimal.localcontext() as computation:
             computation.prec = 10
+            ldgr = Ledger(
+                Column("Canadian cash", Cy.CAD, Role.asset),
+                Column("US cash", Cy.USD, Role.asset),
+                Column("Capital", Cy.CAD, Role.capital),
+                ref=Cy.CAD)
             usC = next(i for i in ldgr.columns if i.name == "US cash")
             txn = ldgr.commit(
                 Exchange({
