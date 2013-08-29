@@ -92,6 +92,41 @@ class Ledger(object):
     def columns(self):
         return self._cols[:]
 
+    @property
+    def equation(self):
+        """
+        Evaluates the Fundamental Accounting Equation::
+
+            Assets - Liabilities = Capital + Income - Expenses
+
+        hence::
+
+            Assets + Expenses = Capital + Income + Liabilities
+
+        Currency trading gains are counted as income.
+        """
+        lhCols = set(i for i in self._cols
+                     if i.role in (Role.asset, Role.expense))
+        trCols = set(i for i in self._cols if i.role is Role.trading)
+        rhCols = set(self._cols) - lhCols - trCols
+        lhs = sum(
+            self._rates[col].convert(
+                self._tally[col],
+                TradePath(col.currency, self.ref, self.ref))
+            for col in lhCols)
+        rhs = sum(
+            self._rates[col].convert(
+                self._tally.get(col, Dl(0)),
+                TradePath(col.currency, self.ref, self.ref))
+            for col in rhCols) + sum(
+            self._tally.get(col, Dl(0)) for col in trCols)
+
+        if lhs == rhs:
+            st = Status.ok
+        else:
+            st = Status.fail
+        return (lhs, rhs, st)
+
     def speculate(self, exchange, cols=None):
         """
         Calculates the effect of a change in exchange rates.
@@ -208,10 +243,18 @@ class CurrencyTests(unittest.TestCase):
                 *args, ts=datetime.date(2013, 1, 1),
                 note="1 USD = 1.20 CAD")
 
+        lhs, rhs, st = ldgr.equation
+        self.assertEqual(lhs, rhs)
+        self.assertIs(st, Status.ok)
+
         for deposit, col in zip((Dl(60), Dl(100), Dl(180)), ldgr.columns):
             ldgr.commit(
                 deposit, col,
                 ts=datetime.date(2013, 1, 1), note="Initial balance")
+
+        lhs, rhs, st = ldgr.equation
+        self.assertEqual(lhs, rhs)
+        self.assertIs(st, Status.ok)
 
         trade, col, exchange = next(ldgr.speculate(
             Exchange({(Cy.USD, Cy.CAD): Dl("1.3")}),
@@ -230,6 +273,10 @@ class CurrencyTests(unittest.TestCase):
             [usC]))
         self.assertIs(col, usC)
         self.assertEqual(-5, trade.gain)
+
+        lhs, rhs, st = ldgr.equation
+        self.assertEqual(lhs, rhs)
+        self.assertIs(st, Status.ok)
 
 if __name__ == "__main__":
     unittest.main()
