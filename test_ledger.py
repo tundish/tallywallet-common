@@ -57,8 +57,8 @@ TradeGain = namedtuple("TradeGain", ["rcv", "gain", "out"])
 
 
 def convert(self, val, path, fees=TradeFees(0, 0)):
-    work = (val - fees.rcv) * self[(path.rcv, path.work)]
-    rv = work * self[(path.work, path.out)] - fees.out
+    work = (val - fees.rcv) * self.get((path.rcv, path.work))
+    rv = work * self.get((path.work, path.out)) - fees.out
     return rv
 
 
@@ -68,7 +68,21 @@ def trade(self, val, path, prior=None, fees=TradeFees(0, 0)):
     that = prior.convert(val, path, fees)
     return TradeGain(val, this - that, this)
 
-Exchange = type("Exchange", (dict,), {"convert": convert, "trade": trade})
+def infer_rate(self, key):
+    try:
+        return self[key]
+    except KeyError:
+        key = tuple(reversed(key))
+        try:
+            return Dl(1) / self[key]
+        except KeyError as err:
+            if key[0] == key[1]:
+                return Dl(1)
+            else:
+                raise err
+
+Exchange = type("Exchange", (dict,),
+                {"convert": convert, "trade": trade, "get": infer_rate})
 
 
 class Ledger(object):
@@ -150,7 +164,7 @@ class Ledger(object):
             trade = exchange.trade(
                 self._tally[c],
                 path=TradePath(c.currency, self.ref, self.ref),
-                prior=self._rates[c])
+                prior=self._rates.get(c))
             yield (trade, c, exchange)
 
     def commit(self, trade, col, exchange=None, **kwargs):
@@ -176,6 +190,10 @@ class Ledger(object):
             else:
                 st = Status.error
         return (trade, col, exchange, kwargs, st)
+
+    def value(self, name):
+        col = next(i for i in self._cols if i.name == name)
+        return self._tally[col]
 
 
 class ExchangeTests(unittest.TestCase):
@@ -217,8 +235,37 @@ class ExchangeTests(unittest.TestCase):
         self.assertEqual(10, trade.rcv)
         self.assertEqual(3.5, trade.gain)
         self.assertEqual(19, trade.out)
+        
+    def test_unity_rate_inferred(self):
+        asym = Exchange({
+            (Currency.GBP, Currency.USD): Dl(2),
+            (Currency.USD, Currency.GBP): Dl(0.5)
+        })
 
+        val = asym.convert(
+            10, path=TradePath(Cy.GBP, Cy.GBP, Cy.USD))
+        self.assertEqual(20, val)
 
+        val = asym.convert(
+            20, path=TradePath(Cy.USD, Cy.GBP, Cy.GBP))
+        self.assertEqual(10, val)
+
+    def test_rate_inferred_from_inverse(self):
+        asym = Exchange({
+            (Currency.GBP, Currency.GBP): Dl(1),
+            (Currency.USD, Currency.USD): Dl(1),
+            (Currency.GBP, Currency.USD): Dl(2)
+        })
+
+        val = asym.convert(
+            10, path=TradePath(Cy.GBP, Cy.GBP, Cy.USD))
+        self.assertEqual(20, val)
+
+        val = asym.convert(
+            20, path=TradePath(Cy.USD, Cy.GBP, Cy.GBP))
+        self.assertEqual(10, val)
+
+        
 class CurrencyTests(unittest.TestCase):
 
     def test_track_exchange_gain_with_fixed_assets(self):
@@ -289,10 +336,42 @@ class CurrencyTests(unittest.TestCase):
                 Balance         CAD 80  USD 60  CAD 200 CAD 52  USD 60 CAD-68
         Jan 5   1 USD==1.25CAD  CAD 75  USD-60                  USD-60 CAD 75
                 Balance         CAD 155 USD 0   CAD 200 CAD 52  USD 0  CAD 07
-        Jan 7   Buy food        CAD-20                  CAD 20     
+        Jan 7   Buy food        CAD-20                  CAD 20
                 Balance         CAD 135 USD 0   CAD 200 CAD 72  USD 0  CAD 07
         """
-        self.fail()
+        ldgr = Ledger(
+            Column("Canadian cash", Cy.CAD, Role.asset),
+            Column("US cash", Cy.USD, Role.asset),
+            Column("Capital", Cy.CAD, Role.capital),
+            Column("Expense", Cy.CAD, Role.expense),
+            ref=Cy.CAD)
+
+        # references to important columns
+        usC = next(i for i in ldgr.columns if i.name == "US cash")
+        usT = next(i for i in ldgr.columns
+                   if i.currency is Cy.USD and i.role is Role.trading)
+
+        # row one
+        for amount, col in zip((Dl(200), Dl(0), Dl(200), Dl(0)), ldgr.columns):
+            ldgr.commit(
+                amount, col,
+                ts=datetime.date(2013, 1, 1), note="Opening balance")
+        self.assertEqual(200, ldgr.value("Canadian cash"))
+        self.assertEqual(200, ldgr.value("Capital"))
+        self.assertEqual(0, ldgr.value("USD trading account"))  # whitebox test
+
+        # row two
+        exchange = Exchange({(Cy.USD, Cy.CAD): Dl("1.2")})
+        for args in ldgr.speculate(exchange):
+            ldgr.commit(
+                *args, ts=datetime.date(2013, 1, 1),
+                note="1 USD = 1.20 CAD")
+        usd = exchange.convert(120, TradePath(Cy.CAD, Cy.CAD, Cy.USD))
+
+        lhs, rhs, st = ldgr.equation
+        self.assertEqual(lhs, rhs)
+        self.assertIs(st, Status.ok)
+
 
 if __name__ == "__main__":
     unittest.main()
