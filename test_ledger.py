@@ -137,7 +137,7 @@ class Ledger(object):
         The columns are recalculated (but not committed) against the new
         exchange rates.
 
-        This method with generate a sequence of 3-tuples;
+        This method will generate a sequence of 3-tuples;
         `(TradeGain, Column, Exchange)`.
 
         This output is compatible with the arguments accepted by the `commit`
