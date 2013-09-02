@@ -426,9 +426,9 @@ class CurrencyTests(unittest.TestCase):
         self.assertEqual(155, ldgr.value("Canadian cash"))
 
         # row five
-        ldgr.commit(-20, cols["Canadian cash"])
+        ldgr.commit(-20, cols["Canadian cash"], note="Buy food")
         self.assertIs(ldgr.equation.status, Status.failed)
-        ldgr.commit(20, cols["Expense"])
+        ldgr.commit(20, cols["Expense"], note="Buy food")
         self.assertIs(ldgr.equation.status, Status.ok)
 
         # final balance 
