@@ -25,6 +25,7 @@ from tallywallet.common.exchange import Exchange
 from tallywallet.common.trade import TradeGain
 from tallywallet.common.trade import TradePath
 
+
 class ExchangeTests(unittest.TestCase):
 
     def test_conversion(self):

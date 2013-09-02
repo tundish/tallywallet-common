@@ -21,6 +21,7 @@ from decimal import Decimal as Dl
 from tallywallet.common.trade import TradeFees
 from tallywallet.common.trade import TradeGain
 
+
 def convert(self, val, path, fees=TradeFees(0, 0)):
     work = (val - fees.rcv) * self.get((path.rcv, path.work))
     rv = work * self.get((path.work, path.out)) - fees.out

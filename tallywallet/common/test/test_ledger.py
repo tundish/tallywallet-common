@@ -28,6 +28,7 @@ from tallywallet.common.ledger import Role
 from tallywallet.common.ledger import Status
 from tallywallet.common.trade import TradePath
 
+
 class LedgerTests(unittest.TestCase):
 
     def test_track_exchange_gain_with_fixed_assets(self):
@@ -110,9 +111,7 @@ class LedgerTests(unittest.TestCase):
             Column("Expense", Cy.CAD, Role.expense),
             ref=Cy.CAD)
 
-        # references to important columns
         cols = ldgr.columns
-
         self.assertIs(Status.failed, ldgr.equation.status)
 
         # row one

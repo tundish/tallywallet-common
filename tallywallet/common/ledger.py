@@ -27,6 +27,7 @@ from tallywallet.common.currency import Currency
 from tallywallet.common.exchange import Exchange
 from tallywallet.common.trade import TradePath
 
+
 @enum.unique
 class Status(enum.Enum):
     ok = "OK"
@@ -38,18 +39,13 @@ class Status(enum.Enum):
 
 
 class Role(enum.Enum):
-    asset = ()
-    liability = ()
-    capital = ()
-    income = ()
-    trading = ()
-    expense = ()
+    asset = 1
+    liability = 2
+    capital = 3
+    income = 4
+    trading = 5
+    expense = 6
 
-    def __new__(cls):
-        value = len(cls.__members__) + 1
-        obj = object.__new__(cls)
-        obj._value_ = value
-        return obj
 
 Column = namedtuple("LedgerColumn", ["name", "currency", "role"])
 FAE = namedtuple("FundamentalAccountingEquation", ["lhs", "rhs", "status"])
@@ -133,7 +129,6 @@ class Ledger(object):
         """
         cols = cols or [i for i in self.columns.values()
                         if not i.role is Role.trading]
-        exchange.update({(c, c): Dl(1.0) for c in self._tradingAccounts})
         for c in cols:
             account = self._tradingAccounts[c.currency]
             trade = exchange.trade(
