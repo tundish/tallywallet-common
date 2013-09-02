@@ -407,7 +407,6 @@ class CurrencyTests(unittest.TestCase):
         ldgr.commit(cad, cols["Expense"])
         self.assertIs(ldgr.equation.status, Status.ok)
 
-
         # row four
         exchange = Exchange({(Cy.USD, Cy.CAD): Dl("1.25")})
         for args in ldgr.speculate(exchange):
@@ -422,7 +421,7 @@ class CurrencyTests(unittest.TestCase):
         self.assertIs(ldgr.equation.status, Status.failed)
         ldgr.commit(cad, cols["Canadian cash"])
         self.assertIs(ldgr.equation.status, Status.ok)
-        
+
         self.assertEqual(155, ldgr.value("Canadian cash"))
 
         # row five
@@ -431,7 +430,7 @@ class CurrencyTests(unittest.TestCase):
         ldgr.commit(20, cols["Expense"], note="Buy food")
         self.assertIs(ldgr.equation.status, Status.ok)
 
-        # final balance 
+        # final balance
         self.assertEqual(135, ldgr.value("Canadian cash"))
         self.assertEqual(0, ldgr.value("US cash"))
         self.assertEqual(200, ldgr.value("Capital"))
