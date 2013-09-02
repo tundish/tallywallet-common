@@ -378,7 +378,7 @@ class CurrencyTests(unittest.TestCase):
         exchange = Exchange({(Cy.USD, Cy.CAD): Dl("1.2")})
         for args in ldgr.speculate(exchange):
             ldgr.commit(
-                *args, ts=datetime.date(2013, 1, 1),
+                *args, ts=datetime.date(2013, 1, 2),
                 note="1 USD = 1.20 CAD")
 
         lhs, rhs, st = ldgr.equation
@@ -386,10 +386,57 @@ class CurrencyTests(unittest.TestCase):
         self.assertIs(st, Status.ok)
 
         usd = exchange.convert(120, TradePath(Cy.CAD, Cy.CAD, Cy.USD))
-        ldgr.commit(-120, cols["Canadian cash"])
-        ldgr.commit(usd, cols["US cash"])
         self.assertEqual(100, usd)
+        ldgr.commit(-120, cols["Canadian cash"])
+        self.assertIs(ldgr.equation.status, Status.failed)
+        ldgr.commit(usd, cols["US cash"])
+        self.assertIs(ldgr.equation.status, Status.ok)
 
+        # row three
+        exchange = Exchange({(Cy.USD, Cy.CAD): Dl("1.3")})
+        for args in ldgr.speculate(exchange):
+            ldgr.commit(
+                *args, ts=datetime.date(2013, 1, 3),
+                note="1 USD = 1.30 CAD")
+        cad = exchange.convert(40, TradePath(Cy.USD, Cy.CAD, Cy.CAD))
+        self.assertEqual(52, cad)
+
+        self.assertIs(ldgr.equation.status, Status.ok)
+        ldgr.commit(-40, cols["US cash"])
+        self.assertIs(ldgr.equation.status, Status.failed)
+        ldgr.commit(cad, cols["Expense"])
+        self.assertIs(ldgr.equation.status, Status.ok)
+
+
+        # row four
+        exchange = Exchange({(Cy.USD, Cy.CAD): Dl("1.25")})
+        for args in ldgr.speculate(exchange):
+            ldgr.commit(
+                *args, ts=datetime.date(2013, 1, 5),
+                note="1 USD = 1.25 CAD")
+        cad = exchange.convert(60, TradePath(Cy.USD, Cy.CAD, Cy.CAD))
+        self.assertEqual(75, cad)
+
+        self.assertIs(ldgr.equation.status, Status.ok)
+        ldgr.commit(-60, cols["US cash"])
+        self.assertIs(ldgr.equation.status, Status.failed)
+        ldgr.commit(cad, cols["Canadian cash"])
+        self.assertIs(ldgr.equation.status, Status.ok)
+        
+        self.assertEqual(155, ldgr.value("Canadian cash"))
+
+        # row five
+        ldgr.commit(-20, cols["Canadian cash"])
+        self.assertIs(ldgr.equation.status, Status.failed)
+        ldgr.commit(20, cols["Expense"])
+        self.assertIs(ldgr.equation.status, Status.ok)
+
+        # final balance 
+        self.assertEqual(135, ldgr.value("Canadian cash"))
+        self.assertEqual(0, ldgr.value("US cash"))
+        self.assertEqual(200, ldgr.value("Capital"))
+        self.assertEqual(72, ldgr.value("Expense"))
+        self.assertEqual(7, ldgr.value("USD trading account"))
 
 if __name__ == "__main__":
     unittest.main()
