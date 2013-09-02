@@ -3,6 +3,16 @@
 ..  Titling
     ##++::==~~--''``
 
+Installation
+::::::::::::
+
+::
+
+    python3.4 setup.py install
+    python3.4 -m unittest discover tallywallet
+
+Notes
+:::::
 W
 M
 
