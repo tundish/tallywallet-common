@@ -20,10 +20,10 @@ from decimal import Decimal as Dl
 import functools
 import unittest
 
-from currency import Currency as Cy
-from exchange import Exchange
-from trade import TradeGain
-from trade import TradePath
+from tallywallet.common.currency import Currency as Cy
+from tallywallet.common.exchange import Exchange
+from tallywallet.common.trade import TradeGain
+from tallywallet.common.trade import TradePath
 
 class ExchangeTests(unittest.TestCase):
 
