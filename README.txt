@@ -11,6 +11,11 @@ Installation
     python3.4 setup.py install
     python3.4 -m unittest discover tallywallet
 
+Issues
+::::::
+
+https://www.assembla.com/spaces/tallywallet/tickets
+
 Notes
 :::::
 W
