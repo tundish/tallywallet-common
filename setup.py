@@ -41,6 +41,12 @@ setup(
     namespace_packages=["tallywallet"],
     packages=["tallywallet.common"],
     package_data={"tallywallet.common": [
+                    "doc/*.rst",
+                    "doc/_templates/*.css",
+                    "doc/html/*.html",
+                    "doc/html/*.js",
+                    "doc/html/_sources/*",
+                    "doc/html/_static/*",
                     ]},
     install_requires=[],
     entry_points={

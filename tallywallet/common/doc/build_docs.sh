@@ -20,8 +20,9 @@ echoerr "Installing package to $PYENV ..."
 $PYENV/bin/python3 setup.py install > /dev/null
 
 echoerr "Building project documentation ..."
-$PYENV/bin/sphinx-build -c $PARENT/tallywallet-common/tallywallet/common/doc \
+$PYENV/bin/sphinx-build -b html \
+    -c $PARENT/tallywallet-common/tallywallet/common/doc \
     $PARENT/tallywallet-common/tallywallet/common/doc \
-    $PARENT/tallywallet-common/tallywallet/common/doc/_build
+    $PARENT/tallywallet-common/tallywallet/common/doc/html
 
 
