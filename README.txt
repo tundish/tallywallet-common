@@ -13,22 +13,33 @@ Tallywallet is a very young project. This release contains the following:
 
 * A Ledger class for double-entry accounting
 * An Exchange class to enable currency trading
-* `Pre-hoc` calculation of exchange rates on currency trading accounts
+* `Pre-hoc` calculation of exchange rate gains on currency trading accounts
 * Evaluation of the Fundamental Accounting Equation to verify balanced accounts
 
-Installation
+Requirements
 ::::::::::::
 
-Tallywallet requires Python 3.4. It uses setuptools for installation, but
+Tallywallet requires Python 3.4. It uses setuptools_ for installation, but
 has no external runtime dependencies.
 
-You may have to compile Python 3.4 yourself if it is not yet available from
-your package repository.::
+You may have to `compile Python 3.4`_ yourself if it is not yet available from
+your package repository.
 
-    tar -xzvf tallywallet-common-0.001.tar.gz
-    python3.4 -m unittest discover tallywallet
+Quick start
+:::::::::::
 
-    python3.4 setup.py install
+Download and unpack the source distribution::
+
+    $ tar -xzvf tallywallet-common-0.001.tar.gz
+    $ cd tallywallet-common-0.001
+
+Run the tests::
+
+    $ python3.4 -m unittest discover tallywallet
+
+Consult the documentation::
+
+    $ firefox tallywallet/common/doc/html/index.html
 
 Roadmap
 :::::::
@@ -43,15 +54,25 @@ The API may change significantly as the project proceeds. At this early stage,
 you should only use the latest release, which may not be compatible with
 previous versions.
 
-If you think it lacks a feature, you can help drive development by describing
-your Use Case
+Next release
+============
 
-.. _GNU Affero General Public License: http://www.gnu.org/licenses/agpl-3.0.html
-https://www.assembla.com/spaces/tallywallet/tickets
-http://www.python.org/download/source/
+The next release will focus on serialising/deserialising transactions.
+
+Can you help?
+=============
+
+* If you've spotted a bug in Tallywallet, please let us know so we can fix it.
+* If you think Tallywallet lacks a feature, you can help drive development by describing
+  your Use Case.
+
+In either event, please leave a message on the project's `message board`_.
+
 
 :Author: D Haynes
 :Copyright: 2013 Thuswise Ltd
 
-
-..  _Tutorial on multiple currency accounting: http://www.mscs.dal.ca/~selinger/accounting/
+.. _setuptools: https://pypi.python.org/pypi/setuptools
+.. _compile Python 3.4: http://www.python.org/download/source/
+.. _GNU Affero General Public License: http://www.gnu.org/licenses/agpl-3.0.html
+.. _message board: https://www.assembla.com/spaces/tallywallet/messages
