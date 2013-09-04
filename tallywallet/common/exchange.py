@@ -21,6 +21,9 @@ from decimal import Decimal as Dl
 from tallywallet.common.trade import TradeFees
 from tallywallet.common.trade import TradeGain
 
+__doc__ = """
+Dooobeedooo.
+"""
 
 def convert(self, val, path, fees=TradeFees(0, 0)):
     work = (val - fees.rcv) * self.get((path.rcv, path.work))
@@ -50,3 +53,6 @@ def infer_rate(self, key):
 
 Exchange = type("Exchange", (dict,),
                 {"convert": convert, "trade": trade, "get": infer_rate})
+Exchange.__doc__ = """
+An exchange is a lookup container for currency exchange rates.
+"""

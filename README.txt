@@ -3,7 +3,7 @@
 
 Tallywallet helps Engineers understand Money and Banking.
 
-You can use it to create economic simulations, or to provide your applications
+You can use it to create economic simulations, or to enable your applications
 with currency exchange and accounting features.
 
 This release
