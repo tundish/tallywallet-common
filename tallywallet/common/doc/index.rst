@@ -8,7 +8,7 @@ Tallywallet - a Money Framework in Python
 
 
 .. toctree::
-   :maxdepth: 2
+   :maxdepth: 1
 
    api
 
