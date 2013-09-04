@@ -70,7 +70,7 @@ Jan 2
 =====
 
 Let's apply the initial currency exchange rate. We do that by instantiating an
-Exchange object, and creating a set of trades to apply to our ledger::
+Exchange object, and creating a sequence of trades to apply to our ledger::
 
     exchange = Exchange({(Cy.USD, Cy.CAD): Dl("1.2")})
     for args in ldgr.speculate(exchange):
@@ -97,9 +97,9 @@ And now, ``ldgr.equation.status`` will evaluate to ``Status.ok``.
 Jan 3
 =====
 
-Our book holds both American and Canadian dollars, so it's exposed to changes
-in the exchange rate. On 3rd January, you can get $1.30 Canadian for one
-American greenback. Let's apply that to our ledger::
+Our book holds both American and Canadian dollars, so it's exposed to
+fluctuations in the exchange rate. On 3rd January, you can get $1.30 Canadian
+for one American greenback. Let's apply that to our ledger::
 
     exchange = Exchange({(Cy.USD, Cy.CAD): Dl("1.3")})
     for args in ldgr.speculate(exchange):
@@ -116,16 +116,16 @@ a calculation to determine how much to deduct from there::
 
 And so::
 
-    ldgr.commit(-40, cols["US cash"])
-    ldgr.commit(cad, cols["Expense"])
+    ldgr.commit(-40, ldgr.columns["US cash"])
+    ldgr.commit(cad, ldgr.columns["Expense"])
 
 Jan 5
 =====
 
-The exchange rate shifts in favour of the Canadian dollar today. We don't make
-any purchases, but we do change all our US dollars back to Canadian. So there
-should be no change to the right hand side of our ledger, only movement of our
-assets on the left.
+The exchange rate shifts a bit today in favour of the Canadian dollar. We don't
+make any purchases, but we do convert all our US dollars back to Canadian. So
+there should be no change to the right hand side of our ledger, only movement
+of our assets on the left.
 
 First we apply the new rate::
 
@@ -135,14 +135,29 @@ First we apply the new rate::
             *args, ts=datetime.date(2013, 1, 5),
             note="1 USD = 1.25 CAD")
 
-... and work out how much our US dollars are now worth::
+... then work out how much our US dollars are worth::
 
     usd = ldgr.value("US cash")
     cad = exchange.convert(usd, TradePath(Cy.USD, Cy.CAD, Cy.CAD))
 
-... and commit that to our book::
+... and finish by committing that to our book::
 
-    ldgr.commit(-usd, cols["US cash"])
-    ldgr.commit(cad, cols["Canadian cash"])
+    ldgr.commit(-usd, ldgr.columns["US cash"])
+    ldgr.commit(cad, ldgr.columns["Canadian cash"])
+
+Jan 7
+=====
+
+We are now back in Canada but stuck in the airport waiting for our transfer
+home. We want food. So we cough up twenty dollars for a nasty burger and a
+bottle of fizzy beer. Here's the transaction for that::
+
+    ldgr.commit(-20, cols["Canadian cash"], note="Buy food")
+    ldgr.commit(20, cols["Expense"], note="Buy food")
+
+How much money do we have left? ``ldgr.value("Canadian cash")`` says $135.00.
+Looking at the other columns it seems we spent CAD 72.00 during our trip. We
+accidentally made CAD 7.00 due to the fluctuations in the exchange rate while
+we were away.
 
 ..  _Peter Selinger's tutorial: http://www.mscs.dal.ca/~selinger/accounting/
