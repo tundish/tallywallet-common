@@ -22,10 +22,15 @@ from tallywallet.common.trade import TradeFees
 from tallywallet.common.trade import TradeGain
 
 __doc__ = """
-Dooobeedooo.
+The exchange module contains functionality to enable conversion between
+currencies.
 """
 
 def convert(self, val, path, fees=TradeFees(0, 0)):
+    """
+    Return the calculated outcome of converting the amount `val`
+    via the TradePath_ `path`.
+    """
     work = (val - fees.rcv) * self.get((path.rcv, path.work))
     rv = work * self.get((path.work, path.out)) - fees.out
     return rv
@@ -55,4 +60,13 @@ Exchange = type("Exchange", (dict,),
                 {"convert": convert, "trade": trade, "get": infer_rate})
 Exchange.__doc__ = """
 An exchange is a lookup container for currency exchange rates.
+
+It behaves just like a Python dictionary, but has some extra methods.
+Note that get_ is overridden.
+
+The approach Tallywallet uses is to associate each rate against a key
+which is a 2-tuple of Currency_.
+By convention, the first element of this key is the source currency,
+and the second is the destination. The values of the exchange mapping can
+therefore be considered as `gain` from one currency to the next. 
 """

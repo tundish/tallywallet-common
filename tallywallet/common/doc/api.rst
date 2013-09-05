@@ -4,6 +4,21 @@
 Programming API
 :::::::::::::::
 
+Currency
+========
+
+.. automodule:: tallywallet.common.currency
+   :members: Currency
+
+Trade
+=====
+
+.. automodule:: tallywallet.common.trade
+   :members: TradePath
+
+Exchange
+========
+
 .. automodule:: tallywallet.common.exchange
    :members: Exchange
 
