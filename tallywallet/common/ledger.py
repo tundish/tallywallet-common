@@ -27,6 +27,9 @@ from tallywallet.common.currency import Currency
 from tallywallet.common.exchange import Exchange
 from tallywallet.common.trade import TradePath
 
+__doc__  = """
+The ledger module defines Ledger_ and some associated classes.
+"""
 
 @enum.unique
 class Status(enum.Enum):
@@ -52,7 +55,10 @@ FAE = namedtuple("FundamentalAccountingEquation", ["lhs", "rhs", "status"])
 
 
 class Ledger(object):
-
+    """
+    This class implements the fundamental operations you need to perform
+    Adjusted Cost Base accounting.
+    """
     def __init__(self, *args, ref=Currency.XTW):
         self.ref = ref
         self._cols = list(args)
