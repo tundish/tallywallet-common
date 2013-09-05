@@ -29,14 +29,23 @@ currencies.
 def convert(self, val, path, fees=TradeFees(0, 0)):
     """
     Return the calculated outcome of converting the amount `val`
-    via the TradePath_ `path`.
+    via the TradePath `path`.
     """
     work = (val - fees.rcv) * self.get((path.rcv, path.work))
     rv = work * self.get((path.work, path.out)) - fees.out
     return rv
 
 
-def trade(self, val, path, prior=None, fees=TradeFees(0, 0)):
+def gain(self, val, path, prior=None, fees=TradeFees(0, 0)):
+    """
+    Calculate the gain related to a change in exchange rates.
+    The `self` object contains the latest rates, and the historic
+    ones are passed as an argument to this method.
+ 
+    :param prior: An Exchange_ object which contains the rates
+                  existing prior to those in the `self` object.
+    :rtype: TradeGain
+    """
     prior = prior or self
     this = self.convert(val, path, fees)
     that = prior.convert(val, path, fees)
@@ -57,16 +66,26 @@ def infer_rate(self, key):
                 raise err
 
 Exchange = type("Exchange", (dict,),
-                {"convert": convert, "trade": trade, "get": infer_rate})
+                {"convert": convert, "gain": gain, "get": infer_rate})
 Exchange.__doc__ = """
 An exchange is a lookup container for currency exchange rates.
 
 It behaves just like a Python dictionary, but has some extra methods.
-Note that get_ is overridden.
 
 The approach Tallywallet uses is to associate each rate against a key
 which is a 2-tuple of Currency_.
 By convention, the first element of this key is the source currency,
 and the second is the destination. The values of the exchange mapping can
-therefore be considered as `gain` from one currency to the next. 
+therefore be considered as `gain` from one currency to the next.
+
+.. py:method:: get(key)
+
+   Return the value stored against `key`.
+
+   This method overrides the standard behaviour of `dict.get`. It infers the
+   values of missing keys as follows:
+
+    * The rate of a currency against itself is unity.
+    * The rate of one currency against another is the reciprocal of the
+      inverse rate (if defined).
 """

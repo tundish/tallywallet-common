@@ -131,7 +131,7 @@ class Ledger(object):
                         if not i.role is Role.trading]
         for c in cols:
             account = self._tradingAccounts[c.currency]
-            trade = exchange.trade(
+            trade = exchange.gain(
                 self._tally[c],
                 path=TradePath(c.currency, self.ref, self.ref),
                 prior=self._rates.get(c))

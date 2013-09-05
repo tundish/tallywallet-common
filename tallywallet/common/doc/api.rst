@@ -13,14 +13,23 @@ Currency
 Trade
 =====
 
-.. automodule:: tallywallet.common.trade
-   :members: TradePath
+.. autoclass:: tallywallet.common.trade.TradePath
+   :member-order: bysource
+
+.. autoclass:: tallywallet.common.trade.TradeGain
+   :member-order: bysource
 
 Exchange
 ========
 
 .. automodule:: tallywallet.common.exchange
    :members: Exchange
+
+Ledger
+======
+
+.. automodule:: tallywallet.common.ledger
+   :members: Ledger
 
 Example
 :::::::

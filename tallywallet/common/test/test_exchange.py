@@ -42,7 +42,7 @@ class ExchangeTests(unittest.TestCase):
             (Cy.GBP, Cy.GBP): Dl(1)
         })
         trader = functools.partial(
-            exchange.trade, path=TradePath(Cy.GBP, Cy.GBP, Cy.GBP))
+            exchange.gain, path=TradePath(Cy.GBP, Cy.GBP, Cy.GBP))
 
         rv = trader(Dl(0))
         self.assertIsInstance(rv, TradeGain)
@@ -60,7 +60,7 @@ class ExchangeTests(unittest.TestCase):
             (Cy.GBP, Cy.USD): Dl("1.90")
         })
 
-        trade = now.trade(
+        trade = now.gain(
             10, path=TradePath(Cy.GBP, Cy.GBP, Cy.USD), prior=then)
         self.assertEqual(10, trade.rcv)
         self.assertEqual(3.5, trade.gain)
