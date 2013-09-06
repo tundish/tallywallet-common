@@ -34,7 +34,8 @@ setup(
     long_description=__doc__,
     classifiers=[
         "Operating System :: OS Independent",
-        "Programming Language :: Python :: 3.4",
+        #"Programming Language :: Python :: 3.4",
+        "Programming Language :: Python :: 3",
         "License :: OSI Approved :: GNU Affero General Public License v3"
         " or later (AGPLv3+)"
     ],
