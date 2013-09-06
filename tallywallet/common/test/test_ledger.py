@@ -46,7 +46,7 @@ class LedgerTests(unittest.TestCase):
             Column("Capital", Cy.CAD, Role.capital),
             ref=Cy.CAD)
         usC = ldgr.columns["US cash"]
-        for args in ldgr.speculate(
+        for args in ldgr.adjustments(
             Exchange({(Cy.USD, Cy.CAD): Dl("1.2")})
         ):
             ldgr.commit(
@@ -68,19 +68,19 @@ class LedgerTests(unittest.TestCase):
         self.assertEqual(lhs, rhs)
         self.assertIs(st, Status.ok)
 
-        trade, col, exchange = next(ldgr.speculate(
+        trade, col, exchange = next(ldgr.adjustments(
             Exchange({(Cy.USD, Cy.CAD): Dl("1.3")}),
             [usC]))
         self.assertIs(col, usC)
         self.assertEqual(10, trade.gain)
 
-        trade, col, exchange = next(ldgr.speculate(
+        trade, col, exchange = next(ldgr.adjustments(
             Exchange({(Cy.USD, Cy.CAD): Dl("1.25")}),
             [usC]))
         self.assertIs(col, usC)
         self.assertEqual(5, trade.gain)
 
-        trade, col, exchange = next(ldgr.speculate(
+        trade, col, exchange = next(ldgr.adjustments(
             Exchange({(Cy.USD, Cy.CAD): Dl("1.15")}),
             [usC]))
         self.assertIs(col, usC)
@@ -129,7 +129,7 @@ class LedgerTests(unittest.TestCase):
 
         # row two
         exchange = Exchange({(Cy.USD, Cy.CAD): Dl("1.2")})
-        for args in ldgr.speculate(exchange):
+        for args in ldgr.adjustments(exchange):
             ldgr.commit(
                 *args, ts=datetime.date(2013, 1, 2),
                 note="1 USD = 1.20 CAD")
@@ -147,7 +147,7 @@ class LedgerTests(unittest.TestCase):
 
         # row three
         exchange = Exchange({(Cy.USD, Cy.CAD): Dl("1.3")})
-        for args in ldgr.speculate(exchange):
+        for args in ldgr.adjustments(exchange):
             ldgr.commit(
                 *args, ts=datetime.date(2013, 1, 3),
                 note="1 USD = 1.30 CAD")
@@ -162,7 +162,7 @@ class LedgerTests(unittest.TestCase):
 
         # row four
         exchange = Exchange({(Cy.USD, Cy.CAD): Dl("1.25")})
-        for args in ldgr.speculate(exchange):
+        for args in ldgr.adjustments(exchange):
             ldgr.commit(
                 *args, ts=datetime.date(2013, 1, 5),
                 note="1 USD = 1.25 CAD")

@@ -27,9 +27,10 @@ from tallywallet.common.currency import Currency
 from tallywallet.common.exchange import Exchange
 from tallywallet.common.trade import TradePath
 
-__doc__  = """
-The ledger module defines Ledger_ and some associated classes.
+__doc__ = """
+The ledger module defines Ledger and some associated classes.
 """
+
 
 @enum.unique
 class Status(enum.Enum):
@@ -42,6 +43,10 @@ class Status(enum.Enum):
 
 
 class Role(enum.Enum):
+    """
+    This enumeration contains definitions for the roles played by
+    a column in a Ledger.
+    """
     asset = 1
     liability = 2
     capital = 3
@@ -50,7 +55,12 @@ class Role(enum.Enum):
     expense = 6
 
 
-Column = namedtuple("LedgerColumn", ["name", "currency", "role"])
+Column = namedtuple("Column", ["name", "currency", "role"])
+Column.__doc__ = """`{}`
+
+A 3-tuple, describing a column in a Ledger.
+""".format(Column.__doc__)
+
 FAE = namedtuple("FundamentalAccountingEquation", ["lhs", "rhs", "status"])
 
 
@@ -60,6 +70,10 @@ class Ledger(object):
     Adjusted Cost Base accounting.
     """
     def __init__(self, *args, ref=Currency.XTW):
+        """
+        :param ref: (optional) the base Currency_ type for the Ledger
+        :param args: One or more Column objects
+        """
         self.ref = ref
         self._cols = list(args)
         self._cols.extend(
@@ -81,15 +95,19 @@ class Ledger(object):
     @property
     def equation(self):
         """
-        Evaluates the Fundamental Accounting Equation::
+        The `Fundamental Accounting Equation` is this::
 
             Assets - Liabilities = Capital + Income - Expenses
 
-        hence::
+        (currency trading gains are counted as income).
+        For practical purposes, it is often rearranged to be::
 
             Assets + Expenses = Capital + Income + Liabilities
 
-        Currency trading gains are counted as income.
+        This property evaluates both sides of this second equation,
+        and determines if they are equal or not.
+
+        :returns: A tuple of `lhs`, `rhs`, `status`
         """
         st = Status.failed
         lhCols = set(i for i in self._cols
@@ -117,9 +135,9 @@ class Ledger(object):
 
         return FAE(lhs, rhs, st)
 
-    def speculate(self, exchange, cols=None):
+    def adjustments(self, exchange, cols=None):
         """
-        Calculates the effect of a change in exchange rates.
+        Calculates the effects of a change in exchange rates.
 
         Supply an Exchange object and an optional sequence of columns.
         If no columns are specified then all are assumed.
@@ -147,9 +165,9 @@ class Ledger(object):
         """
         Applies a trade to the ledger.
 
-        If you supply an exchange rate, `trade` may be a TradeGain object.
-        In this usage, a trading account in the currency of the ledger
-        column will accept any exchange gain or loss.
+        If you supply an exchange argument, `trade` may be a TradeGain
+        object. In this usage, a trading account in the currency of the
+        ledger column will accept any exchange gain or loss.
 
         Otherwise, `trade` should be a number. It will be added to the
         specified column in the ledger.
@@ -168,5 +186,10 @@ class Ledger(object):
         return (trade, col, exchange, kwargs, st)
 
     def value(self, name):
+        """
+        Returns the current value of a column in the ledger.
+
+        :param name: The name of the column
+        """
         col = next(i for i in self._cols if i.name == name)
         return self._tally[col]

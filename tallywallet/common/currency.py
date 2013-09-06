@@ -23,13 +23,14 @@ The currency module defines currencies of various types. As of this
 release, there are only a handful yet defined.
 """
 
+
 @enum.unique
 class Currency(enum.Enum):
     """
     This is an enumeration class which captures the codes defined in
     `ISO 4217`_ for international currencies.
 
-    .. _ISO 4217: http://en.wikipedia.org/wiki/ISO_4217 
+    .. _ISO 4217: http://en.wikipedia.org/wiki/ISO_4217
     """
     CAD = 124
     USD = 840

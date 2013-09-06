@@ -26,6 +26,7 @@ The exchange module contains functionality to enable conversion between
 currencies.
 """
 
+
 def convert(self, val, path, fees=TradeFees(0, 0)):
     """
     Return the calculated outcome of converting the amount `val`
@@ -41,7 +42,7 @@ def gain(self, val, path, prior=None, fees=TradeFees(0, 0)):
     Calculate the gain related to a change in exchange rates.
     The `self` object contains the latest rates, and the historic
     ones are passed as an argument to this method.
- 
+
     :param prior: An Exchange_ object which contains the rates
                   existing prior to those in the `self` object.
     :rtype: TradeGain
@@ -87,5 +88,5 @@ therefore be considered as `gain` from one currency to the next.
 
     * The rate of a currency against itself is unity.
     * The rate of one currency against another is the reciprocal of the
-      inverse rate (if defined).
+      reverse rate (if defined).
 """

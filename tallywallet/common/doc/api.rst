@@ -29,7 +29,14 @@ Ledger
 ======
 
 .. automodule:: tallywallet.common.ledger
-   :members: Ledger
+   :members: Role
+
+.. autoclass:: tallywallet.common.ledger.Column
+   :member-order: bysource
+
+.. autoclass:: tallywallet.common.ledger.Ledger
+   :members:
+   :member-order: bysource
 
 Example
 :::::::
@@ -40,7 +47,7 @@ which comprise both actual expenses and incurred gains/losses due to variations
 in currency rates.
 
 The scenario is a brief trip from Canada to the USA, which requires buying US
-dollars, spending some, enduring exchange rate fluctuations, and changing back
+dollars, spending some during exchange rate fluctuations, and changing back
 to Canadian money at the end.
 
 =====   =============== ======= ======= ======= ======= ===============
@@ -62,6 +69,8 @@ Throughout, we'll assume this boilerplate::
     import datetime
     from decimal import Decimal as Dl
     from tallywallet.common.currency import Currency as Cy
+    from tallywallet.common.ledger import Ledger
+    from tallywallet.common.ledger import Role
 
 Jan 1
 =====
@@ -97,7 +106,7 @@ Let's apply the initial currency exchange rate. We do that by instantiating an
 Exchange object, and creating a sequence of trades to apply to our ledger::
 
     exchange = Exchange({(Cy.USD, Cy.CAD): Dl("1.2")})
-    for args in ldgr.speculate(exchange):
+    for args in ldgr.adjustments(exchange):
         ldgr.commit(
             *args, ts=datetime.date(2013, 1, 2),
             note="1 USD = 1.20 CAD")
@@ -126,7 +135,7 @@ fluctuations in the exchange rate. On 3rd January, you can get $1.30 Canadian
 for one American greenback. Let's apply that to our ledger::
 
     exchange = Exchange({(Cy.USD, Cy.CAD): Dl("1.3")})
-    for args in ldgr.speculate(exchange):
+    for args in ldgr.adjustments(exchange):
         ldgr.commit(
             *args, ts=datetime.date(2013, 1, 3),
             note="1 USD = 1.30 CAD")
@@ -154,7 +163,7 @@ of our assets on the left.
 First we apply the new rate::
 
     exchange = Exchange({(Cy.USD, Cy.CAD): Dl("1.25")})
-    for args in ldgr.speculate(exchange):
+    for args in ldgr.adjustments(exchange):
         ldgr.commit(
             *args, ts=datetime.date(2013, 1, 5),
             note="1 USD = 1.25 CAD")
