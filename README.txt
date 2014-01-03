@@ -6,10 +6,10 @@ Tallywallet helps Engineers understand Money and Banking.
 You can use it to create economic simulations, or to enable your applications
 with currency exchange and accounting features.
 
-This release
+This package
 ::::::::::::
 
-Tallywallet is a very young project. This release contains the following:
+Tallywallet is a very young project. This package contains the following:
 
 * A Ledger class for double-entry accounting
 * An Exchange class to enable currency trading
