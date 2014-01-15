@@ -16,6 +16,13 @@ Issues
 
 https://www.assembla.com/spaces/tallywallet/tickets
 
+Tasks
+:::::
+
+* Serialise to JSON
+* Integrate debunking example
+* Consider graphing approach
+
 Notes
 :::::
 W

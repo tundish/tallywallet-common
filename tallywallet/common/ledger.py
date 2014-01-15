@@ -183,6 +183,11 @@ class Ledger(object):
                 self._tally[col] += trade
             else:
                 st = Status.error
+
+        output = OrderedDict(kwargs)
+        output.update({c.name: v for c, v in self._tally.items()})
+        self._transactions.append(output)
+
         return (trade, col, exchange, kwargs, st)
 
     def value(self, name):
