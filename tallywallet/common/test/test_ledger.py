@@ -191,7 +191,7 @@ class LedgerTests(unittest.TestCase):
         self.assertEqual(7, ldgr.value("USD trading account"))
 
     def test_serialise_columns(self):
-        import json
+        import rson
 
         def dump_decimal(obj):
             if isinstance(obj, Dl):
@@ -212,13 +212,17 @@ class LedgerTests(unittest.TestCase):
                 amount, col,
                 ts=datetime.date(2013, 1, 1), note="Opening balance")
 
-        for i in ldgr:
-            print(i)
-        print(json.dumps(
-            [i for i in ldgr],
-            default=dump_decimal))
         exchange = Exchange({(Cy.USD, Cy.CAD): Dl("1.25")})
-        print(json.dumps(exchange))
+        s = """
+# Metadata
+{}
+    Exchange:
+        name: bottom
+# Time series
+[]
+    [1,2]
+"""
+        print(rson.loads(s))
 
 if __name__ == "__main__":
     unittest.main()

@@ -50,6 +50,7 @@ setup(
                     "doc/html/_static/*",
                     ]},
     install_requires=[],
+    tests_require=["rson>=0.9"],
     entry_points={
         "console_scripts": [
         ],
