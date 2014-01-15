@@ -190,39 +190,6 @@ class LedgerTests(unittest.TestCase):
         self.assertEqual(72, ldgr.value("Expense"))
         self.assertEqual(7, ldgr.value("USD trading account"))
 
-    def test_serialise_columns(self):
-        import rson
-
-        def dump_decimal(obj):
-            if isinstance(obj, Dl):
-                return float(obj)
-            raise TypeError
-
-        ldgr = Ledger(
-            Column("Canadian cash", Cy.CAD, Role.asset),
-            Column("US cash", Cy.USD, Role.asset),
-            Column("Capital", Cy.CAD, Role.capital),
-            Column("Expense", Cy.CAD, Role.expense),
-            ref=Cy.CAD)
-
-        for amount, col in zip(
-            (Dl(200), Dl(0), Dl(200), Dl(0)), ldgr.columns.values()
-        ):
-            ldgr.commit(
-                amount, col,
-                ts=datetime.date(2013, 1, 1), note="Opening balance")
-
-        exchange = Exchange({(Cy.USD, Cy.CAD): Dl("1.25")})
-        s = """
-# Metadata
-{}
-    Exchange:
-        name: bottom
-# Time series
-[]
-    [1,2]
-"""
-        print(rson.loads(s))
 
 if __name__ == "__main__":
     unittest.main()
