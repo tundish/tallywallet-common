@@ -15,6 +15,7 @@ Tallywallet is a very young project. This package contains the following:
 * An Exchange class to enable currency trading
 * `Pre-hoc` calculation of exchange rate gains on currency trading accounts
 * Evaluation of the Fundamental Accounting Equation to verify balanced accounts
+* A text format for saving Ledgers to file
 
 Requirements
 ::::::::::::
@@ -57,7 +58,8 @@ previous versions.
 Next release
 ============
 
-The next release will focus on serialising/deserialising transactions.
+The next release will provide an example of a macro-economic simulation using
+balanced accounting methods.
 
 Can you help?
 =============

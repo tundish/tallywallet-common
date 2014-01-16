@@ -18,8 +18,21 @@
 
 import tallywallet.common
 
+__doc__ = """
+Tallywallet has picked RSON_ as the serialisation format for a Ledger.
+It's a readable serial object notation which can be processed by text
+utilities or converted into Python objects.
+
+.. _RSON: http://code.google.com/p/rson/
+
+"""
+
 
 def metadata(ledger):
+    """
+    Create an RSON string containing all the metadata required to recreate
+    a working Ledger object.
+    """
     columns = ",\n".join(
         " "*12 + "[{0.name}, {0.currency.name}, {0.role.name}]".format(i)
         for i in ledger._cols)
@@ -38,6 +51,13 @@ def metadata(ledger):
 
 
 def transaction(ledger, **kwargs):
+    """
+    Create an RSON string representing the most recent transaction of
+    a Ledger object.
+
+    Transaction strings can be appended to metadata, and/or concatenated
+    to form a time-series record of the Ledger accounts.
+    """
     keys = sorted(kwargs.keys())
     keyargs = "\n".join(
         "{pad}{key}:\n{pad}    {val}".format(key=k, val=kwargs[k], pad=" "*4)

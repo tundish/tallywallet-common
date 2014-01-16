@@ -18,6 +18,7 @@ previous versions.
    :maxdepth: 1
 
    api
+   selinger
 
 * :ref:`search`
 * :ref:`genindex`
