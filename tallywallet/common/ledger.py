@@ -16,7 +16,6 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with tallywallet.  If not, see <http://www.gnu.org/licenses/>.
 
-from collections import deque
 from collections import namedtuple
 from collections import OrderedDict
 from decimal import Decimal as Dl
@@ -83,10 +82,6 @@ class Ledger(object):
             i.currency: i for i in self._cols if i.role is Role.trading}
         self._rates = {i: Exchange({}) for i in args}
         self._tally = OrderedDict((i, Dl(0)) for i in self._cols)
-        self._transactions = deque([], maxlen=200)
-
-    def __iter__(self):
-        return iter(self._transactions)
 
     @property
     def columns(self):
@@ -183,10 +178,6 @@ class Ledger(object):
                 self._tally[col] += trade
             else:
                 st = Status.error
-
-        output = OrderedDict(kwargs)
-        output.update({c.name: v for c, v in self._tally.items()})
-        self._transactions.append(output)
 
         return (trade, col, exchange, kwargs, st)
 

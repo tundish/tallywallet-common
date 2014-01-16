@@ -55,7 +55,11 @@ def metadata(ledger):
     ledger:columns:    [
 {cols}
         ]
-    ledger:ref: {}
+    ledger:ref: {ref}
 """
-    return template.format("pooo",
-        cols=columns, version=tallywallet.common.__version__)
+    return template.format(
+        cols=columns, ref=ledger.ref.name,
+        version=tallywallet.common.__version__)
+
+def transaction(ledger, **kwargs):
+    return ""

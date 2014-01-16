@@ -30,6 +30,7 @@ from tallywallet.common.ledger import Ledger
 from tallywallet.common.ledger import Role
 from tallywallet.common.ledger import Status
 from tallywallet.common.output import metadata
+from tallywallet.common.output import transaction
 from tallywallet.common.trade import TradePath
 
 
@@ -44,7 +45,6 @@ class OutputTests(unittest.TestCase):
             ref=Cy.CAD)
 
         m = metadata(ldgr)
-        print(m)
         out = rson.loads(m)
         self.assertEqual(2, len(out))
         self.assertIn("header", out[0])
@@ -56,6 +56,7 @@ class OutputTests(unittest.TestCase):
         self.assertIn("ledger", out[1])
         # Two columns are added by ledger for USD and CAD trading
         self.assertEqual(6, len(out[1]["ledger"]["columns"]))
+        self.assertEqual("CAD", out[1]["ledger"]["ref"])
 
     def test_serialise_transactions(self):
         ldgr = Ledger(
@@ -68,29 +69,11 @@ class OutputTests(unittest.TestCase):
         for amount, col in zip(
             (Dl(200), Dl(0), Dl(200), Dl(0)), ldgr.columns.values()
         ):
-            ldgr.commit(
+            (_, _, _, kwargs, st) = ldgr.commit(
                 amount, col,
                 ts=datetime.date(2013, 1, 1), note="Opening balance")
 
+        self.assertIs(Status.ok, st)
+        print(transaction(ldgr, **kwargs))
         exchange = Exchange({(Cy.USD, Cy.CAD): Dl("1.25")})
-        metadata = """
-# Metadata
-{}
-    Header:
-        version: 0.002
-{}
-    Ledger:
-        columns:    [
-            (Canadian cash, CAD, asset),
-            (US cash, USD, asset),
-            (Capital, CAD, capital),
-            (Expense, CAD, asset)
-        ]
-        ref: CAD
-"""
-
-        """
-# Time series
-[]
-    [1,2]
-"""
+        
