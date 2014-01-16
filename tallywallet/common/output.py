@@ -19,36 +19,11 @@
 import tallywallet.common
 
 
-
-template = """
-# Metadata
-{{}}
-    header:version: {version}
-{{}}
-    ledger:columns:    [
-            [Canadian cash, CAD, asset],
-            [US cash, USD, asset],
-            [Capital, CAD, capital],
-            [Expense, CAD, asset]
-        ]
-    ledger:ref: {}
-"""
-"""
-# Time series
-{{}}
-    note:
-        initial balance
-    ts:
-        2013-01-01
-[1,2,3]
-"""
-
 def metadata(ledger):
     columns = ",\n".join(
         " "*12 + "[{0.name}, {0.currency.name}, {0.role.name}]".format(i)
         for i in ledger._cols)
     template = """
-# Metadata
 {{}}
     header:version: {version}
 {{}}
@@ -60,6 +35,7 @@ def metadata(ledger):
     return template.format(
         cols=columns, ref=ledger.ref.name,
         version=tallywallet.common.__version__)
+
 
 def transaction(ledger, **kwargs):
     keys = sorted(kwargs.keys())

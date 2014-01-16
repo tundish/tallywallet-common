@@ -18,6 +18,7 @@
 
 import datetime
 from decimal import Decimal as Dl
+import io
 import unittest
 
 import rson
@@ -82,3 +83,45 @@ class OutputTests(unittest.TestCase):
             out[0])
         self.assertEqual(6, len(out[1]))
         self.assertEqual(400, sum(out[1]))
+
+    def test_output_sequential_transactions(self):
+        ldgr = Ledger(
+            Column("Canadian cash", Cy.CAD, Role.asset),
+            Column("US cash", Cy.USD, Role.asset),
+            Column("Capital", Cy.CAD, Role.capital),
+            Column("Expense", Cy.CAD, Role.expense),
+            ref=Cy.CAD)
+        cols = ldgr.columns
+
+        for amount, col in zip(
+            (Dl(200), Dl(0), Dl(200), Dl(0)), ldgr.columns.values()
+        ):
+            ldgr.commit(amount, col)
+
+        out = io.StringIO()
+        print(metadata(ldgr), file=out)
+        print(transaction(
+            ldgr,
+            ts=datetime.date(2013, 1, 1), note="Opening balance"),
+            file=out)
+
+        exchange = Exchange({(Cy.USD, Cy.CAD): Dl("1.2")})
+        for args in ldgr.adjustments(exchange):
+            ldgr.commit(*args)
+
+        print(transaction(
+            ldgr,
+            ts=datetime.date(2013, 1, 2), note="1 USD -> 1.20 CAD"),
+            file=out)
+
+        ldgr.commit(-20, cols["Canadian cash"])
+        ldgr.commit(20, cols["Expense"])
+
+        print(transaction(
+            ldgr,
+            ts=datetime.date(2013, 1, 3), note="Buy food"),
+            file=out)
+
+        objs = rson.loads(out.getvalue())
+        self.assertEqual(8, len(objs))
+        self.assertEqual([180., 0., 200., 20., 0., 0.], objs[-1])
