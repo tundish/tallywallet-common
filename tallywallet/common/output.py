@@ -62,4 +62,9 @@ def metadata(ledger):
         version=tallywallet.common.__version__)
 
 def transaction(ledger, **kwargs):
-    return ""
+    keys = sorted(kwargs.keys())
+    keyargs = "\n".join(
+        "{pad}{key}:\n{pad}    {val}".format(key=k, val=kwargs[k], pad=" "*4)
+        for k in keys)
+    data = ','.join("{: .2f}".format(i) for i in ledger._tally.values())
+    return "{{}}\n{keyargs}\n[{data}]\n""".format(keyargs=keyargs, data=data)

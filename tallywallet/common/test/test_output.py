@@ -58,7 +58,7 @@ class OutputTests(unittest.TestCase):
         self.assertEqual(6, len(out[1]["ledger"]["columns"]))
         self.assertEqual("CAD", out[1]["ledger"]["ref"])
 
-    def test_serialise_transactions(self):
+    def test_output_transaction(self):
         ldgr = Ledger(
             Column("Canadian cash", Cy.CAD, Role.asset),
             Column("US cash", Cy.USD, Role.asset),
@@ -69,11 +69,16 @@ class OutputTests(unittest.TestCase):
         for amount, col in zip(
             (Dl(200), Dl(0), Dl(200), Dl(0)), ldgr.columns.values()
         ):
-            (_, _, _, kwargs, st) = ldgr.commit(
-                amount, col,
-                ts=datetime.date(2013, 1, 1), note="Opening balance")
+            (_, _, _, _, st) = ldgr.commit(amount, col)
 
         self.assertIs(Status.ok, st)
-        print(transaction(ldgr, **kwargs))
-        exchange = Exchange({(Cy.USD, Cy.CAD): Dl("1.25")})
-        
+        t = transaction(
+            ldgr,
+            ts=datetime.date(2013, 1, 1), note="Opening balance")
+        out = rson.loads(t)
+        self.assertEqual(2, len(out))
+        self.assertEqual(
+            {"ts": "2013-01-01", "note": "Opening balance"},
+            out[0])
+        self.assertEqual(6, len(out[1]))
+        self.assertEqual(400, sum(out[1]))
