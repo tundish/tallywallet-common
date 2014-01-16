@@ -22,6 +22,7 @@ import unittest
 
 import rson
 
+import tallywallet.common
 from tallywallet.common.currency import Currency as Cy
 from tallywallet.common.exchange import Exchange
 from tallywallet.common.ledger import Column
@@ -34,7 +35,7 @@ from tallywallet.common.trade import TradePath
 
 class OutputTests(unittest.TestCase):
 
-    def test_serialise_columns(self):
+    def test_output_metadata(self):
         ldgr = Ledger(
             Column("Canadian cash", Cy.CAD, Role.asset),
             Column("US cash", Cy.USD, Role.asset),
@@ -42,16 +43,19 @@ class OutputTests(unittest.TestCase):
             Column("Expense", Cy.CAD, Role.expense),
             ref=Cy.CAD)
 
-        for amount, col in zip(
-            (Dl(200), Dl(0), Dl(200), Dl(0)), ldgr.columns.values()
-        ):
-            ldgr.commit(
-                amount, col,
-                ts=datetime.date(2013, 1, 1), note="Opening balance")
-
-        out = rson.loads(metadata(ldgr))
-        print(out)
+        m = metadata(ldgr)
+        print(m)
+        out = rson.loads(m)
         self.assertEqual(2, len(out))
+        self.assertIn("header", out[0])
+        self.assertEqual(
+            tallywallet.common.__version__,
+            str(out[0]["header"]["version"])
+        )
+
+        self.assertIn("ledger", out[1])
+        # Two columns are added by ledger for USD and CAD trading
+        self.assertEqual(6, len(out[1]["ledger"]["columns"]))
 
     def test_serialise_transactions(self):
         ldgr = Ledger(

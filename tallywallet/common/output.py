@@ -16,11 +16,15 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with tallywallet.  If not, see <http://www.gnu.org/licenses/>.
 
-def metadata(ledger):
-    template = """
+import tallywallet.common
+
+
+
+template = """
 # Metadata
 {{}}
-    header:version: 0.002
+    header:version: {version}
+{{}}
     ledger:columns:    [
             [Canadian cash, CAD, asset],
             [US cash, USD, asset],
@@ -28,7 +32,8 @@ def metadata(ledger):
             [Expense, CAD, asset]
         ]
     ledger:ref: {}
-
+"""
+"""
 # Time series
 {{}}
     note:
@@ -37,4 +42,20 @@ def metadata(ledger):
         2013-01-01
 [1,2,3]
 """
-    return template.format("pooo")
+
+def metadata(ledger):
+    columns = ",\n".join(
+        " "*12 + "[{0.name}, {0.currency.name}, {0.role.name}]".format(i)
+        for i in ledger._cols)
+    template = """
+# Metadata
+{{}}
+    header:version: {version}
+{{}}
+    ledger:columns:    [
+{cols}
+        ]
+    ledger:ref: {}
+"""
+    return template.format("pooo",
+        cols=columns, version=tallywallet.common.__version__)
