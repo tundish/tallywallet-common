@@ -34,8 +34,7 @@ setup(
     long_description=__doc__,
     classifiers=[
         "Operating System :: OS Independent",
-        #"Programming Language :: Python :: 3.4",
-        "Programming Language :: Python :: 3",
+        "Programming Language :: Python :: 3.4",
         "License :: OSI Approved :: GNU Affero General Public License v3"
         " or later (AGPLv3+)"
     ],
@@ -47,7 +46,13 @@ setup(
                     "doc/html/*.html",
                     "doc/html/*.js",
                     "doc/html/_sources/*",
-                    "doc/html/_static/*",
+                    "doc/html/_static/css/*",
+                    "doc/html/_static/font/*",
+                    "doc/html/_static/js/*",
+                    "doc/html/_static/*.css",
+                    "doc/html/_static/*.gif",
+                    "doc/html/_static/*.js",
+                    "doc/html/_static/*.png",
                     ]},
     install_requires=[],
     tests_require=["rson>=0.9"],
