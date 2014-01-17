@@ -9,7 +9,7 @@ with currency exchange and accounting features.
 This package
 ::::::::::::
 
-Tallywallet is a very young project. This package contains the following:
+Tallywallet is a very young project. This package implements the following:
 
 * A Ledger class for double-entry accounting
 * An Exchange class to enable currency trading
@@ -21,7 +21,9 @@ Requirements
 ::::::::::::
 
 Tallywallet requires Python 3.4. It uses setuptools_ for installation, but
-has no external runtime dependencies.
+normally it has no external runtime dependencies.
+
+The unit tests do require the RSON_ package, however.
 
 You may have to `compile Python 3.4`_ yourself if it is not yet available from
 your package repository.
@@ -75,6 +77,7 @@ In either event, please leave a message on the project's `message board`_.
 :Copyright: 2013 Thuswise Ltd
 
 .. _setuptools: https://pypi.python.org/pypi/setuptools
+.. _RSON: https://pypi.python.org/pypi/rson
 .. _compile Python 3.4: http://www.python.org/download/source/
 .. _GNU Affero General Public License: http://www.gnu.org/licenses/agpl-3.0.html
 .. _message board: https://www.assembla.com/spaces/tallywallet/messages
