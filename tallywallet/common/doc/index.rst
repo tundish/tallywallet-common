@@ -19,6 +19,7 @@ previous versions.
 
    api
    selinger
+   wilson
 
 * :ref:`search`
 * :ref:`genindex`

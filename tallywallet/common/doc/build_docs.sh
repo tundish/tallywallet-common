@@ -25,4 +25,4 @@ $PYENV/bin/sphinx-build -b html \
     $PARENT/tallywallet-common/tallywallet/common/doc \
     $PARENT/tallywallet-common/tallywallet/common/doc/html
 
-
+# For Python hosted, zip up html

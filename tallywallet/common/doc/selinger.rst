@@ -1,8 +1,8 @@
 ..  Titling
     ##++::==~~--''``
 
-Example
-:::::::
+Currency exchange example
+:::::::::::::::::::::::::
 
 This example is taken from `Peter Selinger's tutorial`_ on multiple currency
 accounting. We'll use a Ledger to track the transactions set out below,
