@@ -1,6 +1,21 @@
 #!/usr/bin/env python3
 #   encoding: UTF-8
 
+# This file is part of tallywallet.
+#
+# Tallywallet is free software: you can redistribute it and/or modify it
+# under the terms of the GNU Affero General Public License as published
+# by the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# Tallywallet is distributed in the hope that it will be useful, but
+# WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU Affero General Public License for more details.
+#
+# You should have received a copy of the GNU Affero General Public License
+# along with tallywallet.  If not, see <http://www.gnu.org/licenses/>.
+
 import argparse
 from collections import Counter
 from collections import OrderedDict
@@ -83,14 +98,8 @@ def firms_repay(ldgr, dt, pa=Decimal("0.1")):
 
 def simulate(interval, samples):
     t = 0
-    #ldgr = Counter(vault=int(100E6))
-    ldgr = Ledger(
-        Column("vault", Cy.USD, Role.asset),
-        Column("safe", Cy.USD, Role.asset),
-        Column("owing", Cy.USD, Role.capital),
-        Column("firms", Cy.USD, Role.expense),
-        Column("workers", Cy.USD, Role.expense),
-        ref=Cy.USD)
+    ldgr = Ledger(*columns.values(), ref=Cy.USD)
+    ldgr.commit(int(100E6), columns["vault"])
 
     while samples:
         t += interval
@@ -118,6 +127,7 @@ def main(args):
     samples = [YEAR * i for i in range(11)]
     simulate(args.interval, samples)
     return len(samples) and 1  # an error if samples not empty
+
 
 def parser():
     rv = argparse.ArgumentParser(description=__doc__)
