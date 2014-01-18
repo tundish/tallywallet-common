@@ -108,11 +108,11 @@ class DebunkingTests(unittest.TestCase):
 
 class SimulationTests(unittest.TestCase):
     """
-    Attempt to recreate the simulation discribed by Steve Keen in
+    Attempt to recreate the simulation described by Steve Keen in
     'Debunking Economics' 2nd Ed 2011. Page 363, Para 107.
 
-    Vault starts with $100 million
-    Simulation runs for 10 years
+    * Vault starts with $100 million
+    * Simulation runs for 10 years
 
     Steady state:
 
