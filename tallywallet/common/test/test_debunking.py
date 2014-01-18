@@ -39,11 +39,11 @@ class DebunkingTests(unittest.TestCase):
         val = bank_loan(self.ldgr, YEAR)
         self.assertEqual(cap-val, self.ldgr.value("vault"))
         self.assertEqual(val, self.ldgr.value("firms"))
-        self.assertEqual(val, self.ldgr.value("owing"))
+        self.assertEqual(val, self.ldgr.value("loans"))
 
     def test_annual_bank_charge(self):
         loan = 100
-        self.ldgr.commit(loan, columns["owing"])
+        self.ldgr.commit(loan, columns["loans"])
         annual = bank_charge(self.ldgr, YEAR)
         self.assertEqual(5, annual)
         self.assertEqual(-5, self.ldgr.value("firms"))
@@ -51,7 +51,7 @@ class DebunkingTests(unittest.TestCase):
 
     def test_monthly_bank_charge(self):
         loan = 100
-        self.ldgr.commit(loan, columns["owing"])
+        self.ldgr.commit(loan, columns["loans"])
         n = x = 0
         while n < 12:
             n += 1
@@ -98,10 +98,10 @@ class DebunkingTests(unittest.TestCase):
 
     def test_annual_firms_repay(self):
         bal = int(1E7)
-        self.ldgr.commit(bal, columns["owing"])
+        self.ldgr.commit(bal, columns["loans"])
         val = firms_repay(self.ldgr, YEAR)
         self.assertEqual(Decimal(1E6), val)
-        self.assertEqual(bal-val, self.ldgr.value("owing"))
+        self.assertEqual(bal-val, self.ldgr.value("loans"))
         self.assertEqual(-val, self.ldgr.value("firms"))
         self.assertEqual(val, self.ldgr.value("vault"))
 
@@ -152,7 +152,7 @@ class SimulationTests(unittest.TestCase):
                 ldgr.value("vault").quantize(Decimal("0.1E6")))
             self.assertEqual(
                 Decimal("83.1E6"),
-                ldgr.value("owing").quantize(Decimal("0.1E6")))
+                ldgr.value("loans").quantize(Decimal("0.1E6")))
             self.assertEqual(
                 Decimal("2.7E6"),
                 ldgr.value("safe").quantize(Decimal("0.1E6")))

@@ -52,6 +52,7 @@ class Role(enum.Enum):
     income = 4
     trading = 5
     expense = 6
+    dividend = 7
 
 
 Column = namedtuple("Column", ["name", "currency", "role"])
@@ -90,23 +91,29 @@ class Ledger(object):
     @property
     def equation(self):
         """
-        The `Fundamental Accounting Equation` is this::
+        The `Fundamental Accounting Equation`_ is this::
 
-            Assets - Liabilities = Capital + Income - Expenses
+            Assets - Liabilities = Equity
+            Assets - Liabilities = Capital + Retained earnings
+            Assets - Liabilities = Capital + Net income - Dividends
+            Assets - Liabilities = Capital + Income - Expenses - Dividends
 
-        (currency trading gains are counted as income).
-        For practical purposes, it is often rearranged to be::
+        Currency trading gains are counted as income.
+        For practical purposes, the `FAE` is often rearranged to be::
 
-            Assets + Expenses = Capital + Income + Liabilities
+            Assets + Expenses + Dividends = Capital + Income + Liabilities
 
         This property evaluates both sides of this second equation,
         and determines if they are equal or not.
 
         :returns: A tuple of `lhs`, `rhs`, `status`
+
+        .. _Fundamental Accounting Equation: \
+http://en.wikipedia.org/wiki/Accounting_equation
         """
         st = Status.failed
         lhCols = set(i for i in self._cols
-                     if i.role in (Role.asset, Role.expense))
+                     if i.role in (Role.asset, Role.expense, Role.dividend))
         trCols = set(i for i in self._cols if i.role is Role.trading)
         rhCols = set(self._cols) - lhCols - trCols
         try:
@@ -125,7 +132,7 @@ class Ledger(object):
             lhs = None
             rhs = None
         else:
-            if lhs == rhs:
+            if lhs.quantize(Dl("0.01")) == rhs.quantize(Dl("0.01")):
                 st = Status.ok
 
         return FAE(lhs, rhs, st)

@@ -21,6 +21,7 @@ from collections import Counter
 from collections import OrderedDict
 from decimal import Decimal
 import sys
+import warnings
 
 from tallywallet.common.currency import Currency as Cy
 from tallywallet.common.ledger import Column
@@ -51,32 +52,35 @@ INITIAL = int(100E6)
 
 columns = OrderedDict(
     (i.name, i) for i in (
-        Column("vault", Cy.USD, Role.asset),
-        Column("safe", Cy.USD, Role.asset),
-        Column("owing", Cy.USD, Role.capital),
-        Column("firms", Cy.USD, Role.expense),
-        Column("workers", Cy.USD, Role.expense)))
+        Column("licence", Cy.USD, Role.asset),
+        Column("loans", Cy.USD, Role.asset),
+        Column("vault", Cy.USD, Role.liability),
+        Column("firms", Cy.USD, Role.liability),
+        Column("workers", Cy.USD, Role.liability),
+        Column("safe", Cy.USD, Role.income),
+        ))
 
 
 def bank_loan(ldgr, dt, pa=Decimal("0.5")):
     rv = ldgr.value("vault") * pa * Decimal(dt / YEAR)
+    ldgr.commit(-rv, columns["licence"])
+    ldgr.commit(rv, columns["loans"])
     ldgr.commit(-rv, columns["vault"])
     ldgr.commit(rv, columns["firms"])
-    ldgr.commit(rv, columns["owing"])
     return rv
 
 
 def bank_charge(ldgr, dt, pa=Decimal("5E-2")):
-    rv = ldgr.value("owing") * pa * Decimal(dt / YEAR)
-    ldgr.commit(rv, columns["safe"])
+    rv = ldgr.value("loans") * pa * Decimal(dt / YEAR)
     ldgr.commit(-rv, columns["firms"])
+    ldgr.commit(rv, columns["safe"])
     return rv
 
 
 def firms_interest(ldgr, dt, pa=Decimal("2E-2")):
     rv = ldgr.value("firms") * pa * Decimal(dt / YEAR)
-    ldgr.commit(-rv, columns["safe"])
     ldgr.commit(rv, columns["firms"])
+    ldgr.commit(-rv, columns["safe"])
     return rv
 
 
@@ -90,17 +94,18 @@ def firms_wages(ldgr, dt, pa=Decimal(3)):
 def nonfirms_consume(ldgr, dt, paB=Decimal(1), paW=Decimal(26)):
     banks = ldgr.value("safe") * paB * Decimal(dt / YEAR)
     workers = ldgr.value("workers") * paW * Decimal(dt / YEAR)
-    ldgr.commit(-banks, columns["safe"])
-    ldgr.commit(-workers, columns["workers"])
     ldgr.commit((banks + workers), columns["firms"])
+    ldgr.commit(-workers, columns["workers"])
+    ldgr.commit(-banks, columns["safe"])
     return banks + workers
 
 
 def firms_repay(ldgr, dt, pa=Decimal("0.1")):
-    rv = ldgr.value("owing") * pa * Decimal(dt / YEAR)
-    ldgr.commit(-rv, columns["firms"])
+    rv = ldgr.value("loans") * pa * Decimal(dt / YEAR)
+    ldgr.commit(rv, columns["licence"])
+    ldgr.commit(-rv, columns["loans"])
     ldgr.commit(rv, columns["vault"])
-    ldgr.commit(-rv, columns["owing"])
+    ldgr.commit(-rv, columns["firms"])
     return rv
 
 
@@ -110,7 +115,9 @@ def simulate(samples, initial=INITIAL, interval=HOUR, ledger=None):
     cols = ldgr.columns
     yield metadata(ldgr)
 
+    ldgr.commit(initial, cols["licence"])
     ldgr.commit(initial, cols["vault"])
+
     yield transaction(
         ldgr, ts=t, note="Keen Money Circuit with balanced accounting")
 
@@ -124,6 +131,10 @@ def simulate(samples, initial=INITIAL, interval=HOUR, ledger=None):
             nonfirms_consume(ldgr, interval),
             firms_repay(ldgr, interval))
 
+        if not ldgr.equation.status is Status.ok:
+            warnings.warn(
+                "# Unbalanced ledger\n{}".format(transaction(ldgr)))
+
         if t >= samples[0]:
             yield transaction(ldgr, ts=t)
             samples.pop(0)
@@ -131,6 +142,7 @@ def simulate(samples, initial=INITIAL, interval=HOUR, ledger=None):
 
 
 def main(args):
+    warnings.simplefilter("error")
     samples = [YEAR * i for i in range(11)]
     for msg in simulate(samples, args.initial, args.interval):
         print(msg)
