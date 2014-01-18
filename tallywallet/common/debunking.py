@@ -5,9 +5,16 @@ import argparse
 from collections import Counter
 from decimal import Decimal
 import logging
-from pprint import pprint
 import sys
- 
+
+from tallywallet.common.currency import Currency as Cy
+from tallywallet.common.ledger import Column
+from tallywallet.common.ledger import Ledger 
+from tallywallet.common.ledger import Role
+from tallywallet.common.ledger import Status
+from tallywallet.common.output import metadata
+from tallywallet.common.output import transaction
+
 __doc__ = """
 """
 
@@ -25,16 +32,16 @@ WEEK = 7 * DAY
 YEAR = 52 * WEEK
 
 def bank_loan(ldgr, dt, pa=Decimal("0.5")):
-    rv = ldgr["vault"] * pa * Decimal(dt / YEAR)
-    ldgr["vault"] -= rv
-    ldgr["firms"] += rv
-    ldgr["owing"] += rv
+    rv = ldgr.value("vault") * pa * Decimal(dt / YEAR)
+    ldgr.commit(-rv, ldgr.columns["vault"])
+    ldgr.commit(rv, ldgr.columns["firms"])
+    ldgr.commit(rv, ldgr.columns["owing"])
     return rv 
 
 def bank_charge(ldgr, dt, pa=Decimal("5E-2")):
-    rv = ldgr["owing"] * pa * Decimal(dt / YEAR)
-    ldgr["safe"] += rv
-    ldgr["firms"] -= rv
+    rv = ldgr.value("owing") * pa * Decimal(dt / YEAR)
+    ldgr.commit(rv, ldgr.columns["safe"])
+    ldgr.commit(-rv, ldgr.columns["firms"])
     return rv
 
 def firms_interest(ldgr, dt, pa=Decimal("2E-2")):
@@ -65,9 +72,17 @@ def firms_repay(ldgr, dt, pa=Decimal("0.1")):
     return rv
 
 
-def simulate(interval, samples, output=sys.stdout):
+def simulate(interval, samples):
     t = 0
-    ldgr = Counter(vault=int(100E6))
+    #ldgr = Counter(vault=int(100E6))
+    ldgr = Ledger(
+        Column("vault", Cy.USD, Role.asset),
+        Column("safe", Cy.USD, Role.asset),
+        Column("owing", Cy.USD, Role.capital),
+        Column("firms", Cy.USD, Role.expense),
+        Column("workers", Cy.USD, Role.expense),
+        ref=Cy.USD)
+
     while samples:
         t += interval
         flows = (
@@ -80,7 +95,7 @@ def simulate(interval, samples, output=sys.stdout):
 
         # report
         if t >= samples[0]:
-            pprint(ldgr)
+            yield repr(ldgr)
             samples.pop(0)
     return ldgr
 

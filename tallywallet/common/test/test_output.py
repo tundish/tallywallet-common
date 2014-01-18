@@ -32,7 +32,6 @@ from tallywallet.common.ledger import Role
 from tallywallet.common.ledger import Status
 from tallywallet.common.output import metadata
 from tallywallet.common.output import transaction
-from tallywallet.common.trade import TradePath
 
 
 class OutputTests(unittest.TestCase):
