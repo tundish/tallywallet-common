@@ -16,27 +16,23 @@ from tallywallet.common.ledger import Role
 class DebunkingTests(unittest.TestCase):
 
     def setUp(self):
-        self.ldgr = Ledger(
-            Column("vault", Cy.USD, Role.asset),
-            Column("safe", Cy.USD, Role.asset),
-            Column("owing", Cy.USD, Role.capital),
-            Column("firms", Cy.USD, Role.expense),
-            Column("workers", Cy.USD, Role.expense),
-            ref=Cy.USD)
+        self.ldgr = Ledger(*columns.values(), ref=Cy.USD)
 
     def test_loan(self):
         cap = int(1E6)
-        val = bank_loan(ldgr, YEAR)
-        self.assertEqual(cap-val, self.ldgr["vault"])
-        self.assertEqual(val, self.ldgr["firms"])
-        self.assertEqual(val, self.ldgr["owing"])
+        self.ldgr.commit(cap, columns["vault"])
+        val = bank_loan(self.ldgr, YEAR)
+        self.assertEqual(cap-val, self.ldgr.value("vault"))
+        self.assertEqual(val, self.ldgr.value("firms"))
+        self.assertEqual(val, self.ldgr.value("owing"))
 
     def test_annual_bank_charge(self):
         loan = 100
+        self.ldgr.commit(loan, columns["owing"])
         annual = bank_charge(self.ldgr, YEAR)
         self.assertEqual(5, annual)
-        self.assertEqual(-5, self.ldgr["firms"])
-        self.assertEqual(5, self.ldgr["safe"])
+        self.assertEqual(-5, self.ldgr.value("firms"))
+        self.assertEqual(5, self.ldgr.value("safe"))
 
     def test_monthly_bank_charge(self):
         loan = 100
@@ -67,9 +63,10 @@ class DebunkingTests(unittest.TestCase):
 
     def test_firms_wages(self):
         bal = int(1E5)
+        self.ldgr.commit(bal, columns["firms"])
         val = firms_wages(self.ldgr, YEAR)
-        self.assertEqual(bal-val, self.ldgr["firms"])
-        self.assertEqual(val, self.ldgr["workers"])
+        self.assertEqual(bal-val, self.ldgr.value("firms"))
+        self.assertEqual(val, self.ldgr.value("workers"))
 
     def test_nonfirms_consumption(self):
         safe = int(26E9)

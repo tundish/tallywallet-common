@@ -3,6 +3,7 @@
 
 import argparse
 from collections import Counter
+from collections import OrderedDict
 from decimal import Decimal
 import logging
 import sys
@@ -22,7 +23,7 @@ __all__ = [
     "HOUR", "DAY", "WEEK", "YEAR",
     "bank_loan", "bank_charge",
     "firms_interest", "firms_repay", "firms_wages", "nonfirms_consume",
-    "simulate"
+    "columns", "simulate"
 ]
 
 SEC = 1
@@ -30,6 +31,14 @@ HOUR = 60 * 60 * SEC
 DAY = 24 * HOUR
 WEEK = 7 * DAY
 YEAR = 52 * WEEK
+
+columns = OrderedDict(
+    (i.name, i) for i in (
+        Column("vault", Cy.USD, Role.asset),
+        Column("safe", Cy.USD, Role.asset),
+        Column("owing", Cy.USD, Role.capital),
+        Column("firms", Cy.USD, Role.expense),
+        Column("workers", Cy.USD, Role.expense)))
 
 def bank_loan(ldgr, dt, pa=Decimal("0.5")):
     rv = ldgr.value("vault") * pa * Decimal(dt / YEAR)
@@ -45,30 +54,30 @@ def bank_charge(ldgr, dt, pa=Decimal("5E-2")):
     return rv
 
 def firms_interest(ldgr, dt, pa=Decimal("2E-2")):
-    rv = ldgr["firms"] * pa * Decimal(dt / YEAR)
-    ldgr["safe"] -= rv
-    ldgr["firms"] += rv
+    rv = ldgr.value("firms") * pa * Decimal(dt / YEAR)
+    ldgr.commit(-rv, ldgr.columns["safe"])
+    ldgr.commit(rv, ldgr.columns["firms"])
     return rv
 
 def firms_wages(ldgr, dt, pa=Decimal(3)):
-    rv = ldgr["firms"] * pa * Decimal(dt / YEAR)
-    ldgr["firms"] -= rv
-    ldgr["workers"] += rv
+    rv = ldgr.value("firms") * pa * Decimal(dt / YEAR)
+    ldgr.commit(-rv, ldgr.columns["firms"])
+    ldgr.commit(rv, ldgr.columns["workers"])
     return rv
 
 def nonfirms_consume(ldgr, dt, paB=Decimal(1), paW=Decimal(26)):
-    banks = ldgr["safe"] * paB * Decimal(dt / YEAR)
-    workers = ldgr["workers"] * paW * Decimal(dt / YEAR)
-    ldgr["safe"] -= banks
-    ldgr["workers"] -= workers
-    ldgr["firms"] += (banks + workers)
+    banks = ldgr.value("safe") * paB * Decimal(dt / YEAR)
+    workers = ldgr.value("workers") * paW * Decimal(dt / YEAR)
+    ldgr.commit(-banks, ldgr.columns["safe"])
+    ldgr.commit(-workers, ldgr.columns["workers"])
+    ldgr.commit((banks + workers), "firms")
     return banks + workers
 
 def firms_repay(ldgr, dt, pa=Decimal("0.1")):
-    rv = ldgr["owing"] * pa * Decimal(dt / YEAR)
-    ldgr["firms"] -= rv
-    ldgr["vault"] += rv
-    ldgr["owing"] -= rv
+    rv = ldgr.value("owing") * pa * Decimal(dt / YEAR)
+    ldgr.commit(-rv, ldgr.columns["firms"])
+    ldgr.commit(rv, ldgr.columns["vault"])
+    ldgr.commit(-rv, ldgr.columns["owing"])
     return rv
 
 
