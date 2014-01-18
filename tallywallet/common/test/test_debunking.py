@@ -138,7 +138,7 @@ class SimulationTests(unittest.TestCase):
     def test_final_values(self):
         print("\nMoney simulation in progress...")
         ledger = Ledger(*columns.values(), ref=Cy.USD)
-        sim = simulate(HOUR, samples=[10 * YEAR], ledger=ledger)
+        sim = simulate(samples=[10 * YEAR], ledger=ledger)
         output = ""
         try:
             while True:

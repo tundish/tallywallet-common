@@ -35,6 +35,7 @@ __doc__ = """
 
 __all__ = [
     "HOUR", "DAY", "WEEK", "YEAR",
+    "INITIAL",
     "bank_loan", "bank_charge",
     "firms_interest", "firms_repay", "firms_wages", "nonfirms_consume",
     "columns", "simulate"
@@ -103,13 +104,13 @@ def firms_repay(ldgr, dt, pa=Decimal("0.1")):
     return rv
 
 
-def simulate(interval, samples, ledger=None):
+def simulate(samples, initial=INITIAL, interval=HOUR, ledger=None):
     t = 0
     ldgr = ledger or Ledger(*columns.values(), ref=Cy.USD)
     cols = ldgr.columns
     yield metadata(ldgr)
 
-    ldgr.commit(INITIAL, cols["vault"])
+    ldgr.commit(initial, cols["vault"])
     yield transaction(
         ldgr, ts=t, note="Keen Money Circuit with balanced accounting")
 
@@ -131,7 +132,7 @@ def simulate(interval, samples, ledger=None):
 
 def main(args):
     samples = [YEAR * i for i in range(11)]
-    for msg in simulate(args.interval, samples):
+    for msg in simulate(samples, args.initial, args.interval):
         print(msg)
     return len(samples) and 1  # an error if samples not empty
 
