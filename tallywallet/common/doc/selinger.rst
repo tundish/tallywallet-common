@@ -1,8 +1,8 @@
 ..  Titling
     ##++::==~~--''``
 
-Currency exchange example
-:::::::::::::::::::::::::
+An example of Currency Exchange
+:::::::::::::::::::::::::::::::
 
 This example is taken from `Peter Selinger's tutorial`_ on multiple currency
 accounting. We'll use a Ledger to track the transactions set out below,
@@ -66,7 +66,7 @@ Jan 2
 =====
 
 Let's apply the initial currency exchange rate. We do that by instantiating an
-Exchange object, and creating a sequence of trades to apply to our ledger::
+Exchange object, and creating a sequence of changes to apply to our ledger::
 
     exchange = Exchange({(Cy.USD, Cy.CAD): Dl("1.2")})
     for args in ldgr.adjustments(exchange):
@@ -145,7 +145,7 @@ Jan 7
 =====
 
 We are now back in Canada but stuck in the airport waiting for our transfer
-home. We want food. So we cough up twenty dollars for a nasty burger and a
+home. We want food. So we cough up twenty dollars for a tasty burger and a
 bottle of fizzy beer. Here's the transaction for that::
 
     ldgr.commit(-20, cols["Canadian cash"], note="Buy food")

@@ -6,30 +6,16 @@ from collections import Counter
 from decimal import Decimal
 import logging
 from pprint import pprint
-import random
-import statistics
 import sys
-import unittest
  
 __doc__ = """
-'Debunking Economics' 2nd Ed 2011 Steve Keen. Page 363, Para 107.
-
-NB: see http://en.wikipedia.org/wiki/Annual_percentage_rate
-
-Vault starts with $100 million
-Sim runs for 10 years
-
-Vault:  16.9 million
-Owing:  83.1 million
-Safe:   2.7 million
-Firms:  72.1 million
-Workers:8.3 million
 """
 
 __all__ = [
     "HOUR", "DAY", "WEEK", "YEAR",
     "bank_loan", "bank_charge",
-    "firms_interest", "firms_repay", "firms_wages", "nonfirms_consume"
+    "firms_interest", "firms_repay", "firms_wages", "nonfirms_consume",
+    "simulate"
 ]
 
 SEC = 1
@@ -79,18 +65,10 @@ def firms_repay(ldgr, dt, pa=Decimal("0.1")):
     return rv
 
 
-def main(args):
-    logging.basicConfig(
-        level=args.log_level,
-        format="%(asctime)s %(levelname)-7s %(name)s|%(message)s")
-
-    log = logging.getLogger("tallywallet.dynamics.debunking")
-
+def simulate(interval, samples, output=sys.stdout):
     t = 0
-    picks = [DAY, YEAR, 10 * YEAR]
     ldgr = Counter(vault=int(100E6))
-    interval = HOUR
-    while picks:
+    while samples:
         t += interval
         flows = (
             bank_loan(ldgr, interval),
@@ -101,11 +79,21 @@ def main(args):
             firms_repay(ldgr, interval))
 
         # report
-        if t >= picks[0]:
-            log.info(t)
+        if t >= samples[0]:
             pprint(ldgr)
-            picks.pop(0)
+            samples.pop(0)
+    return ldgr
 
+
+def main(args):
+    logging.basicConfig(
+        level=args.log_level,
+        format="%(asctime)s %(levelname)-7s %(name)s|%(message)s")
+
+    log = logging.getLogger("tallywallet.common.debunking")
+    samples = [YEAR * i for i in range(11)]
+    simulate(args.interval, samples)
+    return len(samples) and 1  # an error if samples not empty
 
 def parser():
     rv = argparse.ArgumentParser(description=__doc__)
@@ -114,6 +102,9 @@ def parser():
         action="store_const", dest="log_level",
         const=logging.DEBUG, default=logging.INFO,
         help="Increase the verbosity of output")
+    rv.add_argument(
+        "--interval", type=int, default=HOUR,
+        help="Writes each data point on a separate line")
     rv.add_argument(
         "--lineout", action="store_true", default=False,
         help="Writes each data point on a separate line")

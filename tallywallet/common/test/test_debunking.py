@@ -3,11 +3,12 @@
 
 from collections import Counter
 from decimal import Decimal
+from decimal import ROUND_UP
 import unittest
-
 
 from tallywallet.common.debunking import *
  
+
 class DebunkingTests(unittest.TestCase):
 
     def test_loan(self):
@@ -78,3 +79,50 @@ class DebunkingTests(unittest.TestCase):
         self.assertEqual(bal-val, ldgr["owing"])
         self.assertEqual(-val, ldgr["firms"])
         self.assertEqual(val, ldgr["vault"])
+
+
+class SimulationTests(unittest.TestCase):
+    """
+    Attempt to recreate the simulation discribed by Steve Keen in
+    'Debunking Economics' 2nd Ed 2011. Page 363, Para 107.
+
+    Vault starts with $100 million
+    Simulation runs for 10 years
+
+    Steady state:
+
+    ======= =========
+    Account $ million
+    ======= =========
+    Vault   16.9
+    Owing   83.1
+    Safe     2.7
+    Firms   72.1
+    Workers  8.3
+    ======= =========
+    """
+
+    def test_rounding(self):
+        # A reminder of how Decimal rounding works
+        self.assertEqual(
+            Decimal("16.9E6"),
+            Decimal('16873357.20273378125176183675').quantize(
+            Decimal("0.1E6"), rounding=ROUND_UP))
+
+    def test_final_values(self):
+        print("\nMoney simulation in progress...")
+        ldgr = simulate(HOUR, samples=[10 * YEAR])
+        self.assertEqual(
+            Decimal("16.9E6"),
+            ldgr["vault"].quantize(Decimal("0.1E6")))
+        self.assertEqual(
+            Decimal("83.1E6"),
+            ldgr["owing"].quantize(Decimal("0.1E6")))
+        self.assertEqual(
+            Decimal("2.7E6"),
+            ldgr["safe"].quantize(Decimal("0.1E6")))
+        self.assertEqual(
+            Decimal("72.1E6"),
+            ldgr["firms"].quantize(Decimal("0.1E6")))
+        self.assertEqual(Decimal("8.3E6"), ldgr["workers"].quantize(
+            Decimal("0.1E6")))
