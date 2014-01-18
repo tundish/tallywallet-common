@@ -71,8 +71,12 @@ class DebunkingTests(unittest.TestCase):
     def test_nonfirms_consumption(self):
         safe = int(26E9)
         workers = int(1E3)
+        self.ldgr.commit(safe, columns["safe"])
+        self.ldgr.commit(workers, columns["workers"])
         val = nonfirms_consume(self.ldgr, YEAR / 26)
-        self.assertAlmostEqual(Decimal(1E9 + 1E3), self.ldgr["firms"], places=6)
+        self.assertAlmostEqual(
+            Decimal(1E9 + 1E3),
+            self.ldgr.value("firms"), places=6)
 
     def test_annual_firms_repay(self):
         bal = int(1E7)
@@ -83,7 +87,7 @@ class DebunkingTests(unittest.TestCase):
         self.assertEqual(val, self.ldgr["vault"])
 
 
-class SimulationTests(unittest.TestCase):
+class SimulationTests(DebunkingTests):
     """
     Attempt to recreate the simulation discribed by Steve Keen in
     'Debunking Economics' 2nd Ed 2011. Page 363, Para 107.
@@ -117,16 +121,16 @@ class SimulationTests(unittest.TestCase):
         print(output)
         self.assertEqual(
             Decimal("16.9E6"),
-            self.ldgr["vault"].quantize(Decimal("0.1E6")))
+            self.ldgr.value("vault").quantize(Decimal("0.1E6")))
         self.assertEqual(
             Decimal("83.1E6"),
-            self.ldgr["owing"].quantize(Decimal("0.1E6")))
+            self.ldgr.value("owing").quantize(Decimal("0.1E6")))
         self.assertEqual(
             Decimal("2.7E6"),
-            self.ldgr["safe"].quantize(Decimal("0.1E6")))
+            self.ldgr.value("safe").quantize(Decimal("0.1E6")))
         self.assertEqual(
             Decimal("72.1E6"),
-            self.ldgr["firms"].quantize(Decimal("0.1E6")))
+            self.ldgr.value("firms").quantize(Decimal("0.1E6")))
         self.assertEqual(
-            Decimal("8.3E6"), self.ldgr["workers"].quantize(
+            Decimal("8.3E6"), self.ldgr.value("workers").quantize(
             Decimal("0.1E6")))

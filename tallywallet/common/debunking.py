@@ -42,42 +42,42 @@ columns = OrderedDict(
 
 def bank_loan(ldgr, dt, pa=Decimal("0.5")):
     rv = ldgr.value("vault") * pa * Decimal(dt / YEAR)
-    ldgr.commit(-rv, ldgr.columns["vault"])
-    ldgr.commit(rv, ldgr.columns["firms"])
-    ldgr.commit(rv, ldgr.columns["owing"])
+    ldgr.commit(-rv, columns["vault"])
+    ldgr.commit(rv, columns["firms"])
+    ldgr.commit(rv, columns["owing"])
     return rv 
 
 def bank_charge(ldgr, dt, pa=Decimal("5E-2")):
     rv = ldgr.value("owing") * pa * Decimal(dt / YEAR)
-    ldgr.commit(rv, ldgr.columns["safe"])
-    ldgr.commit(-rv, ldgr.columns["firms"])
+    ldgr.commit(rv, columns["safe"])
+    ldgr.commit(-rv, columns["firms"])
     return rv
 
 def firms_interest(ldgr, dt, pa=Decimal("2E-2")):
     rv = ldgr.value("firms") * pa * Decimal(dt / YEAR)
-    ldgr.commit(-rv, ldgr.columns["safe"])
-    ldgr.commit(rv, ldgr.columns["firms"])
+    ldgr.commit(-rv, columns["safe"])
+    ldgr.commit(rv, columns["firms"])
     return rv
 
 def firms_wages(ldgr, dt, pa=Decimal(3)):
     rv = ldgr.value("firms") * pa * Decimal(dt / YEAR)
-    ldgr.commit(-rv, ldgr.columns["firms"])
-    ldgr.commit(rv, ldgr.columns["workers"])
+    ldgr.commit(-rv, columns["firms"])
+    ldgr.commit(rv, columns["workers"])
     return rv
 
 def nonfirms_consume(ldgr, dt, paB=Decimal(1), paW=Decimal(26)):
     banks = ldgr.value("safe") * paB * Decimal(dt / YEAR)
     workers = ldgr.value("workers") * paW * Decimal(dt / YEAR)
-    ldgr.commit(-banks, ldgr.columns["safe"])
-    ldgr.commit(-workers, ldgr.columns["workers"])
-    ldgr.commit((banks + workers), "firms")
+    ldgr.commit(-banks, columns["safe"])
+    ldgr.commit(-workers, columns["workers"])
+    ldgr.commit((banks + workers), columns["firms"])
     return banks + workers
 
 def firms_repay(ldgr, dt, pa=Decimal("0.1")):
     rv = ldgr.value("owing") * pa * Decimal(dt / YEAR)
-    ldgr.commit(-rv, ldgr.columns["firms"])
-    ldgr.commit(rv, ldgr.columns["vault"])
-    ldgr.commit(-rv, ldgr.columns["owing"])
+    ldgr.commit(-rv, columns["firms"])
+    ldgr.commit(rv, columns["vault"])
+    ldgr.commit(-rv, columns["owing"])
     return rv
 
 
