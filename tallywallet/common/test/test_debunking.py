@@ -127,9 +127,6 @@ class SimulationTests(unittest.TestCase):
     ======= =========
     """
 
-    def setUp(self):
-        self.ldgr = Ledger(*columns.values(), ref=Cy.USD)
-
     def test_rounding(self):
         # A reminder of how Decimal rounding works
         self.assertEqual(
@@ -139,13 +136,15 @@ class SimulationTests(unittest.TestCase):
 
     def test_final_values(self):
         print("\nMoney simulation in progress...")
-        sim = simulate(HOUR, samples=[10 * YEAR])
+        ledger = Ledger(*columns.values(), ref=Cy.USD)
+        sim = simulate(HOUR, samples=[10 * YEAR], ledger=ledger)
         output = ""
         try:
             while True:
                 output += next(sim)
         except StopIteration as end:
             ldgr = end.value
+            self.assertIs(ledger, ldgr)
             print(output)
             self.assertEqual(
                 Decimal("16.9E6"),

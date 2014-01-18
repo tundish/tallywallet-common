@@ -96,10 +96,15 @@ def firms_repay(ldgr, dt, pa=Decimal("0.1")):
     return rv
 
 
-def simulate(interval, samples):
+def simulate(interval, samples, ledger=None):
     t = 0
-    ldgr = Ledger(*columns.values(), ref=Cy.USD)
+    ldgr = ledger or Ledger(*columns.values(), ref=Cy.USD)
+    columns = ldgr.columns
+    yield metadata(ldgr)
+
     ldgr.commit(int(100E6), columns["vault"])
+    yield transaction(
+        ldgr, ts=t, note="Keen Money Circuit with balanced accounting")
 
     while samples:
         t += interval
@@ -111,9 +116,8 @@ def simulate(interval, samples):
             nonfirms_consume(ldgr, interval),
             firms_repay(ldgr, interval))
 
-        # report
         if t >= samples[0]:
-            yield repr(ldgr)
+            yield transaction(ldgr, ts=t)
             samples.pop(0)
     return ldgr
 
@@ -125,7 +129,8 @@ def main(args):
 
     log = logging.getLogger("tallywallet.common.debunking")
     samples = [YEAR * i for i in range(11)]
-    simulate(args.interval, samples)
+    output = ''.join(simulate(args.interval, samples))
+    print(output)
     return len(samples) and 1  # an error if samples not empty
 
 
