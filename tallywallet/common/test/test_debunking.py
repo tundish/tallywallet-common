@@ -26,7 +26,7 @@ from tallywallet.common.exchange import Exchange
 from tallywallet.common.ledger import Column
 from tallywallet.common.ledger import Ledger
 from tallywallet.common.ledger import Role
- 
+
 
 class DebunkingTests(unittest.TestCase):
 
@@ -132,7 +132,8 @@ class SimulationTests(unittest.TestCase):
         self.assertEqual(
             Decimal("16.9E6"),
             Decimal('16873357.20273378125176183675').quantize(
-            Decimal("0.1E6"), rounding=ROUND_UP))
+                Decimal("0.1E6"), rounding=ROUND_UP)
+            )
 
     def test_final_values(self):
         print("\nMoney simulation in progress...")

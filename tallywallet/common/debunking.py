@@ -20,12 +20,11 @@ import argparse
 from collections import Counter
 from collections import OrderedDict
 from decimal import Decimal
-import logging
 import sys
 
 from tallywallet.common.currency import Currency as Cy
 from tallywallet.common.ledger import Column
-from tallywallet.common.ledger import Ledger 
+from tallywallet.common.ledger import Ledger
 from tallywallet.common.ledger import Role
 from tallywallet.common.ledger import Status
 from tallywallet.common.output import metadata
@@ -47,6 +46,8 @@ DAY = 24 * HOUR
 WEEK = 7 * DAY
 YEAR = 52 * WEEK
 
+INITIAL = int(100E6)
+
 columns = OrderedDict(
     (i.name, i) for i in (
         Column("vault", Cy.USD, Role.asset),
@@ -55,12 +56,14 @@ columns = OrderedDict(
         Column("firms", Cy.USD, Role.expense),
         Column("workers", Cy.USD, Role.expense)))
 
+
 def bank_loan(ldgr, dt, pa=Decimal("0.5")):
     rv = ldgr.value("vault") * pa * Decimal(dt / YEAR)
     ldgr.commit(-rv, columns["vault"])
     ldgr.commit(rv, columns["firms"])
     ldgr.commit(rv, columns["owing"])
-    return rv 
+    return rv
+
 
 def bank_charge(ldgr, dt, pa=Decimal("5E-2")):
     rv = ldgr.value("owing") * pa * Decimal(dt / YEAR)
@@ -68,17 +71,20 @@ def bank_charge(ldgr, dt, pa=Decimal("5E-2")):
     ldgr.commit(-rv, columns["firms"])
     return rv
 
+
 def firms_interest(ldgr, dt, pa=Decimal("2E-2")):
     rv = ldgr.value("firms") * pa * Decimal(dt / YEAR)
     ldgr.commit(-rv, columns["safe"])
     ldgr.commit(rv, columns["firms"])
     return rv
 
+
 def firms_wages(ldgr, dt, pa=Decimal(3)):
     rv = ldgr.value("firms") * pa * Decimal(dt / YEAR)
     ldgr.commit(-rv, columns["firms"])
     ldgr.commit(rv, columns["workers"])
     return rv
+
 
 def nonfirms_consume(ldgr, dt, paB=Decimal(1), paW=Decimal(26)):
     banks = ldgr.value("safe") * paB * Decimal(dt / YEAR)
@@ -87,6 +93,7 @@ def nonfirms_consume(ldgr, dt, paB=Decimal(1), paW=Decimal(26)):
     ldgr.commit(-workers, columns["workers"])
     ldgr.commit((banks + workers), columns["firms"])
     return banks + workers
+
 
 def firms_repay(ldgr, dt, pa=Decimal("0.1")):
     rv = ldgr.value("owing") * pa * Decimal(dt / YEAR)
@@ -99,10 +106,10 @@ def firms_repay(ldgr, dt, pa=Decimal("0.1")):
 def simulate(interval, samples, ledger=None):
     t = 0
     ldgr = ledger or Ledger(*columns.values(), ref=Cy.USD)
-    columns = ldgr.columns
+    cols = ldgr.columns
     yield metadata(ldgr)
 
-    ldgr.commit(int(100E6), columns["vault"])
+    ldgr.commit(INITIAL, cols["vault"])
     yield transaction(
         ldgr, ts=t, note="Keen Money Circuit with balanced accounting")
 
@@ -123,30 +130,20 @@ def simulate(interval, samples, ledger=None):
 
 
 def main(args):
-    logging.basicConfig(
-        level=args.log_level,
-        format="%(asctime)s %(levelname)-7s %(name)s|%(message)s")
-
-    log = logging.getLogger("tallywallet.common.debunking")
     samples = [YEAR * i for i in range(11)]
-    output = ''.join(simulate(args.interval, samples))
-    print(output)
+    for msg in simulate(args.interval, samples):
+        print(msg)
     return len(samples) and 1  # an error if samples not empty
 
 
 def parser():
     rv = argparse.ArgumentParser(description=__doc__)
     rv.add_argument(
-        "-v", "--verbose", required=False,
-        action="store_const", dest="log_level",
-        const=logging.DEBUG, default=logging.INFO,
-        help="Increase the verbosity of output")
+        "--initial", type=int, default=INITIAL,
+        help="Set the initial level of vault funds [{}]".format(INITIAL))
     rv.add_argument(
         "--interval", type=int, default=HOUR,
-        help="Writes each data point on a separate line")
-    rv.add_argument(
-        "--lineout", action="store_true", default=False,
-        help="Writes each data point on a separate line")
+        help="Set the simulation interval (s) [{}]".format(HOUR))
     return rv
 
 
