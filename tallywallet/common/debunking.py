@@ -152,10 +152,10 @@ def simulate(samples, initial=INITIAL, interval=HOUR, ledger=None):
         flows = (
             bank_loan(ldgr, interval),
             bank_charge(ldgr, interval),
+            firms_repay(ldgr, interval),
             firms_interest(ldgr, interval),
             firms_wages(ldgr, interval),
-            nonfirms_consume(ldgr, interval),
-            firms_repay(ldgr, interval))
+            nonfirms_consume(ldgr, interval))
 
         if not ldgr.equation.status is Status.ok:
             warnings.warn(
