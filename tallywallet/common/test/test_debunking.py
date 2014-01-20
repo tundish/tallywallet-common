@@ -46,7 +46,9 @@ class DebunkingTests(unittest.TestCase):
         self.ldgr.commit(loan, columns["loans"])
         annual = bank_charge(self.ldgr, YEAR)
         self.assertEqual(5, annual)
-        self.assertEqual(-5, self.ldgr.value("firms"))
+        self.assertEqual(-5, self.ldgr.value("licence"))
+        self.assertEqual(loan + 5, self.ldgr.value("loans"))
+        self.assertEqual(-5, self.ldgr.value("vault"))
         self.assertEqual(5, self.ldgr.value("safe"))
 
     def test_monthly_bank_charge(self):
@@ -56,9 +58,11 @@ class DebunkingTests(unittest.TestCase):
         while n < 12:
             n += 1
             x += bank_charge(self.ldgr, YEAR / 12)
-        self.assertAlmostEqual(Decimal(5), x, places=9)
-        self.assertAlmostEqual(-5, self.ldgr.value("firms"))
-        self.assertAlmostEqual(5, self.ldgr.value("safe"))
+        self.assertAlmostEqual(Decimal(5), x, places=0)
+        self.assertAlmostEqual(-5, self.ldgr.value("licence"), places=0)
+        self.assertAlmostEqual(loan + 5, self.ldgr.value("loans"), places=0)
+        self.assertAlmostEqual(-5, self.ldgr.value("vault"), places=0)
+        self.assertAlmostEqual(5, self.ldgr.value("safe"), places=0)
 
     def test_annual_firms_interest(self):
         loan = 100

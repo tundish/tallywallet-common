@@ -82,7 +82,7 @@ def bank_charge(ldgr, dt, pa=Decimal("5E-2")):
     """
     This makes sense because a Bank wants to reduce its liabilities
     at every opportunity. Interest is charged immediately as revenue
-    which reduces the level in the vault. Interest is issued as a
+    which reduces the level in the vault. The interest is issued as a
     loan so the ledger goes up and the value is deducted from the licence.
     4. Charge interest
     5. Record interest
@@ -109,7 +109,7 @@ def firms_repay(ldgr, dt, interest, pa=Decimal("0.1")):
     ldgr.commit(-interest, columns["loans"])
     ldgr.commit(interest, columns["vault"])
     ldgr.commit(-interest, columns["firms"])
-    return principal
+    return principal + interest
 
 
 def firms_interest(ldgr, dt, pa=Decimal("2E-2")):
