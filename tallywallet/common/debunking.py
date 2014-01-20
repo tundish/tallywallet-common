@@ -32,6 +32,10 @@ from tallywallet.common.output import metadata
 from tallywallet.common.output import transaction
 
 __doc__ = """
+TODO:
+
+5. Record Interest
+9. Pay Worker Deposit Interest
 """
 
 __all__ = [
@@ -62,6 +66,10 @@ columns = OrderedDict(
 
 
 def bank_loan(ldgr, dt, pa=Decimal("0.5")):
+    """
+    2. Lend money
+    3. Record loan
+    """
     rv = ldgr.value("vault") * pa * Decimal(dt / YEAR)
     ldgr.commit(-rv, columns["licence"])
     ldgr.commit(rv, columns["loans"])
@@ -71,6 +79,9 @@ def bank_loan(ldgr, dt, pa=Decimal("0.5")):
 
 
 def bank_charge(ldgr, dt, pa=Decimal("5E-2")):
+    """
+    4. Charge interest
+    """
     rv = ldgr.value("loans") * pa * Decimal(dt / YEAR)
     ldgr.commit(-rv, columns["firms"])
     ldgr.commit(rv, columns["safe"])
@@ -78,6 +89,9 @@ def bank_charge(ldgr, dt, pa=Decimal("5E-2")):
 
 
 def firms_interest(ldgr, dt, pa=Decimal("2E-2")):
+    """
+    8. Pay firm deposit interest
+    """
     rv = ldgr.value("firms") * pa * Decimal(dt / YEAR)
     ldgr.commit(rv, columns["firms"])
     ldgr.commit(-rv, columns["safe"])
@@ -85,6 +99,9 @@ def firms_interest(ldgr, dt, pa=Decimal("2E-2")):
 
 
 def firms_wages(ldgr, dt, pa=Decimal(3)):
+    """
+    10. Hire Workers
+    """
     rv = ldgr.value("firms") * pa * Decimal(dt / YEAR)
     ldgr.commit(-rv, columns["firms"])
     ldgr.commit(rv, columns["workers"])
@@ -92,6 +109,10 @@ def firms_wages(ldgr, dt, pa=Decimal(3)):
 
 
 def nonfirms_consume(ldgr, dt, paB=Decimal(1), paW=Decimal(26)):
+    """
+    11. Workers' Consumption
+    12. Bankers' Consumption
+    """
     banks = ldgr.value("safe") * paB * Decimal(dt / YEAR)
     workers = ldgr.value("workers") * paW * Decimal(dt / YEAR)
     ldgr.commit((banks + workers), columns["firms"])
@@ -101,6 +122,11 @@ def nonfirms_consume(ldgr, dt, paB=Decimal(1), paW=Decimal(26)):
 
 
 def firms_repay(ldgr, dt, pa=Decimal("0.1")):
+    """
+    FIXME
+    6. Repay Loan and Interest
+    7. Record Loan and Interest Repayment
+    """
     rv = ldgr.value("loans") * pa * Decimal(dt / YEAR)
     ldgr.commit(rv, columns["licence"])
     ldgr.commit(-rv, columns["loans"])
