@@ -99,8 +99,18 @@ class DebunkingTests(unittest.TestCase):
     def test_annual_firms_repay(self):
         bal = int(1E7)
         self.ldgr.commit(bal, columns["loans"])
-        val = firms_repay(self.ldgr, YEAR)
+        val = firms_repay(self.ldgr, YEAR, interest=0)
         self.assertEqual(Decimal(1E6), val)
+        self.assertEqual(bal-val, self.ldgr.value("loans"))
+        self.assertEqual(-val, self.ldgr.value("firms"))
+        self.assertEqual(val, self.ldgr.value("vault"))
+
+
+    def test_annual_firms_repay_with_interest(self):
+        bal = int(1E7)
+        self.ldgr.commit(bal, columns["loans"])
+        val = firms_repay(self.ldgr, YEAR, interest=Decimal(5E5))
+        self.assertEqual(Decimal(1.5E6), val)
         self.assertEqual(bal-val, self.ldgr.value("loans"))
         self.assertEqual(-val, self.ldgr.value("firms"))
         self.assertEqual(val, self.ldgr.value("vault"))

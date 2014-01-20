@@ -82,38 +82,40 @@ def bank_charge(ldgr, dt, pa=Decimal("5E-2")):
     """
     This makes sense because a Bank wants to reduce its liabilities
     at every opportunity. Interest is charged immediately as revenue
-    which reduces the level in the vault. Loan ledger goes down and
-    the value is recovered to the licence (an asset).
+    which reduces the level in the vault. Interest is issued as a
+    loan so the ledger goes up and the value is deducted from the licence.
     4. Charge interest
     5. Record interest
     """
     rv = ldgr.value("loans") * pa * Decimal(dt / YEAR)
-    #ldgr.commit(-rv, columns["firms"])
-    #ldgr.commit(rv, columns["safe"])
-    ldgr.commit(rv, columns["licence"])
-    ldgr.commit(-rv, columns["ledger"])
+    ldgr.commit(-rv, columns["licence"])
+    ldgr.commit(rv, columns["loans"])
     ldgr.commit(-rv, columns["vault"])
     ldgr.commit(rv, columns["safe"])
     return rv
 
 
-def firms_repay(ldgr, dt, pa=Decimal("0.1")):
+def firms_repay(ldgr, dt, interest, pa=Decimal("0.1")):
     """
-    FIXME
     6. Repay Loan and Interest
     7. Record Loan and Interest Repayment
     """
-    rv = ldgr.value("loans") * pa * Decimal(dt / YEAR)
-    ldgr.commit(rv, columns["licence"])
-    ldgr.commit(-rv, columns["loans"])
-    ldgr.commit(rv, columns["vault"])
-    ldgr.commit(-rv, columns["firms"])
-    return rv
+    principal = ldgr.value("loans") * pa * Decimal(dt / YEAR)
+    ldgr.commit(principal, columns["licence"])
+    ldgr.commit(-principal, columns["loans"])
+    ldgr.commit(principal, columns["vault"])
+    ldgr.commit(-principal, columns["firms"])
+    ldgr.commit(interest, columns["licence"])
+    ldgr.commit(-interest, columns["loans"])
+    ldgr.commit(interest, columns["vault"])
+    ldgr.commit(-interest, columns["firms"])
+    return principal
 
 
 def firms_interest(ldgr, dt, pa=Decimal("2E-2")):
     """
     8. Pay firm deposit interest
+    9. TODO: Pay worker deposit interest
     """
     rv = ldgr.value("firms") * pa * Decimal(dt / YEAR)
     ldgr.commit(rv, columns["firms"])
@@ -158,10 +160,10 @@ def simulate(samples, initial=INITIAL, interval=HOUR, ledger=None):
 
     while samples:
         t += interval
+        bank_loan(ldgr, interval),
+        interest = bank_charge(ldgr, interval)
         flows = (
-            bank_loan(ldgr, interval),
-            bank_charge(ldgr, interval),
-            firms_repay(ldgr, interval),
+            firms_repay(ldgr, interval, interest),
             firms_interest(ldgr, interval),
             firms_wages(ldgr, interval),
             nonfirms_consume(ldgr, interval))
