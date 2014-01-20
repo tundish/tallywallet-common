@@ -80,11 +80,34 @@ def bank_loan(ldgr, dt, pa=Decimal("0.5")):
 
 def bank_charge(ldgr, dt, pa=Decimal("5E-2")):
     """
+    This makes sense because a Bank wants to reduce its liabilities
+    at every opportunity. Interest is charged immediately as revenue
+    which reduces the level in the vault. Loan ledger goes down and
+    the value is recovered to the licence (an asset).
     4. Charge interest
+    5. Record interest
     """
     rv = ldgr.value("loans") * pa * Decimal(dt / YEAR)
-    ldgr.commit(-rv, columns["firms"])
+    #ldgr.commit(-rv, columns["firms"])
+    #ldgr.commit(rv, columns["safe"])
+    ldgr.commit(rv, columns["licence"])
+    ldgr.commit(-rv, columns["ledger"])
+    ldgr.commit(-rv, columns["vault"])
     ldgr.commit(rv, columns["safe"])
+    return rv
+
+
+def firms_repay(ldgr, dt, pa=Decimal("0.1")):
+    """
+    FIXME
+    6. Repay Loan and Interest
+    7. Record Loan and Interest Repayment
+    """
+    rv = ldgr.value("loans") * pa * Decimal(dt / YEAR)
+    ldgr.commit(rv, columns["licence"])
+    ldgr.commit(-rv, columns["loans"])
+    ldgr.commit(rv, columns["vault"])
+    ldgr.commit(-rv, columns["firms"])
     return rv
 
 
@@ -119,20 +142,6 @@ def nonfirms_consume(ldgr, dt, paB=Decimal(1), paW=Decimal(26)):
     ldgr.commit(-workers, columns["workers"])
     ldgr.commit(-banks, columns["safe"])
     return banks + workers
-
-
-def firms_repay(ldgr, dt, pa=Decimal("0.1")):
-    """
-    FIXME
-    6. Repay Loan and Interest
-    7. Record Loan and Interest Repayment
-    """
-    rv = ldgr.value("loans") * pa * Decimal(dt / YEAR)
-    ldgr.commit(rv, columns["licence"])
-    ldgr.commit(-rv, columns["loans"])
-    ldgr.commit(rv, columns["vault"])
-    ldgr.commit(-rv, columns["firms"])
-    return rv
 
 
 def simulate(samples, initial=INITIAL, interval=HOUR, ledger=None):
