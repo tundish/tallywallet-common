@@ -77,7 +77,7 @@ def banking_licence(ldgr, val):
     Wilson's suggestion is to formalise the ability of a bank
     to create money. His first step (not present in Keen) is
     to capture this value as an asset.
-    
+
     1. Grant licence
     """
     ldgr.commit(val, columns["licence"])
@@ -169,7 +169,7 @@ def nonbank_interest(ldgr, dt, paF=Decimal("2E-2"), paW=Decimal("3E-3")):
 def firms_wages(ldgr, dt, pa=Decimal(3)):
     """
     Keen models the cost of production entirely as workers'
-    wages. There is no mention of `capital`. Clearly this is
+    wages. There is no mention of capital. Clearly this is
     a simplification which we can elaborate at another opportunity.
 
     10. Hire Workers

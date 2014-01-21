@@ -16,6 +16,8 @@ Tallywallet is a very young project. This package implements the following:
 * `Pre-hoc` calculation of exchange rate gains on currency trading accounts
 * Evaluation of the Fundamental Accounting Equation to verify balanced accounts
 * A text format for saving Ledgers to file
+* A tutorial on how to achieve foreign currency exchange in Python code
+* An example of a macroeconomic monetary circuit simulation
 
 Requirements
 ::::::::::::
@@ -23,18 +25,18 @@ Requirements
 Tallywallet requires Python 3.4. It uses setuptools_ for installation, but
 normally it has no external runtime dependencies.
 
-The unit tests do require the RSON_ package, however.
-
 You may have to `compile Python 3.4`_ yourself if it is not yet available from
 your package repository.
+
+Tallywallet comes with unit tests. To run them all requires the RSON_ package.
 
 Quick start
 :::::::::::
 
 Download and unpack the source distribution::
 
-    $ tar -xzvf tallywallet-common-0.001.tar.gz
-    $ cd tallywallet-common-0.001
+    $ tar -xzvf tallywallet-common-0.005.tar.gz
+    $ cd tallywallet-common-0.005
 
 Run the tests::
 

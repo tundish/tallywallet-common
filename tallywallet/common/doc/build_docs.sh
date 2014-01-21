@@ -25,4 +25,9 @@ $PYENV/bin/sphinx-build -b html \
     $PARENT/tallywallet-common/tallywallet/common/doc \
     $PARENT/tallywallet-common/tallywallet/common/doc/html
 
-# For Python hosted, zip up html
+REL=`$PYENV/bin/python3 setup.py --version`
+
+# http://pythonhosted.org/tallywallet-common
+cd $PARENT/tallywallet-common/tallywallet/common/doc/html
+zip -r tallywallet-common-$REL-doc-html.zip *
+cd -

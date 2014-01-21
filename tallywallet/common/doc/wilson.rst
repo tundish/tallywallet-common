@@ -133,7 +133,7 @@ Typical output
 
 By default the program replicates the behaviour described in `Debunking`.
 It begins with a debt supply of $100,000,000 and runs for ten years.
-The output matches Keen's to three significant figures.
+The output matches to three significant figures that published by Keen.
 
 ::
 
