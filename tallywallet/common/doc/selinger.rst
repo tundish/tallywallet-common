@@ -1,8 +1,8 @@
 ..  Titling
     ##++::==~~--''``
 
-An tutorial on Currency Exchange
-::::::::::::::::::::::::::::::::
+A tutorial on Currency Exchange
+:::::::::::::::::::::::::::::::
 
 This example is taken from `Peter Selinger's tutorial`_ on multiple currency
 accounting. We'll use a Ledger to track the transactions set out below,
