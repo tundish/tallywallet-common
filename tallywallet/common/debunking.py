@@ -34,15 +34,13 @@ from tallywallet.common.output import transaction
 __doc__ = """
 TODO:
 
-5. Record Interest
-9. Pay Worker Deposit Interest
 """
 
 __all__ = [
     "HOUR", "DAY", "WEEK", "YEAR",
     "INITIAL",
-    "bank_loan", "bank_charge",
-    "firms_interest", "firms_repay", "firms_wages", "nonfirms_consume",
+    "bank_loan", "bank_charge", "nonbank_interest", "firms_repayment",
+    "firms_wages", "nonfirms_consumption",
     "columns", "simulate"
 ]
 
@@ -63,6 +61,15 @@ columns = OrderedDict(
         Column("workers", Cy.USD, Role.liability),
         Column("safe", Cy.USD, Role.income),
         ))
+
+
+def banking_licence(ldgr, val):
+    """
+    1. Grant licence
+    """
+    ldgr.commit(val, columns["licence"])
+    ldgr.commit(val, columns["vault"])
+    return val
 
 
 def bank_loan(ldgr, dt, pa=Decimal("0.5")):
@@ -95,7 +102,7 @@ def bank_charge(ldgr, dt, pa=Decimal("5E-2")):
     return rv
 
 
-def firms_repay(ldgr, dt, interest, pa=Decimal("0.1")):
+def firms_repayment(ldgr, dt, interest, pa=Decimal("0.1")):
     """
     6. Repay Loan and Interest
     7. Record Loan and Interest Repayment
@@ -112,7 +119,7 @@ def firms_repay(ldgr, dt, interest, pa=Decimal("0.1")):
     return principal + interest
 
 
-def firms_interest(ldgr, dt, paF=Decimal("2E-2"), paW=Decimal("3E-3")):
+def nonbank_interest(ldgr, dt, paF=Decimal("2E-2"), paW=Decimal("3E-3")):
     """
     8. Pay firm deposit interest
     9. Pay worker deposit interest
@@ -136,7 +143,7 @@ def firms_wages(ldgr, dt, pa=Decimal(3)):
     return rv
 
 
-def nonfirms_consume(ldgr, dt, paB=Decimal(1), paW=Decimal(26)):
+def nonfirms_consumption(ldgr, dt, paB=Decimal(1), paW=Decimal(26)):
     """
     11. Workers' Consumption
     12. Bankers' Consumption
@@ -155,8 +162,7 @@ def simulate(samples, initial=INITIAL, interval=HOUR, ledger=None):
     cols = ldgr.columns
     yield metadata(ldgr)
 
-    ldgr.commit(initial, cols["licence"])
-    ldgr.commit(initial, cols["vault"])
+    banking_licence(ldgr, initial)
 
     yield transaction(
         ldgr, ts=t, note="Keen Money Circuit with balanced accounting")
@@ -166,10 +172,10 @@ def simulate(samples, initial=INITIAL, interval=HOUR, ledger=None):
         bank_loan(ldgr, interval),
         interest = bank_charge(ldgr, interval)
         flows = (
-            firms_repay(ldgr, interval, interest),
-            firms_interest(ldgr, interval),
+            firms_repayment(ldgr, interval, interest),
+            nonbank_interest(ldgr, interval),
             firms_wages(ldgr, interval),
-            nonfirms_consume(ldgr, interval))
+            nonfirms_consumption(ldgr, interval))
 
         if not ldgr.equation.status is Status.ok:
             warnings.warn(

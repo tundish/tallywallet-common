@@ -64,21 +64,21 @@ class DebunkingTests(unittest.TestCase):
         self.assertAlmostEqual(-5, self.ldgr.value("vault"), places=0)
         self.assertAlmostEqual(5, self.ldgr.value("safe"), places=0)
 
-    def test_annual_firms_interest(self):
+    def test_annual_nonbank_interest(self):
         loan = 100
         self.ldgr.commit(loan, columns["firms"])
-        annual = firms_interest(self.ldgr, YEAR)
+        annual = nonbank_interest(self.ldgr, YEAR)
         self.assertEqual(2, annual)
         self.assertAlmostEqual(-2, self.ldgr.value("safe"))
         self.assertAlmostEqual(102, self.ldgr.value("firms"))
 
-    def test_monthly_firms_interest(self):
+    def test_monthly_nonbank_interest(self):
         loan = 100
         self.ldgr.commit(loan, columns["firms"])
         n = x = 0
         while n < 12:
             n += 1
-            x += firms_interest(self.ldgr, YEAR / 12)
+            x += nonbank_interest(self.ldgr, YEAR / 12)
         self.assertAlmostEqual(Decimal(2), x, places=1)
         self.assertAlmostEqual(-2, self.ldgr.value("safe"), places=1)
         self.assertAlmostEqual(102, self.ldgr.value("firms"), places=1)
@@ -95,25 +95,24 @@ class DebunkingTests(unittest.TestCase):
         workers = int(1E3)
         self.ldgr.commit(safe, columns["safe"])
         self.ldgr.commit(workers, columns["workers"])
-        val = nonfirms_consume(self.ldgr, YEAR / 26)
+        val = nonfirms_consumption(self.ldgr, YEAR / 26)
         self.assertAlmostEqual(
             Decimal(1E9 + 1E3),
             self.ldgr.value("firms"), places=6)
 
-    def test_annual_firms_repay(self):
+    def test_annual_firms_repayment(self):
         bal = int(1E7)
         self.ldgr.commit(bal, columns["loans"])
-        val = firms_repay(self.ldgr, YEAR, interest=0)
+        val = firms_repayment(self.ldgr, YEAR, interest=0)
         self.assertEqual(Decimal(1E6), val)
         self.assertEqual(bal-val, self.ldgr.value("loans"))
         self.assertEqual(-val, self.ldgr.value("firms"))
         self.assertEqual(val, self.ldgr.value("vault"))
 
-
-    def test_annual_firms_repay_with_interest(self):
+    def test_annual_firms_repayment_with_interest(self):
         bal = int(1E7)
         self.ldgr.commit(bal, columns["loans"])
-        val = firms_repay(self.ldgr, YEAR, interest=Decimal(5E5))
+        val = firms_repayment(self.ldgr, YEAR, interest=Decimal(5E5))
         self.assertEqual(Decimal(1.5E6), val)
         self.assertEqual(bal-val, self.ldgr.value("loans"))
         self.assertEqual(-val, self.ldgr.value("firms"))
