@@ -31,6 +31,15 @@ thought` (2012)
     modifications to make it more recognisable to a reader familiar with
     double-entry accounting.
 
+Efficiency
+::::::::::
+
+A purely numerical simulation would use `collections.Counter`.
+Ledger better when complex accounting strategies are computed at run-time
+and assurance is needed of balanced equation. Also, hands-off simulation
+(parallelised Monte Carlo/parameter sweep) when there might be so many
+scenarios that they cannot be checked manually for correctness.
+
     Wilson's description of the model is re-documented here as this table.
 
 .. Small screens may need an 8 point font to see this table one row per line.
@@ -63,7 +72,7 @@ thought` (2012)
 +-------+                                       |                       |                       |                       |                           |                           |                           |
 |       |                                       |   |+| Interest charge |   |-| Interest charge |                       |                           |                           |                           |
 +-------+---------------------------------------+-----------------------+-----------------------+-----------------------+---------------------------+---------------------------+---------------------------+
-| 08    |   Pay Firm Deposit Interest           |                       |                       |                       |   |-| Firm interest       |   |+| Firm interest       |                           |
+| 08    |   Pay Firm Deposit Interest           |                       |                       |                       |   |-| Firm interest       |                           |   |+| Firm interest       |
 +-------+---------------------------------------+-----------------------+-----------------------+-----------------------+---------------------------+---------------------------+---------------------------+
 | 09    |   Pay Worker Deposit Interest         |                       |                       |                       |                           |   |-| Worker interest     |   |+| Worker interest     |
 +-------+---------------------------------------+-----------------------+-----------------------+-----------------------+---------------------------+---------------------------+---------------------------+

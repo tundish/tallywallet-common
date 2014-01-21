@@ -112,15 +112,18 @@ def firms_repay(ldgr, dt, interest, pa=Decimal("0.1")):
     return principal + interest
 
 
-def firms_interest(ldgr, dt, pa=Decimal("2E-2")):
+def firms_interest(ldgr, dt, paF=Decimal("2E-2"), paW=Decimal("3E-3")):
     """
     8. Pay firm deposit interest
-    9. TODO: Pay worker deposit interest
+    9. Pay worker deposit interest
     """
-    rv = ldgr.value("firms") * pa * Decimal(dt / YEAR)
-    ldgr.commit(rv, columns["firms"])
-    ldgr.commit(-rv, columns["safe"])
-    return rv
+    firms = ldgr.value("firms") * paF * Decimal(dt / YEAR)
+    workers = ldgr.value("workers") * paW * Decimal(dt / YEAR)
+    ldgr.commit(firms, columns["firms"])
+    ldgr.commit(-firms, columns["safe"])
+    ldgr.commit(workers, columns["workers"])
+    ldgr.commit(-workers, columns["safe"])
+    return firms + workers
 
 
 def firms_wages(ldgr, dt, pa=Decimal(3)):
