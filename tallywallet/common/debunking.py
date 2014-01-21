@@ -74,6 +74,10 @@ columns = OrderedDict(
 
 def banking_licence(ldgr, val):
     """
+    Wilson's suggestion is to formalise the ability of a bank
+    to create money. His first step (not present in Keen) is
+    to capture this value as an asset.
+    
     1. Grant licence
     """
     ldgr.commit(val, columns["licence"])
@@ -83,6 +87,10 @@ def banking_licence(ldgr, val):
 
 def bank_loan(ldgr, dt, pa=Decimal("0.5")):
     """
+    These two steps create a debit against the licence and
+    a corresponding addition to the loans book. The firms'
+    account is credited, reducing the balance in the vault.
+
     2. Lend money
     3. Record loan
     """
@@ -96,7 +104,9 @@ def bank_loan(ldgr, dt, pa=Decimal("0.5")):
 
 def bank_charge(ldgr, dt, pa=Decimal("5E-2")):
     """
-    This makes sense because a Bank wants to reduce its liabilities
+    This operation is a significant departure from Keen's original.
+
+    In the real world, a Bank will want to reduce its liabilities
     at every opportunity. Interest is charged immediately as revenue
     which reduces the level in the vault. The interest is issued as a
     loan so the ledger goes up and the value is deducted from the licence.
@@ -114,6 +124,11 @@ def bank_charge(ldgr, dt, pa=Decimal("5E-2")):
 
 def firms_repayment(ldgr, dt, interest, pa=Decimal("0.1")):
     """
+    The interest calculated in the previous step is debited from
+    the firms' account. At the same time, part of the principal
+    of the loan is paid off too. The total reappears in the vault,
+    reducing the loan book and accruing value back to the licence.
+
     6. Repay Loan and Interest
     7. Record Loan and Interest Repayment
     """
@@ -131,6 +146,14 @@ def firms_repayment(ldgr, dt, interest, pa=Decimal("0.1")):
 
 def nonbank_interest(ldgr, dt, paF=Decimal("2E-2"), paW=Decimal("3E-3")):
     """
+    Keen's original model only paid interest on the firms' account.
+    Wilson added interest for workers too. In order to maintain the
+    equivalence of the two simulations, I have adjusted the workers'
+    interest rate so that the steady state output after ten years is
+    close to that described in Keen's book. This corresponds to a rate
+    of 0.3% on a worker's current account which, though low, has been
+    observed in the UK in recent times.
+
     8. Pay firm deposit interest
     9. Pay worker deposit interest
     """
@@ -145,6 +168,10 @@ def nonbank_interest(ldgr, dt, paF=Decimal("2E-2"), paW=Decimal("3E-3")):
 
 def firms_wages(ldgr, dt, pa=Decimal(3)):
     """
+    Keen models the cost of production entirely as workers'
+    wages. There is no mention of `capital`. Clearly this is
+    a simplification which we can elaborate at another opportunity.
+
     10. Hire Workers
     """
     rv = ldgr.value("firms") * pa * Decimal(dt / YEAR)
@@ -155,6 +182,9 @@ def firms_wages(ldgr, dt, pa=Decimal(3)):
 
 def nonfirms_consumption(ldgr, dt, paB=Decimal(1), paW=Decimal(26)):
     """
+    This operation is as Keen defined it, since it doesn't impact
+    the loan ledger or the licence asset which Wilson introduced.
+
     11. Workers' Consumption
     12. Bankers' Consumption
     """
@@ -168,7 +198,21 @@ def nonfirms_consumption(ldgr, dt, paB=Decimal(1), paW=Decimal(26)):
 
 def simulate(samples, initial=INITIAL, interval=HOUR, ledger=None):
     """
-    Run the simulation.
+    Run the simulation by repeating the operations described above.
+    At the end of every cycle, the equality of the
+    Fundamental Accounting Equation is tested. A warning is raised if
+    the equality fails.
+
+    :param samples: A sequence of times. At each of these the simulation
+                    will print out the state of the Ledger. The simulation
+                    will stop after the final sample time has passed.
+    :param initial: The initial value of the banking licence.
+    :param interval:    The value of the simulation timestep in seconds.
+    :param ledger:  An existing Ledger object. If None is passed, a new
+                    one will be created.
+    :returns:       This routine is a generator which yields RSON_ strings.
+                    The final return value is the ledger object used during
+                    the simulation.
     """
     t = 0
     ldgr = ledger or Ledger(*columns.values(), ref=Cy.USD)

@@ -21,8 +21,8 @@ a computational simulation in Python would most likely choose
 ...and why you might do
 =======================
 
-There are some scenarios where Tallywallet's features do apply to
-economics. Here is one.
+But there are some scenarios where Tallywallet's features could aid in
+simulation. Here is one.
 
 Debunking economics
 ~~~~~~~~~~~~~~~~~~~
@@ -131,6 +131,10 @@ How it works
 Typical output
 ~~~~~~~~~~~~~~
 
+By default the program replicates the behaviour described in `Debunking`.
+It begins with a debt supply of $100,000,000 and runs for ten years.
+The output matches Keen's to three significant figures.
+
 ::
 
     {}
@@ -212,3 +216,5 @@ Typical output
 .. _Steve Keen: http://www.debtdeflation.com/blogs
 .. _Double entry view on Keen Circuit Model: http://www.3spoken.co.uk/2011/12/double-entry-view-on-keen-circuit-model.html
 .. _Neil Wilson: http://www.3spoken.co.uk
+.. _RSON: http://code.google.com/p/rson/
+
