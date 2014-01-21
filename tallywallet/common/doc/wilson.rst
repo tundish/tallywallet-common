@@ -18,36 +18,39 @@ called `Steve Keen`_, wrote a book called
 `Debunking economics: The naked Emperor dethroned?` (the reference for
 this example is the 2011 edition, particularly chapters 13-18).
 
-Keen painstakingly exposed the deficiencies of orthodox macroeconomic theory.
-As an Engineer familiar with the mathematics
-of electronic control systems, he presented an alternative; to treat the
-economy as a natural system capable of dynamic instability.
+As an Engineer familiar with the mathematics of electronic control systems,
+Keen saw many deficiencies in the static approach of neoclassical
+macroeconomics. He presented an alternative; to treat the economy as a natural
+system capable of dynamic instability.
 
-Chapters 13-18 provide reference material for the implementation of
-this software. Professor Keen presents a top-down synthesis of Marx,
-Schumpeter, Keynes and Minsky. But he also acknowledges the validity
-of a multi-agent paradigm which is the approach of
-`tallywallet-dynamics`.
+Professor Keen incorporated ideas from Marx, Schumpeter, Keynes and Minsky,
+to create what he called the `Monetary Circuit Model`. Far from being
+complicated, this approach will feel quite natural to anyone who has written
+software to simulate industrial processes.
 
-The Double-entry paradigm
-=========================
+Keen's simulation uses simple rules but is nonetheless capable of predicting
+the kind of phenomena seen in financial downturns. These are not explained
+by orthodox economic models.
 
-`Double entry view on Keen Circuit Model`_ (2012)
+Double-entry paradigm
+=====================
 
-    `Neil Wilson`_ reviews Keen's dynamic circuit model. He proposes some
-    modifications to make it more recognisable to a reader familiar with
-    double-entry accounting.
+In 2012, the UK-based blogger `Neil Wilson`_ wrote a critique of Keen's new
+model. Wilson was concerned that Keen's work had too much Engineering about
+it.
 
-Efficiency
-==========
+While supportive of the approach, Wilson felt that the model's ignorance of
+accounting concepts prevented its acceptance by the economic community.
 
-A purely numerical simulation would use `collections.Counter`.
-Ledger better when complex accounting strategies are computed at run-time
-and assurance is needed of balanced equation. Also, hands-off simulation
-(parallelised Monte Carlo/parameter sweep) when there might be so many
-scenarios that they cannot be checked manually for correctness.
+In the article `Double entry view on Keen Circuit Model`_, Wilson reviews
+Keen's dynamic circuit model. He proposes some modifications to make it more
+recognisable to a reader familiar with the double-entry accounting system
+used by banks and businesses.
 
-    Wilson's description of the model is re-documented here as this table.
+Ledger simulation
+=================
+
+Wilson's description of the model is captured here in this table.
 
 .. Small screens may need an 8 point font to see this table one row per line.
 
@@ -95,6 +98,15 @@ scenarios that they cannot be checked manually for correctness.
 
 .. |+| replace:: **+**
 .. |-| replace:: **-**
+
+Efficiency
+==========
+
+A purely numerical simulation would use `collections.Counter`.
+Ledger better when complex accounting strategies are computed at run-time
+and assurance is needed of balanced equation. Also, hands-off simulation
+(parallelised Monte Carlo/parameter sweep) when there might be so many
+scenarios that they cannot be checked manually for correctness.
 
 .. _setuptools: https://pypi.python.org/pypi/setuptools
 .. _compile Python 3.4: http://www.python.org/download/source/
