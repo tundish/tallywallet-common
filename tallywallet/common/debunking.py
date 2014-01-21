@@ -32,7 +32,16 @@ from tallywallet.common.output import metadata
 from tallywallet.common.output import transaction
 
 __doc__ = """
-TODO:
+The `tallywallet.common.debunking` module presents Keen's simulation
+according to Wilson's perspective of balanced accounting.
+
+You run it as follows::
+
+    $ python -m tallywallet.common.debunking
+
+Or, to make use of the advanced options, read the help like this::
+
+    $ python -m tallywallet.common.debunking --help
 
 """
 
@@ -196,7 +205,9 @@ def main(args):
 
 
 def parser():
-    rv = argparse.ArgumentParser(description=__doc__)
+    rv = argparse.ArgumentParser(
+        description=__doc__,
+        formatter_class=argparse.RawDescriptionHelpFormatter)
     rv.add_argument(
         "--initial", type=int, default=INITIAL,
         help="Set the initial level of vault funds [{}]".format(INITIAL))

@@ -4,14 +4,33 @@
 A simple Keen Monetary Circuit simulation
 :::::::::::::::::::::::::::::::::::::::::
 
+Why you shouldn't use Tallywallet in an economic simulation...
+==============================================================
+
+Book-keeping is a contemplative activity which usually requires a
+human being to make judgements on how best to present accounts.
+
+A numerical simulation of an economy is a different thing. You want it
+to go as fast as it can, and to optimise for speed is to do away with
+such features as balanced accounting.
+
+So, while Tallywallet's `Ledger` class is designed for interactive use,
+a computational simulation in Python would most likely choose
+`collections.Counter` to store numerical values.
+
+...and why you might do
+=======================
+
+There are some scenarios where Tallywallet's features do apply to
+economics. Here is one.
+
+Debunking economics
+~~~~~~~~~~~~~~~~~~~
+
 Economic crises have become frequent events in the last 80 years. The
-character and origins of each are difficult to comprehend. The
 lack of a coherent narrative to explain them has led to controversy in
 the academic profession as rival schools challenge or defend the
 orthodoxy of neoclassical economic theory.
-
-Debunking economics
-===================
 
 One longstanding opponent of neoclassical theory, an Australian professor
 called `Steve Keen`_, wrote a book called
@@ -25,7 +44,7 @@ system capable of dynamic instability.
 
 Professor Keen incorporated ideas from Marx, Schumpeter, Keynes and Minsky,
 to create what he called the `Monetary Circuit Model`. Far from being
-complicated, this approach will feel quite natural to anyone who has written
+complicated, this approach feels quite natural to someone who has written
 software to simulate industrial processes.
 
 Keen's simulation uses simple rules but is nonetheless capable of predicting
@@ -33,22 +52,25 @@ the kind of phenomena seen in financial downturns. These are not explained
 by orthodox economic models.
 
 Double-entry paradigm
-=====================
+~~~~~~~~~~~~~~~~~~~~~
 
 In 2012, the UK-based blogger `Neil Wilson`_ wrote a critique of Keen's new
 model. Wilson was concerned that Keen's work had too much Engineering about
 it.
 
 While supportive of the approach, Wilson felt that the model's ignorance of
-accounting concepts prevented its acceptance by the economic community.
+accounting concepts prevented its acceptance by the financial community.
 
 In the article `Double entry view on Keen Circuit Model`_, Wilson reviews
 Keen's dynamic circuit model. He proposes some modifications to make it more
 recognisable to a reader familiar with the double-entry accounting system
 used by banks and businesses.
 
-Ledger simulation
-=================
+Ledger simulation example
+=========================
+
+This example will use Tallywallet to recreate Keen's simulation. But we'll
+also incorporate Wilson's recommendations to maintain a balanced ledger.
 
 Wilson's description of the model is captured here in this table.
 
@@ -99,14 +121,11 @@ Wilson's description of the model is captured here in this table.
 .. |+| replace:: **+**
 .. |-| replace:: **-**
 
-Efficiency
-==========
+Debunking.py
+~~~~~~~~~~~~
 
-A purely numerical simulation would use `collections.Counter`.
-Ledger better when complex accounting strategies are computed at run-time
-and assurance is needed of balanced equation. Also, hands-off simulation
-(parallelised Monte Carlo/parameter sweep) when there might be so many
-scenarios that they cannot be checked manually for correctness.
+.. automodule:: tallywallet.common.debunking
+   :members:
 
 .. _setuptools: https://pypi.python.org/pypi/setuptools
 .. _compile Python 3.4: http://www.python.org/download/source/
