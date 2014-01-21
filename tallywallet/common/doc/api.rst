@@ -43,4 +43,5 @@ Output
 
 .. automodule:: tallywallet.common.output
    :members:
+   :member-order: bysource
 

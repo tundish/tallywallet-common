@@ -121,17 +121,94 @@ Wilson's description of the model is captured here in this table.
 .. |+| replace:: **+**
 .. |-| replace:: **-**
 
-Debunking.py
+How it works
 ~~~~~~~~~~~~
 
 .. automodule:: tallywallet.common.debunking
    :members:
+   :member-order: bysource
 
-.. _setuptools: https://pypi.python.org/pypi/setuptools
-.. _compile Python 3.4: http://www.python.org/download/source/
-.. _tallywallet-common: https://pypi.python.org/pypi/tallywallet-common
-.. _David Orrell: http://www.postpythagorean.com
+Typical output
+~~~~~~~~~~~~~~
+
+::
+
+    {}
+        header:version: 0.005
+    {}
+        ledger:columns:    [
+                [licence, USD, asset],
+                [loans, USD, asset],
+                [vault, USD, liability],
+                [firms, USD, liability],
+                [workers, USD, liability],
+                [safe, USD, income],
+                [USD trading account, USD, trading]
+            ]
+        ledger:ref: USD
+
+    {}
+        note:
+            Keen Money Circuit with balanced accounting
+        ts:
+            0
+    [ 100000000.00, 0.00, 100000000.00, 0.00, 0.00, 0.00, 0.00]
+
+    {}
+        ts:
+            3600
+    [ 99994276.62, 5723.38, 99994276.62, 5721.40, 1.96, 0.02, 0.00]
+
+    {}
+        ts:
+            31449600
+    [ 62400370.51, 37599629.49, 62400370.51, 33389071.04, 3733551.18, 477007.26, 0.00]
+
+    {}
+        ts:
+            62899200
+    [ 41765575.22, 58234424.78, 41765575.22, 51200784.95, 5832702.36, 1200937.47, 0.00]
+
+    {}
+        ts:
+            94348800
+    [ 30441134.47, 69558865.53, 30441134.47, 60821254.87, 6966230.99, 1771379.68, 0.00]
+
+    {}
+        ts:
+            125798400
+    [ 24226245.65, 75773754.35, 24226245.65, 66043064.02, 7581387.75, 2149302.57, 0.00]
+
+    {}
+        ts:
+            157248000
+    [ 20815495.07, 79184504.93, 20815495.07, 68887106.37, 7916392.69, 2381005.88, 0.00]
+
+    {}
+        ts:
+            188697600
+    [ 18943664.38, 81056335.62, 18943664.38, 70439795.64, 8099272.33, 2517267.65, 0.00]
+
+    {}
+        ts:
+            220147200
+    [ 17916397.80, 82083602.20, 17916397.80, 71288870.80, 8199273.09, 2595458.32, 0.00]
+
+    {}
+        ts:
+            251596800
+    [ 17352630.66, 82647369.34, 17352630.66, 71753705.00, 8254017.40, 2639646.94, 0.00]
+
+    {}
+        ts:
+            283046400
+    [ 17043233.47, 82956766.53, 17043233.47, 72008380.09, 8284010.14, 2664376.30, 0.00]
+
+    {}
+        ts:
+            314496000
+    [ 16873435.32, 83126564.68, 16873435.32, 72147986.47, 8300451.11, 2678127.10, 0.00]
+
 .. _Steve Keen: http://www.debtdeflation.com/blogs
 .. _Double entry view on Keen Circuit Model: http://www.3spoken.co.uk/2011/12/double-entry-view-on-keen-circuit-model.html
 .. _Neil Wilson: http://www.3spoken.co.uk
-.. _Fred Decker: http://www.modernmt.net

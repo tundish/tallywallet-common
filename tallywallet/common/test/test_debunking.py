@@ -19,6 +19,7 @@
 from decimal import Decimal
 from decimal import ROUND_UP
 import unittest
+import unittest as functest
 
 from tallywallet.common.currency import Currency as Cy
 from tallywallet.common.debunking import *
@@ -119,7 +120,7 @@ class DebunkingTests(unittest.TestCase):
         self.assertEqual(val, self.ldgr.value("vault"))
 
 
-class SimulationTests(unittest.TestCase):
+class SimulationTests(functest.TestCase):
     """
     Attempt to recreate the simulation described by Steve Keen in
     'Debunking Economics' 2nd Ed 2011. Page 363, Para 107.

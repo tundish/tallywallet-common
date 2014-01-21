@@ -93,9 +93,6 @@ class Ledger(object):
         """
         The `Fundamental Accounting Equation`_ is this::
 
-            Assets - Liabilities = Equity
-            Assets - Liabilities = Capital + Retained earnings
-            Assets - Liabilities = Capital + Net income - Dividends
             Assets - Liabilities = Capital + Income - Expenses - Dividends
 
         Currency trading gains are counted as income.

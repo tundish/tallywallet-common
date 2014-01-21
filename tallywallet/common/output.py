@@ -50,12 +50,12 @@ def metadata(ledger):
         version=tallywallet.common.__version__)
 
 
-def transaction(ledger, **kwargs):
+def journal(ledger, **kwargs):
     """
-    Create an RSON string representing the most recent transaction of
+    Create an RSON string representing the current state of
     a Ledger object.
 
-    Transaction strings can be appended to metadata, and/or concatenated
+    Journal strings can be appended to metadata, and/or concatenated
     to form a time-series record of the Ledger accounts.
     """
     keys = sorted(kwargs.keys())

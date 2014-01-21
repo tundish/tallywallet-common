@@ -29,7 +29,7 @@ from tallywallet.common.ledger import Ledger
 from tallywallet.common.ledger import Role
 from tallywallet.common.ledger import Status
 from tallywallet.common.output import metadata
-from tallywallet.common.output import transaction
+from tallywallet.common.output import journal
 
 __doc__ = """
 The `tallywallet.common.debunking` module presents Keen's simulation
@@ -47,7 +47,7 @@ Or, to make use of the advanced options, read the help like this::
 
 __all__ = [
     "HOUR", "DAY", "WEEK", "YEAR",
-    "INITIAL",
+    "INITIAL", "banking_licence",
     "bank_loan", "bank_charge", "nonbank_interest", "firms_repayment",
     "firms_wages", "nonfirms_consumption",
     "columns", "simulate"
@@ -100,6 +100,7 @@ def bank_charge(ldgr, dt, pa=Decimal("5E-2")):
     at every opportunity. Interest is charged immediately as revenue
     which reduces the level in the vault. The interest is issued as a
     loan so the ledger goes up and the value is deducted from the licence.
+
     4. Charge interest
     5. Record interest
     """
@@ -166,6 +167,9 @@ def nonfirms_consumption(ldgr, dt, paB=Decimal(1), paW=Decimal(26)):
 
 
 def simulate(samples, initial=INITIAL, interval=HOUR, ledger=None):
+    """
+    Run the simulation.
+    """
     t = 0
     ldgr = ledger or Ledger(*columns.values(), ref=Cy.USD)
     cols = ldgr.columns
@@ -173,7 +177,7 @@ def simulate(samples, initial=INITIAL, interval=HOUR, ledger=None):
 
     banking_licence(ldgr, initial)
 
-    yield transaction(
+    yield journal(
         ldgr, ts=t, note="Keen Money Circuit with balanced accounting")
 
     while samples:
@@ -188,10 +192,10 @@ def simulate(samples, initial=INITIAL, interval=HOUR, ledger=None):
 
         if not ldgr.equation.status is Status.ok:
             warnings.warn(
-                "# Unbalanced ledger\n{}".format(transaction(ldgr)))
+                "# Unbalanced ledger\n{}".format(journal(ldgr)))
 
         if t >= samples[0]:
-            yield transaction(ldgr, ts=t)
+            yield journal(ldgr, ts=t)
             samples.pop(0)
     return ldgr
 

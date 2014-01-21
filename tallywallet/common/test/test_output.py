@@ -31,7 +31,7 @@ from tallywallet.common.ledger import Ledger
 from tallywallet.common.ledger import Role
 from tallywallet.common.ledger import Status
 from tallywallet.common.output import metadata
-from tallywallet.common.output import transaction
+from tallywallet.common.output import journal
 
 
 class OutputTests(unittest.TestCase):
@@ -58,7 +58,7 @@ class OutputTests(unittest.TestCase):
         self.assertEqual(6, len(out[1]["ledger"]["columns"]))
         self.assertEqual("CAD", out[1]["ledger"]["ref"])
 
-    def test_output_transaction(self):
+    def test_output_journal(self):
         ldgr = Ledger(
             Column("Canadian cash", Cy.CAD, Role.asset),
             Column("US cash", Cy.USD, Role.asset),
@@ -72,7 +72,7 @@ class OutputTests(unittest.TestCase):
             (_, _, _, _, st) = ldgr.commit(amount, col)
 
         self.assertIs(Status.ok, st)
-        t = transaction(
+        t = journal(
             ldgr,
             ts=datetime.date(2013, 1, 1), note="Opening balance")
         out = rson.loads(t)
@@ -83,7 +83,7 @@ class OutputTests(unittest.TestCase):
         self.assertEqual(6, len(out[1]))
         self.assertEqual(400, sum(out[1]))
 
-    def test_output_sequential_transactions(self):
+    def test_output_sequential_journals(self):
         ldgr = Ledger(
             Column("Canadian cash", Cy.CAD, Role.asset),
             Column("US cash", Cy.USD, Role.asset),
@@ -99,7 +99,7 @@ class OutputTests(unittest.TestCase):
 
         out = io.StringIO()
         print(metadata(ldgr), file=out)
-        print(transaction(
+        print(journal(
             ldgr,
             ts=datetime.date(2013, 1, 1), note="Opening balance"),
             file=out)
@@ -108,7 +108,7 @@ class OutputTests(unittest.TestCase):
         for args in ldgr.adjustments(exchange):
             ldgr.commit(*args)
 
-        print(transaction(
+        print(journal(
             ldgr,
             ts=datetime.date(2013, 1, 2), note="1 USD -> 1.20 CAD"),
             file=out)
@@ -116,7 +116,7 @@ class OutputTests(unittest.TestCase):
         ldgr.commit(-20, cols["Canadian cash"])
         ldgr.commit(20, cols["Expense"])
 
-        print(transaction(
+        print(journal(
             ldgr,
             ts=datetime.date(2013, 1, 3), note="Buy food"),
             file=out)
