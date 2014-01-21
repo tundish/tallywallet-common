@@ -19,7 +19,7 @@
 import tallywallet.common
 
 __doc__ = """
-Tallywallet has picked RSON_ as the serialisation format for a Ledger.
+Tallywallet has chosen RSON_ as the serialisation format for a Ledger.
 It's a readable serial object notation which can be processed by text
 utilities or converted into Python objects.
 
