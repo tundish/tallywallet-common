@@ -30,7 +30,7 @@ setup(
     description="A currency trading ledger in Python",
     author="D Haynes",
     author_email="tundish@thuswise.org",
-    url="http://www.thuswise.co.uk",
+    url="https://www.assembla.com/spaces/tallywallet/messages",
     long_description=__doc__,
     classifiers=[
         "Operating System :: OS Independent",
