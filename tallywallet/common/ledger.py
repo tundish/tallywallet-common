@@ -185,6 +185,15 @@ http://en.wikipedia.org/wiki/Accounting_equation
 
         return (trade, col, exchange, kwargs, st)
 
+    def balance(self, name):
+        """
+        Returns columns and their values in the ledger.
+
+        :param name: The name of the column
+        """
+        return [(col, self._tally[col]) for col in self._cols
+                if col.name == name]
+
     def value(self, name):
         """
         Returns the current value of a column in the ledger.
