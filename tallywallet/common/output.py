@@ -34,7 +34,8 @@ def metadata(ledger):
     a working Ledger object.
     """
     columns = ",\n".join(
-        " "*12 + "[{0.name}, {0.currency.name}, {0.role.name}]".format(i)
+        " "*12 + "[{0}, {1.currency.name}, {1.role.name}]".format(
+            i.label.format(i.ref), i)
         for i in ledger._cols)
     template = """
 {{}}

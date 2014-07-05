@@ -41,9 +41,9 @@ class LedgerTests(unittest.TestCase):
         Jan 4 Balance (1 USD = 1.15 CAD) CAD 60 USD 100 CAD 180 – CAD 5
         """
         ldgr = Ledger(
-            Column("Canadian cash", Cy.CAD, Role.asset),
-            Column("US cash", Cy.USD, Role.asset),
-            Column("Capital", Cy.CAD, Role.capital),
+            Column("Canadian cash", Cy.CAD, Role.asset, "{}"),
+            Column("US cash", Cy.USD, Role.asset, "{}"),
+            Column("Capital", Cy.CAD, Role.capital, "{}"),
             ref=Cy.CAD)
         usC = ldgr.columns["US cash"]
         for args in ldgr.adjustments(
@@ -105,10 +105,10 @@ class LedgerTests(unittest.TestCase):
                 Balance         CAD 135 USD 0   CAD 200 CAD 72  USD 0  CAD 07
         """
         ldgr = Ledger(
-            Column("Canadian cash", Cy.CAD, Role.asset),
-            Column("US cash", Cy.USD, Role.asset),
-            Column("Capital", Cy.CAD, Role.capital),
-            Column("Expense", Cy.CAD, Role.expense),
+            Column("Canadian cash", Cy.CAD, Role.asset, "{}"),
+            Column("US cash", Cy.USD, Role.asset, "{}"),
+            Column("Capital", Cy.CAD, Role.capital, "{}"),
+            Column("Expense", Cy.CAD, Role.expense, "{}"),
             ref=Cy.CAD)
 
         cols = ldgr.columns

@@ -38,10 +38,10 @@ class OutputTests(unittest.TestCase):
 
     def test_output_metadata(self):
         ldgr = Ledger(
-            Column("Canadian cash", Cy.CAD, Role.asset),
-            Column("US cash", Cy.USD, Role.asset),
-            Column("Capital", Cy.CAD, Role.capital),
-            Column("Expense", Cy.CAD, Role.expense),
+            Column("Canadian cash", Cy.CAD, Role.asset, "{}"),
+            Column("US cash", Cy.USD, Role.asset, "{}"),
+            Column("Capital", Cy.CAD, Role.capital, "{}"),
+            Column("Expense", Cy.CAD, Role.expense, "{}"),
             ref=Cy.CAD)
 
         m = metadata(ldgr)
@@ -60,10 +60,10 @@ class OutputTests(unittest.TestCase):
 
     def test_output_journal(self):
         ldgr = Ledger(
-            Column("Canadian cash", Cy.CAD, Role.asset),
-            Column("US cash", Cy.USD, Role.asset),
-            Column("Capital", Cy.CAD, Role.capital),
-            Column("Expense", Cy.CAD, Role.expense),
+            Column("Canadian cash", Cy.CAD, Role.asset, "{}"),
+            Column("US cash", Cy.USD, Role.asset, "{}"),
+            Column("Capital", Cy.CAD, Role.capital, "{}"),
+            Column("Expense", Cy.CAD, Role.expense, "{}"),
             ref=Cy.CAD)
 
         for amount, col in zip(
@@ -85,10 +85,10 @@ class OutputTests(unittest.TestCase):
 
     def test_output_sequential_journals(self):
         ldgr = Ledger(
-            Column("Canadian cash", Cy.CAD, Role.asset),
-            Column("US cash", Cy.USD, Role.asset),
-            Column("Capital", Cy.CAD, Role.capital),
-            Column("Expense", Cy.CAD, Role.expense),
+            Column("Canadian cash", Cy.CAD, Role.asset, "{}"),
+            Column("US cash", Cy.USD, Role.asset, "{}"),
+            Column("Capital", Cy.CAD, Role.capital, "{}"),
+            Column("Expense", Cy.CAD, Role.expense, "{}"),
             ref=Cy.CAD)
         cols = ldgr.columns
 

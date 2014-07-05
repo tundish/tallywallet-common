@@ -55,10 +55,10 @@ class Role(enum.Enum):
     dividend = 7
 
 
-Column = namedtuple("Column", ["name", "currency", "role"])
+Column = namedtuple("Column", ["ref", "currency", "role", "label"])
 Column.__doc__ = """`{}`
 
-A 3-tuple, describing a column in a Ledger.
+A 4-tuple, describing a column in a Ledger.
 """.format(Column.__doc__)
 
 FAE = namedtuple("FundamentalAccountingEquation", ["lhs", "rhs", "status"])
@@ -77,7 +77,7 @@ class Ledger(object):
         self.ref = ref
         self._cols = list(args)
         self._cols.extend(
-            Column("{} trading account".format(c.name), c, Role.trading)
+            Column(c.name, c, Role.trading, "{} trading account")
             for c in set(i.currency for i in args))
         self._tradingAccounts = {
             i.currency: i for i in self._cols if i.role is Role.trading}
@@ -86,7 +86,7 @@ class Ledger(object):
 
     @property
     def columns(self):
-        return OrderedDict((i.name, i) for i in self._cols)
+        return OrderedDict((i.label.format(i.ref), i) for i in self._cols)
 
     @property
     def equation(self):
@@ -194,11 +194,12 @@ http://en.wikipedia.org/wiki/Accounting_equation
         return [(col, self._tally[col]) for col in self._cols
                 if col.name == name]
 
+    #TODO: dispatch on argument (string or column spec)
     def value(self, name):
         """
         Returns the current value of a column in the ledger.
 
         :param name: The name of the column
         """
-        col = next(i for i in self._cols if i.name == name)
+        col = next(i for i in self._cols if i.label.format(i.ref) == name)
         return self._tally[col]
