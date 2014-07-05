@@ -74,6 +74,7 @@ class Ledger(object):
         :param ref: (optional) the base Currency_ type for the Ledger
         :param args: One or more Column objects
         """
+        # TODO: Lose self._cols
         self.ref = ref
         self._cols = list(args)
         self._cols.extend(
@@ -185,21 +186,23 @@ http://en.wikipedia.org/wiki/Accounting_equation
 
         return (trade, col, exchange, kwargs, st)
 
-    def balance(self, name):
+    def balance(self, ref):
         """
         Returns columns and their values in the ledger.
 
         :param name: The name of the column
         """
         return [(col, self._tally[col]) for col in self._cols
-                if col.name == name]
+                if col.ref == ref]
 
-    #TODO: dispatch on argument (string or column spec)
-    def value(self, name):
+    def value(self, arg):
         """
         Returns the current value of a column in the ledger.
 
-        :param name: The name of the column
+        :param col: The column object, or its name as a string
         """
-        col = next(i for i in self._cols if i.label.format(i.ref) == name)
-        return self._tally[col]
+        try:
+            return self._tally[arg]
+        except KeyError:
+            col = next(i for i in self._cols if i.label.format(i.ref) == arg)
+            return self._tally[col]

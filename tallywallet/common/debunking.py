@@ -62,13 +62,13 @@ YEAR = 52 * WEEK
 INITIAL = int(100E6)
 
 columns = OrderedDict(
-    (i.name, i) for i in (
-        Column("licence", Cy.USD, Role.asset),
-        Column("loans", Cy.USD, Role.asset),
-        Column("vault", Cy.USD, Role.liability),
-        Column("firms", Cy.USD, Role.liability),
-        Column("workers", Cy.USD, Role.liability),
-        Column("safe", Cy.USD, Role.income),
+    (i.ref, i) for i in (
+        Column("licence", Cy.USD, Role.asset, "{}"),
+        Column("loans", Cy.USD, Role.asset, "{}"),
+        Column("vault", Cy.USD, Role.liability, "{}"),
+        Column("firms", Cy.USD, Role.liability, "{}"),
+        Column("workers", Cy.USD, Role.liability, "{}"),
+        Column("safe", Cy.USD, Role.income, "{}"),
         ))
 
 

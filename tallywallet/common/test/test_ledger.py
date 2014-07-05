@@ -31,6 +31,24 @@ from tallywallet.common.trade import TradePath
 
 class LedgerTests(unittest.TestCase):
 
+    def test_value_by_column(self):
+        ldgr = Ledger(
+            Column("Domestic", Cy.GBP, Role.asset, "{} assets"),
+            Column("Domestic", Cy.GBP, Role.capital, "{} capital"),
+            ref=Cy.GBP)
+        assets = next(i for i in ldgr.columns.values() if i.role is Role.asset)
+        ldgr.commit(120, assets)
+        self.assertEqual(120, ldgr.value(assets))
+
+    def test_value_by_string(self):
+        ldgr = Ledger(
+            Column("Domestic", Cy.GBP, Role.asset, "{} assets"),
+            Column("Domestic", Cy.GBP, Role.capital, "{} capital"),
+            ref=Cy.GBP)
+        assets = next(i for i in ldgr.columns.values() if i.role is Role.asset)
+        ldgr.commit(120, assets)
+        self.assertEqual(120, ldgr.value("Domestic assets"))
+
     def test_track_exchange_gain_with_fixed_assets(self):
         """
         From Selinger table 4.1
