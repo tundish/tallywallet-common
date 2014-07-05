@@ -2,7 +2,7 @@
 
 # Builds TopicMob web to go. Outputs the source package names.
 # eg:
-# $ ./topicmob/ops/scripts/build.sh --novenv --nopush --nosign > build.out
+# $ ./tallywallet/common/doc/build_docs.sh
 
 PYTHON=/usr/local/bin/python3.4
 PYENV=~/py3.4

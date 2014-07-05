@@ -76,18 +76,18 @@ class Ledger(object):
         """
         # TODO: Lose self._cols
         self.ref = ref
-        self._cols = list(args)
-        self._cols.extend(
+        cols = list(args)
+        cols.extend(
             Column(c.name, c, Role.trading, "{} trading account")
             for c in set(i.currency for i in args))
         self._tradingAccounts = {
-            i.currency: i for i in self._cols if i.role is Role.trading}
+            i.currency: i for i in cols if i.role is Role.trading}
         self._rates = {i: Exchange({}) for i in args}
-        self._tally = OrderedDict((i, Dl(0)) for i in self._cols)
+        self._tally = OrderedDict((i, Dl(0)) for i in cols)
 
     @property
     def columns(self):
-        return OrderedDict((i.label.format(i.ref), i) for i in self._cols)
+        return OrderedDict((i.label.format(i.ref), i) for i in self._tally)
 
     @property
     def equation(self):
@@ -110,10 +110,10 @@ class Ledger(object):
 http://en.wikipedia.org/wiki/Accounting_equation
         """
         st = Status.failed
-        lhCols = set(i for i in self._cols
+        lhCols = set(i for i in self._tally
                      if i.role in (Role.asset, Role.expense, Role.dividend))
-        trCols = set(i for i in self._cols if i.role is Role.trading)
-        rhCols = set(self._cols) - lhCols - trCols
+        trCols = set(i for i in self._tally if i.role is Role.trading)
+        rhCols = set(self._tally.keys()) - lhCols - trCols
         try:
             lhs = sum(
                 self._rates[col].convert(
@@ -190,19 +190,19 @@ http://en.wikipedia.org/wiki/Accounting_equation
         """
         Returns columns and their values in the ledger.
 
-        :param name: The name of the column
+        :param ref: The ref of the column
         """
-        return [(col, self._tally[col]) for col in self._cols
+        return [(col, val) for col, val in self._tally.items()
                 if col.ref == ref]
 
     def value(self, arg):
         """
         Returns the current value of a column in the ledger.
 
-        :param col: The column object, or its name as a string
+        :param arg: The column object, or its name as a string
         """
         try:
             return self._tally[arg]
         except KeyError:
-            col = next(i for i in self._cols if i.label.format(i.ref) == arg)
+            col = next(i for i in self._tally if i.label.format(i.ref) == arg)
             return self._tally[col]

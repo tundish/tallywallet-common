@@ -31,6 +31,13 @@ from tallywallet.common.trade import TradePath
 
 class LedgerTests(unittest.TestCase):
 
+    def test_balance(self):
+        ldgr = Ledger(
+            Column("Domestic", Cy.GBP, Role.asset, "{} assets"),
+            Column("Domestic", Cy.GBP, Role.capital, "{} capital"),
+            ref=Cy.GBP)
+        self.assertEqual(2, len(ldgr.balance("Domestic")))
+
     def test_value_by_column(self):
         ldgr = Ledger(
             Column("Domestic", Cy.GBP, Role.asset, "{} assets"),
@@ -39,6 +46,15 @@ class LedgerTests(unittest.TestCase):
         assets = next(i for i in ldgr.columns.values() if i.role is Role.asset)
         ldgr.commit(120, assets)
         self.assertEqual(120, ldgr.value(assets))
+
+    def test_value_by_columns(self):
+        ldgr = Ledger(
+            Column("Domestic", Cy.GBP, Role.asset, "{} assets"),
+            Column("Domestic", Cy.GBP, Role.capital, "{} capital"),
+            ref=Cy.GBP)
+        assets = next(i for i in ldgr.columns.values() if i.role is Role.asset)
+        ldgr.commit(120, assets)
+        self.assertEqual(120, ldgr.value(ldgr.columns["Domestic assets"]))
 
     def test_value_by_string(self):
         ldgr = Ledger(

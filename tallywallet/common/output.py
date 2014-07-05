@@ -36,7 +36,7 @@ def metadata(ledger):
     columns = ",\n".join(
         " "*12 + "[{0}, {1.currency.name}, {1.role.name}]".format(
             i.label.format(i.ref), i)
-        for i in ledger._cols)
+        for i in ledger._tally)
     template = """
 {{}}
     header:version: {version}

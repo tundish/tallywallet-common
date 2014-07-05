@@ -35,8 +35,8 @@ Quick start
 
 Download and unpack the source distribution::
 
-    $ tar -xzvf tallywallet-common-0.005.tar.gz
-    $ cd tallywallet-common-0.005
+    $ tar -xzvf tallywallet-common-0.007.tar.gz
+    $ cd tallywallet-common-0.007
 
 Run the tests::
 

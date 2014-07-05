@@ -34,6 +34,7 @@ Throughout, we'll assume this boilerplate::
     from tallywallet.common.currency import Currency as Cy
     from tallywallet.common.ledger import Ledger
     from tallywallet.common.ledger import Role
+    from tallywallet.common.ledger import Status
 
 Jan 1
 =====
@@ -42,10 +43,10 @@ First, we'll establish a ledger with the necessary columns. We needn't
 define a currency trading account; that will be created for us::
 
     ldgr = Ledger(
-        Column("Canadian cash", Cy.CAD, Role.asset),
-        Column("US cash", Cy.USD, Role.asset),
-        Column("Capital", Cy.CAD, Role.capital),
-        Column("Expense", Cy.CAD, Role.expense),
+        Column("Canadian cash", Cy.CAD, Role.asset, "{}"),
+        Column("US cash", Cy.USD, Role.asset, "{}"),
+        Column("Capital", Cy.CAD, Role.capital, "{}"),
+        Column("Expense", Cy.CAD, Role.expense, "{}"),
         ref=Cy.CAD)
 
 At this point, there's no balance, and no rates defined for the currencies.
