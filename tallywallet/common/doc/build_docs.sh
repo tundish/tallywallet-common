@@ -29,5 +29,6 @@ REL=`$PYENV/bin/python3 setup.py --version`
 
 # http://pythonhosted.org/tallywallet-common
 cd $PARENT/tallywallet-common/tallywallet/common/doc/html
+rm -v *.zip
 zip -r tallywallet-common-$REL-doc-html.zip *
 cd -

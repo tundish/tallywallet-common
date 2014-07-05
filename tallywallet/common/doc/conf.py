@@ -45,7 +45,7 @@ master_doc = 'index'
 
 # General information about the project.
 project = 'Tallywallet'
-copyright = '2013, Thuswise Ltd'
+copyright = '2014, Thuswise Ltd'
 
 # The version info for the project you're documenting, acts as replacement for
 # |version| and |release|, also used in various other places throughout the
