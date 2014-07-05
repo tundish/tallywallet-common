@@ -31,7 +31,7 @@ describing your Use Case.
 In either event, please leave a message on the project's `message board`_.
 
 :Author: D Haynes
-:Copyright: 2013 Thuswise Ltd
+:Copyright: 2014 Thuswise Ltd
 :Licence: `GNU Affero General Public License`_
 
 .. _GNU Affero General Public License: http://www.gnu.org/licenses/agpl-3.0.html

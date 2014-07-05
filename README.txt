@@ -76,7 +76,7 @@ In either event, please leave a message on the project's `message board`_.
 
 
 :Author: D Haynes
-:Copyright: 2013 Thuswise Ltd
+:Copyright: 2014 Thuswise Ltd
 
 .. _setuptools: https://pypi.python.org/pypi/setuptools
 .. _RSON: https://pypi.python.org/pypi/rson

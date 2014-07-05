@@ -39,7 +39,10 @@ setup(
         " or later (AGPLv3+)"
     ],
     namespace_packages=["tallywallet"],
-    packages=["tallywallet.common"],
+    packages=[
+        "tallywallet.common",
+        "tallywallet.common.test",
+    ],
     package_data={"tallywallet.common": [
                     "doc/*.rst",
                     "doc/_templates/*.css",
@@ -62,4 +65,3 @@ setup(
     },
     zip_safe=False
 )
-
