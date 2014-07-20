@@ -74,7 +74,6 @@ class Ledger(object):
         :param ref: (optional) the base Currency_ type for the Ledger
         :param args: One or more Column objects
         """
-        # TODO: Lose self._cols
         self.ref = ref
         cols = list(args)
         cols.extend(
