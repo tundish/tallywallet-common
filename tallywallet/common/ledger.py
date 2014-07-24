@@ -20,7 +20,9 @@ from collections import namedtuple
 from collections import OrderedDict
 from decimal import Decimal as Dl
 import enum
+from functools import singledispatch
 from numbers import Number
+import warnings
 
 from tallywallet.common.currency import Currency
 from tallywallet.common.exchange import Exchange
@@ -64,6 +66,10 @@ A 4-tuple, describing a column in a Ledger.
 FAE = namedtuple("FundamentalAccountingEquation", ["lhs", "rhs", "status"])
 
 
+@singledispatch
+def transaction(job, *args, **kwargs):
+    raise NotImplementedError
+
 class Ledger(object):
     """
     This class implements the fundamental operations you need to perform
@@ -86,7 +92,10 @@ class Ledger(object):
 
     @property
     def columns(self):
-        return OrderedDict((i.label.format(i.ref), i) for i in self._tally)
+        rv = OrderedDict((i.label.format(i.ref), i) for i in self._tally)
+        if len(rv) != len(self._tally):
+            warnings.warn("Missing key(s)")
+        return rv
 
     @property
     def equation(self):
@@ -134,11 +143,12 @@ http://en.wikipedia.org/wiki/Accounting_equation
 
         return FAE(lhs, rhs, st)
 
-    def add_column(self, ref, role, label="{}", currency=None):
+    def add_column(self, ref, role, *, label="{}", currency=None):
         assert role is not Role.trading
         crncy = currency or self.ref
         rv = Column(ref, crncy, role, label)
         self._tally[rv] = Dl(0)
+        self._rates[rv] = Exchange({})
         if crncy not in self._tradingAccounts:
             tA = Column(crncy.name, crncy, Role.trading, "{} trading account")
             self._tradingAccounts[crncy] = tA

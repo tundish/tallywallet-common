@@ -16,9 +16,12 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with tallywallet.  If not, see <http://www.gnu.org/licenses/>.
 
+from collections import namedtuple
 import datetime
 from decimal import Decimal as Dl
+from functools import singledispatch
 import unittest
+import warnings
 
 from tallywallet.common.currency import Currency as Cy
 from tallywallet.common.exchange import Exchange
@@ -26,6 +29,7 @@ from tallywallet.common.ledger import Column
 from tallywallet.common.ledger import Ledger
 from tallywallet.common.ledger import Role
 from tallywallet.common.ledger import Status
+from tallywallet.common.ledger import transaction
 from tallywallet.common.trade import TradePath
 
 
@@ -39,12 +43,54 @@ class LedgerTests(unittest.TestCase):
         self.assertIs(col.currency, Cy.GBP)
         self.assertEqual(2, len(ldgr.columns))
 
+    def test_columns_duplicate_key(self):
+        ldgr = Ledger(ref=Cy.GBP)
+        ldgr.add_column("A", Role.asset, label="{} B")
+        ldgr.add_column("B", Role.asset, label="A {}")
+        with warnings.catch_warnings(record=True) as w:
+            warnings.simplefilter("error")
+            self.assertRaises(UserWarning, getattr, ldgr, "columns")
+
     def test_balance(self):
         ldgr = Ledger(
             Column("Domestic", Cy.GBP, Role.asset, "{} assets"),
             Column("Domestic", Cy.GBP, Role.capital, "{} capital"),
             ref=Cy.GBP)
         self.assertEqual(2, len(ldgr.balance("Domestic")))
+
+    def test_transaction_no_handler(self):
+        ldgr = Ledger(ref=Cy.GBP)
+        self.assertRaises(
+            NotImplementedError, transaction, ("A", "B", 1000))
+
+    def test_transaction_simple_handler(self):
+
+        class PaymentLedger(Ledger):
+
+            Payment = namedtuple("Payment", ["src", "dst", "val"])
+
+            def transact_payment(self, job:Payment):
+                pass
+
+        ldgr = PaymentLedger(ref=Cy.GBP)
+        transaction.register(
+            PaymentLedger.Payment, ldgr.transact_payment)
+        self.assertEqual(
+            ldgr.transaction.dispatch(PaymentLedger.Payment),
+            ldgr.transact_payment)
+        a = ldgr.add_column("A", Role.asset)
+        b = ldgr.add_column("B", Role.asset)
+        c = ldgr.add_column("C", Role.capital)
+        ldgr.commit(120, a)
+        ldgr.commit(15, b)
+        ldgr.commit(135, c)
+        self.assertIs(Status.ok, ldgr.equation[2])
+
+        ldgr.transaction(PaymentLedger.Payment(a, b, 15))
+        self.assertEqual(105, ldgr.value(a))
+        self.assertEqual(30, ldgr.value(b))
+        self.assertIs(Status.ok, ldgr.equation[2])
+
 
     def test_value_by_column(self):
         ldgr = Ledger(
