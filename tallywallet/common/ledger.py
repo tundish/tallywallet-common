@@ -66,9 +66,9 @@ A 4-tuple, describing a column in a Ledger.
 FAE = namedtuple("FundamentalAccountingEquation", ["lhs", "rhs", "status"])
 
 
-@singledispatch
 def transaction(job, *args, **kwargs):
     raise NotImplementedError
+
 
 class Ledger(object):
     """
@@ -89,6 +89,7 @@ class Ledger(object):
             i.currency: i for i in cols if i.role is Role.trading}
         self._rates = {i: Exchange({}) for i in args}
         self._tally = OrderedDict((i, Dl(0)) for i in cols)
+        self.transaction = singledispatch(transaction)
 
     @property
     def columns(self):

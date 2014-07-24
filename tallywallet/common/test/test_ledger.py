@@ -69,14 +69,19 @@ class LedgerTests(unittest.TestCase):
 
             Payment = namedtuple("Payment", ["src", "dst", "val"])
 
+            def __init__(self, *args, **kwargs):
+                super().__init__(*args, **kwargs)
+                self.transaction.register(
+                    PaymentLedger.Payment, self.transact_payment)
+
             def transact_payment(self, job:Payment):
-                pass
+                self.commit(-job.val, job.src)
+                self.commit(job.val, job.dst)
+                return self.equation
 
         ldgr = PaymentLedger(ref=Cy.GBP)
-        transaction.register(
-            PaymentLedger.Payment, ldgr.transact_payment)
         self.assertEqual(
-            transaction.dispatch(PaymentLedger.Payment),
+            ldgr.transaction.dispatch(PaymentLedger.Payment),
             ldgr.transact_payment)
         a = ldgr.add_column("A", Role.asset)
         b = ldgr.add_column("B", Role.asset)
@@ -86,11 +91,13 @@ class LedgerTests(unittest.TestCase):
         ldgr.commit(135, c)
         self.assertIs(Status.ok, ldgr.equation[2])
 
-        ldgr.transaction(PaymentLedger.Payment(a, b, 15))
+        eqn = ldgr.transaction(PaymentLedger.Payment(a, b, 15))
         self.assertEqual(105, ldgr.value(a))
         self.assertEqual(30, ldgr.value(b))
-        self.assertIs(Status.ok, ldgr.equation[2])
+        self.assertIs(Status.ok, eqn[2])
 
+        other = PaymentLedger(ref=Cy.GBP)
+        self.assertFalse(ldgr.transaction is other.transaction)
 
     def test_value_by_column(self):
         ldgr = Ledger(
