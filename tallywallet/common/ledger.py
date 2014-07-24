@@ -134,6 +134,17 @@ http://en.wikipedia.org/wiki/Accounting_equation
 
         return FAE(lhs, rhs, st)
 
+    def add_column(self, ref, role, label="{}", currency=None):
+        assert role is not Role.trading
+        crncy = currency or self.ref
+        rv = Column(ref, crncy, role, label)
+        self._tally[rv] = Dl(0)
+        if crncy not in self._tradingAccounts:
+            tA = Column(crncy.name, crncy, Role.trading, "{} trading account")
+            self._tradingAccounts[crncy] = tA
+            self._tally[tA] = Dl(0)
+        return rv
+
     def adjustments(self, exchange, cols=None):
         """
         Calculates the effects of a change in exchange rates.

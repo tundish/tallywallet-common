@@ -31,6 +31,14 @@ from tallywallet.common.trade import TradePath
 
 class LedgerTests(unittest.TestCase):
 
+    def test_add_column_simple(self):
+        ldgr = Ledger(ref=Cy.GBP)
+        self.assertEqual(0, len(ldgr.columns))
+        col = ldgr.add_column("new column", Role.asset)
+        self.assertIsInstance(col, Column)
+        self.assertIs(col.currency, Cy.GBP)
+        self.assertEqual(2, len(ldgr.columns))
+
     def test_balance(self):
         ldgr = Ledger(
             Column("Domestic", Cy.GBP, Role.asset, "{} assets"),
