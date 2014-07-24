@@ -76,7 +76,7 @@ class LedgerTests(unittest.TestCase):
         transaction.register(
             PaymentLedger.Payment, ldgr.transact_payment)
         self.assertEqual(
-            ldgr.transaction.dispatch(PaymentLedger.Payment),
+            transaction.dispatch(PaymentLedger.Payment),
             ldgr.transact_payment)
         a = ldgr.add_column("A", Role.asset)
         b = ldgr.add_column("B", Role.asset)
