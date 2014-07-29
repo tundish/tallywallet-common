@@ -16,6 +16,9 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with tallywallet.  If not, see <http://www.gnu.org/licenses/>.
 
+import datetime
+import decimal
+import fractions
 import itertools
 import unittest
 
@@ -23,6 +26,7 @@ import unittest
 from collections import namedtuple
 from decimal import Decimal
 
+Note = namedtuple("Note", ["date", "principal", "currency", "term", "interest", "period"])
 Schedule = namedtuple("Schedule", ["n", "val"])
 
 class ProgressionTests(unittest.TestCase):
@@ -49,3 +53,21 @@ class TestDiscountingAtSimpleInterest(unittest.TestCase):
     def test_ordinary_simple_interest(self):
         """MoF 2Ed 3.1"""
         self.fail()
+
+
+class TestPromissoryNote(unittest.TestCase):
+
+    def test_maturity_value(self):
+        """Schaum's MoF 2Ed 3.29"""
+        note = Note(
+            date=datetime.date(1995, 5, 11),
+            principal=1500,
+            currency=None,
+            term=datetime.timedelta(days=90),
+            interest=Decimal("0.08"),
+            period=datetime.timedelta(days=360)
+        )
+        self.assertEqual(
+            Decimal("1530.00"),
+            note.principal * (
+                1 + note.interest * Decimal(note.term / note.period)))
