@@ -18,6 +18,7 @@
 
 import datetime
 import decimal
+from decimal import ROUND_05UP
 import fractions
 import itertools
 import unittest
@@ -28,6 +29,9 @@ from decimal import Decimal
 
 Note = namedtuple("Note", ["date", "principal", "currency", "term", "interest", "period"])
 Schedule = namedtuple("Schedule", ["n", "val"])
+
+def value_simple(principal, term, period, interest, **kwargs):
+    return principal * (1 + interest * Decimal(term / period))
 
 class ProgressionTests(unittest.TestCase):
 
@@ -48,7 +52,7 @@ class TestDiscountingAtSimpleInterest(unittest.TestCase):
             Schedule(n, Decimal(0.145 * i / 365))
             for n, i in enumerate(itertools.count(0, 1)))
         prog = list(itertools.takewhile(lambda i: i.n < 60, proc))
-        self.fail(prog)
+        self.fail()
 
     def test_ordinary_simple_interest(self):
         """MoF 2Ed 3.1"""
@@ -67,7 +71,28 @@ class TestPromissoryNote(unittest.TestCase):
             interest=Decimal("0.08"),
             period=datetime.timedelta(days=360)
         )
+        self.assertEqual(Decimal("1530.00"), value_simple(**vars(note)))
+
+    def test_sale_at_discount(self):
+        """Schaum's MoF 2Ed 3.30"""
+        note = Note(
+            date=datetime.date(1995, 5, 11),
+            principal=1500,
+            currency=None,
+            term=datetime.timedelta(days=90),
+            interest=Decimal("0.08"),
+            period=datetime.timedelta(days=360)
+        )
+        valueAtMaturity = value_simple(**vars(note))
+        self.assertEqual(1530, valueAtMaturity)
+
+        dateOfSale = datetime.date(1995, 7, 2)
+        termRemaining = note.date + note.term - dateOfSale
+        self.assertEqual(38, termRemaining.days)
+        valueAtDiscount = value_simple(
+            principal=valueAtMaturity, term=(-termRemaining),
+            period=note.period, interest=Decimal("0.09"))
         self.assertEqual(
-            Decimal("1530.00"),
-            note.principal * (
-                1 + note.interest * Decimal(note.term / note.period)))
+            Decimal("1515.46"),
+            valueAtDiscount.quantize(Decimal("0.01"), rounding=ROUND_05UP)
+        )
