@@ -30,8 +30,8 @@ from decimal import Decimal
 Note = namedtuple("Note", ["date", "principal", "currency", "term", "interest", "period"])
 Schedule = namedtuple("Schedule", ["n", "val"])
 
-def value_simple(principal, term, period, interest, **kwargs):
-    return principal * (1 + interest * Decimal(term / period))
+def value_simple(note:Note):
+    return next(value_series(m=1, **vars(note)))[1]
 
 def value_series(date, principal, term, period, interest, m=1, **kwargs):
     interval = min(term, period / m)
@@ -41,6 +41,7 @@ def value_series(date, principal, term, period, interest, m=1, **kwargs):
         t += interval
         principal = principal * (1 + rate)
         yield (t, principal)
+
 
 class ProgressionTests(unittest.TestCase):
 
@@ -55,13 +56,6 @@ class ProgressionTests(unittest.TestCase):
 
 class TestCompoundInterest(unittest.TestCase):
 
-    def test_exact_simple_interest(self):
-        """MoF 2Ed 3.1"""
-        proc = (
-            Schedule(n, Decimal(0.145 * i / 365))
-            for n, i in enumerate(itertools.count(0, 1)))
-        prog = list(itertools.takewhile(lambda i: i.n < 60, proc))
-
     def test_value_series(self):
         """Schaum's MoF 2Ed 4.1"""
         note = Note(
@@ -74,12 +68,17 @@ class TestCompoundInterest(unittest.TestCase):
         )
         series = list(value_series(m=2, **vars(note)))
         self.assertEqual(4, len(series))
-        print(series)
+        # NB: Pennies are off-by-one from reference ->     ¬          ¬ 
+        self.assertEqual(
+            [Decimal(i) for i in ("1060", "1123.6", "1191.01", "1262.47")],
+            [i[1].quantize(Decimal("0.01"), rounding=ROUND_05UP)
+                for i in series]
+        )
 
 
 class TestPromissoryNote(unittest.TestCase):
 
-    def test_value_series(self):
+    def test_value_simple(self):
         """Schaum's MoF 2Ed 3.29"""
         note = Note(
             date=datetime.date(1995, 5, 11),
@@ -89,7 +88,10 @@ class TestPromissoryNote(unittest.TestCase):
             interest=Decimal("0.08"),
             period=datetime.timedelta(days=360)
         )
-        self.assertEqual(Decimal("1530.00"), next(value_series(**vars(note))))
+        self.assertEqual(
+            Decimal("1530.00"),
+            value_simple(note)
+        )
 
     def test_sale_at_discount(self):
         """Schaum's MoF 2Ed 3.30"""
@@ -101,15 +103,16 @@ class TestPromissoryNote(unittest.TestCase):
             interest=Decimal("0.08"),
             period=datetime.timedelta(days=360)
         )
-        valueAtMaturity = value_simple(**vars(note))
+        valueAtMaturity = value_simple(note)
         self.assertEqual(1530, valueAtMaturity)
 
         dateOfSale = datetime.date(1995, 7, 2)
         termRemaining = note.date + note.term - dateOfSale
         self.assertEqual(38, termRemaining.days)
-        valueAtDiscount = value_simple(
+        _, valueAtDiscount = next(value_series(
+            date=note.date + note.term,
             principal=valueAtMaturity, term=(-termRemaining),
-            period=note.period, interest=Decimal("0.09"))
+            period=note.period, interest=Decimal("0.09")))
         self.assertEqual(
             Decimal("1515.46"),
             valueAtDiscount.quantize(Decimal("0.01"), rounding=ROUND_05UP)
