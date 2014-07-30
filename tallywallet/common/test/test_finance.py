@@ -40,7 +40,7 @@ def value_series(date, principal, term, period, interest, m=1, **kwargs):
     for i in range(term // interval):
         t += interval
         principal = principal * (1 + rate)
-        yield principal
+        yield (t, principal)
 
 class ProgressionTests(unittest.TestCase):
 
