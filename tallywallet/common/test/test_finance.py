@@ -50,7 +50,43 @@ class FinancialEvents(unittest.TestCase):
         then = now + datetime.timedelta(weeks=104)
         asset = Note(now, 1000, "GBP", then - now, Decimal("0.06"),
                      datetime.timedelta(days=60))
-        print(list(value_series(**vars(asset))))
+        #print(list(value_series(**vars(asset))))
+
+
+class AmortizationTests(unittest.TestCase):
+
+    def test_loan_schedule(self):
+        """
+        MoF 2Ed 7.1
+
+        A debt of $6000 with interest at 16% compounded semiannually is
+        to be amortized by equal semiannual payments of $R over the next 3
+        years, the first payment due in 6 months. Find the payment rounded
+        up to the nearest cent.
+
+        """
+        now = datetime.datetime.utcnow()
+        then = now + datetime.timedelta(weeks=104)
+        loan = Note(
+            now, 6000, "USD",
+            datetime.timedelta(days=360*3),
+            Decimal("0.16"), datetime.timedelta(days=180))
+
+        value = list(value_series(m=2, **vars(loan)))[-1][1]
+
+        # MoF 5.2; discounted value of an ordinary simple annuity
+        A = 6000
+        n = int(3 * 360 / 180)
+        self.assertEqual(6, n)
+
+        i = Decimal("0.16") * 180 / 360
+        self.assertEqual(Decimal("0.08"), i)
+        R = A * i / (1 - (1 + i) ** -n)
+        self.assertEqual(
+            Decimal("1297.90"),
+            R.quantize(Decimal("0.01"), rounding=decimal.ROUND_UP)
+        )
+
 
 class ProgressionTests(unittest.TestCase):
 
