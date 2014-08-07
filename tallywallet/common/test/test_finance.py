@@ -27,8 +27,14 @@ import unittest
 from collections import namedtuple
 from decimal import Decimal
 
-Note = namedtuple("Note", ["date", "principal", "currency", "term", "interest", "period"])
-Schedule = namedtuple("Schedule", ["n", "val"])
+Note = namedtuple(
+    "Note",
+    ["date", "principal", "currency", "term", "interest", "period"])
+
+Amortization = namedtuple(
+    "Amortization",
+    ["date", "payment", "interest", "repaid", "balance"])
+
 
 def discount_simple(note:Note):
     """
@@ -38,10 +44,28 @@ def discount_simple(note:Note):
     n = int(note.term / note.period)
     i = note.interest * Decimal(note.period / datetime.timedelta(days=360))
     R = note.principal * i / (1 - (1 + i) ** -n)
-    return R
+    return (n, i, R)
+
+
+def schedule(note:Note, places=2, rounding=decimal.ROUND_UP):
+    quantum = Decimal(10) ** -places
+    n, rate, annuity = discount_simple(note)
+    payment = annuity.quantize(quantum, rounding=rounding)
+    balance = note.principal
+    end = note.date + note.term
+    ts = note.date
+    while ts < end:
+        ts += note.period
+        interest = rate * balance
+        payment = min(balance + interest, payment)
+        repaid = payment - interest
+        balance -= repaid
+        yield Amortization(ts, payment, interest, repaid, balance)
+
 
 def value_simple(note:Note):
     return next(value_series(m=1, **vars(note)))[1]
+
 
 def value_series(date, principal, term, period, interest, m=1, **kwargs):
     interval = min(term, period / m)
@@ -53,16 +77,6 @@ def value_series(date, principal, term, period, interest, m=1, **kwargs):
         yield (t, principal)
 
 
-class FinancialEvents(unittest.TestCase):
-
-    def test_loan_book(self):
-        now = datetime.datetime.utcnow()
-        then = now + datetime.timedelta(weeks=104)
-        asset = Note(now, 1000, "GBP", then - now, Decimal("0.06"),
-                     datetime.timedelta(days=60))
-        #print(list(value_series(**vars(asset))))
-
-
 class AmortizationTests(unittest.TestCase):
 
     def test_loan_payment(self):
@@ -71,33 +85,53 @@ class AmortizationTests(unittest.TestCase):
 
         A debt of $6000 with interest at 16% compounded semiannually is
         to be amortized by equal semiannual payments of $R over the next 3
-        years, the first payment due in 6 months. Find the payment rounded
-        up to the nearest cent.
+        years, the first payment due in 6 months.
+
+        Find the payment rounded up to the nearest cent.
 
         """
         now = datetime.datetime.utcnow()
-        then = now + datetime.timedelta(weeks=104)
         loan = Note(
             now, 6000, "USD",
             datetime.timedelta(days=360*3),
             Decimal("0.16"), datetime.timedelta(days=180))
 
-        R = discount_simple(loan)
+        R = discount_simple(loan)[2]
         self.assertEqual(
             Decimal("1297.90"),
             R.quantize(Decimal("0.01"), rounding=decimal.ROUND_UP)
         )
 
+    def test_amortization_schedule(self):
+        """
+        MoF 2Ed 7.4
 
-class ProgressionTests(unittest.TestCase):
+        A debt of $6000 with interest at 16% compounded semiannually is
+        to be amortized by equal semiannual payments of $R over the next 3
+        years, the first payment due in 6 months.
 
-    def test_arithmetic_progression(self):
-        """MoF 2Ed 2.1"""
-        proc = (
-            Schedule(n, v) for n, v in enumerate(itertools.count(-1, 3)))
-        prog = list(itertools.takewhile(lambda i: i.n < 15, proc))
-        self.assertEqual(41, prog[-1].val)
-        self.assertEqual(300, sum(i.val for i in prog))
+        Construct a complete amortization schedule for the debt.
+
+        """
+        now = datetime.datetime.utcnow()
+        loan = Note(
+            now, 6000, "USD",
+            datetime.timedelta(days=360*3),
+            Decimal("0.16"), datetime.timedelta(days=180))
+
+        record = list(schedule(loan, places=0))
+
+        self.assertEqual(6, len(record))
+        self.assertEqual(
+            Decimal("7787.21"),
+            sum(i.payment for i in record).quantize(Decimal("0.01"))
+        )
+        self.assertEqual(
+            Decimal("1787.21"),
+            sum(i.interest for i in record).quantize(Decimal("0.01"))
+        )
+        self.assertEqual(6000, sum(i.repaid for i in record))
+        self.assertEqual(0, record[-1].balance)
 
 
 class TestCompoundInterest(unittest.TestCase):
