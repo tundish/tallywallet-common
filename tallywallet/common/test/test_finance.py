@@ -30,6 +30,16 @@ from decimal import Decimal
 Note = namedtuple("Note", ["date", "principal", "currency", "term", "interest", "period"])
 Schedule = namedtuple("Schedule", ["n", "val"])
 
+def discount_simple(note:Note):
+    """
+    Ref MoF Eqn 5.2
+    Discounted value of an ordinary simple annuity.
+    """
+    n = int(note.term / note.period)
+    i = note.interest * Decimal(note.period / datetime.timedelta(days=360))
+    R = note.principal * i / (1 - (1 + i) ** -n)
+    return R
+
 def value_simple(note:Note):
     return next(value_series(m=1, **vars(note)))[1]
 
@@ -55,7 +65,7 @@ class FinancialEvents(unittest.TestCase):
 
 class AmortizationTests(unittest.TestCase):
 
-    def test_loan_schedule(self):
+    def test_loan_payment(self):
         """
         MoF 2Ed 7.1
 
@@ -72,16 +82,7 @@ class AmortizationTests(unittest.TestCase):
             datetime.timedelta(days=360*3),
             Decimal("0.16"), datetime.timedelta(days=180))
 
-        value = list(value_series(m=2, **vars(loan)))[-1][1]
-
-        # MoF 5.2; discounted value of an ordinary simple annuity
-        A = 6000
-        n = int(3 * 360 / 180)
-        self.assertEqual(6, n)
-
-        i = Decimal("0.16") * 180 / 360
-        self.assertEqual(Decimal("0.08"), i)
-        R = A * i / (1 - (1 + i) ** -n)
+        R = discount_simple(loan)
         self.assertEqual(
             Decimal("1297.90"),
             R.quantize(Decimal("0.01"), rounding=decimal.ROUND_UP)
