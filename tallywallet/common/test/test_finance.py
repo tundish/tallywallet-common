@@ -43,6 +43,15 @@ def value_series(date, principal, term, period, interest, m=1, **kwargs):
         yield (t, principal)
 
 
+class FinancialEvents(unittest.TestCase):
+
+    def test_loan_book(self):
+        now = datetime.datetime.utcnow()
+        then = now + datetime.timedelta(weeks=104)
+        asset = Note(now, 1000, "GBP", then - now, Decimal("0.06"),
+                     datetime.timedelta(days=60))
+        print(list(value_series(**vars(asset))))
+
 class ProgressionTests(unittest.TestCase):
 
     def test_arithmetic_progression(self):
