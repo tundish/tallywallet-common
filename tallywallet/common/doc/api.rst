@@ -10,6 +10,12 @@ Currency
 .. automodule:: tallywallet.common.currency
    :members: Currency
 
+Finance
+========
+
+.. automodule:: tallywallet.common.finance
+   :members: Note, Amortization
+
 Trade
 =====
 

@@ -18,64 +18,15 @@
 
 import datetime
 import decimal
-from decimal import ROUND_05UP
-import fractions
-import itertools
+from decimal import Decimal
 import unittest
 
-#prototyping
-from collections import namedtuple
-from decimal import Decimal
-
-Note = namedtuple(
-    "Note",
-    ["date", "principal", "currency", "term", "interest", "period"])
-
-Amortization = namedtuple(
-    "Amortization",
-    ["date", "payment", "interest", "repaid", "balance"])
-
-
-def discount_simple(note:Note):
-    """
-    Ref MoF Eqn 5.2
-    Discounted value of an ordinary simple annuity.
-    """
-    n = int(note.term / note.period)
-    i = note.interest * Decimal(note.period / datetime.timedelta(days=360))
-    R = note.principal * i / (1 - (1 + i) ** -n)
-    return (n, i, R)
-
-
-def schedule(note:Note, places=2, rounding=decimal.ROUND_UP):
-    quantum = Decimal(10) ** -places
-    n, rate, annuity = discount_simple(note)
-    payment = annuity.quantize(quantum, rounding=rounding)
-    balance = note.principal
-    end = note.date + note.term
-    ts = note.date
-    while ts < end:
-        ts += note.period
-        interest = rate * balance
-        payment = min(balance + interest, payment)
-        repaid = payment - interest
-        balance -= repaid
-        yield Amortization(ts, payment, interest, repaid, balance)
-
-
-def value_simple(note:Note):
-    return next(value_series(m=1, **vars(note)))[1]
-
-
-def value_series(date, principal, term, period, interest, m=1, **kwargs):
-    interval = min(term, period / m)
-    rate = interest * Decimal(interval / period)
-    t = date
-    for i in range(term // interval):
-        t += interval
-        principal = principal * (1 + rate)
-        yield (t, principal)
-
+from tallywallet.common.finance import Amortization
+from tallywallet.common.finance import Note
+from tallywallet.common.finance import discount_simple
+from tallywallet.common.finance import schedule
+from tallywallet.common.finance import value_series
+from tallywallet.common.finance import value_simple
 
 class AmortizationTests(unittest.TestCase):
 
@@ -151,7 +102,7 @@ class TestCompoundInterest(unittest.TestCase):
         # NB: Pennies are off-by-one from reference ->     ¬          ¬ 
         self.assertEqual(
             [Decimal(i) for i in ("1060", "1123.6", "1191.01", "1262.47")],
-            [i[1].quantize(Decimal("0.01"), rounding=ROUND_05UP)
+            [i[1].quantize(Decimal("0.01"), rounding=decimal.ROUND_05UP)
                 for i in series]
         )
 
@@ -195,5 +146,6 @@ class TestPromissoryNote(unittest.TestCase):
             period=note.period, interest=Decimal("0.09")))
         self.assertEqual(
             Decimal("1515.46"),
-            valueAtDiscount.quantize(Decimal("0.01"), rounding=ROUND_05UP)
+            valueAtDiscount.quantize(
+                Decimal("0.01"), rounding=decimal.ROUND_05UP)
         )
