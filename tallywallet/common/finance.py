@@ -24,6 +24,22 @@ from decimal import Decimal
 Note = namedtuple(
     "Note",
     ["date", "principal", "currency", "term", "interest", "period"])
+Note.__doc__ = """The note keeps all the details of the promise to pay,
+as follows:
+
+    date
+        The date on which the loan is agreed.
+    principal
+        The amount of the original loan.
+    currency
+        The currency in which the loan will be paid.
+    term
+        The duration of the loan.
+    interest
+        The rate of interest.
+    period
+        The period of time over which interest is calculated.
+"""
 
 Amortization = namedtuple(
     "Amortization",

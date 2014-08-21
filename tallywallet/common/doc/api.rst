@@ -1,8 +1,8 @@
 ..  Titling
     ##++::==~~--''``
 
-Programming API
-:::::::::::::::
+API Reference
+:::::::::::::
 
 Currency
 ========
