@@ -5,9 +5,10 @@ A tutorial on currency exchange
 :::::::::::::::::::::::::::::::
 
 This example is taken from `Peter Selinger's tutorial`_ on multiple currency
-accounting. We'll use a Ledger to track the transactions set out below,
-which comprise both actual expenses and incurred gains/losses due to variations
-in currency rates.
+accounting. We'll use a
+:py:class:`Ledger <tallywallet.common.ledger.Ledger>` to track the
+transactions set out below, which comprise both actual expenses and incurred
+gains/losses due to variations in currency rates.
 
 The scenario is a brief trip from Canada to the USA, which requires buying US
 dollars, spending some during exchange rate fluctuations, and changing back
@@ -42,12 +43,11 @@ Jan 1
 First, we'll establish a ledger with the necessary columns. We needn't
 define a currency trading account; that will be created for us::
 
-    ldgr = Ledger(
-        Column("Canadian cash", Cy.CAD, Role.asset, "{}"),
-        Column("US cash", Cy.USD, Role.asset, "{}"),
-        Column("Capital", Cy.CAD, Role.capital, "{}"),
-        Column("Expense", Cy.CAD, Role.expense, "{}"),
-        ref=Cy.CAD)
+    ldgr = Ledger(ref=Cy.CAD)
+    ldgr.add_column("Canadian cash", Role.asset)
+    ldgr.add_column("US cash", Role.asset, currency=Cy.USD)
+    ldgr.add_column("Capital", Role.capital)
+    ldgr.add_column("Expense", Role.expense)
 
 At this point, there's no balance, and no rates defined for the currencies.
 ``ldgr.equation.status`` will evaluate to ``Status.failed``.
@@ -95,8 +95,8 @@ Jan 3
 =====
 
 Our book holds both American and Canadian dollars, so it's exposed to
-fluctuations in the exchange rate. On 3rd January, you can get $1.30 Canadian
-for one American greenback. Let's apply that to our ledger::
+fluctuations in the exchange rate. On 3rd January, you can get 1.30 Canadian
+dollars for one American. Let's apply that to our ledger::
 
     exchange = Exchange({(Cy.USD, Cy.CAD): Dl("1.3")})
     for args in ldgr.adjustments(exchange):
@@ -149,12 +149,12 @@ We are now back in Canada but stuck in the airport waiting for our transfer
 home. We want food. So we cough up twenty dollars for a tasty burger and a
 bottle of fizzy beer. Here's the transaction for that::
 
-    ldgr.commit(-20, cols["Canadian cash"], note="Buy food")
-    ldgr.commit(20, cols["Expense"], note="Buy food")
+    ldgr.commit(-20, ldgr.columns["Canadian cash"], note="Buy food")
+    ldgr.commit(20, ldgr.columns["Expense"], note="Buy food")
 
 How much money do we have left? ``ldgr.value("Canadian cash")`` says $135.00.
-Looking at the other columns it seems we spent CAD 72.00 during our trip. We
-accidentally made CAD 7.00 due to the fluctuations in the exchange rate while
-we were away.
+Looking at the other columns it seems we spent CAD 72.00 during our trip. So
+we accidentally made CAD 7.00 due to the fluctuations in the exchange rate
+while we were away.
 
 ..  _Peter Selinger's tutorial: http://www.mscs.dal.ca/~selinger/accounting/
