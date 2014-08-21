@@ -14,7 +14,7 @@ Finance
 ========
 
 .. automodule:: tallywallet.common.finance
-   :members: Note, Amortization
+   :members: Note, Amortization, value_simple, value_series, discount_simple, schedule
 
 Trade
 =====

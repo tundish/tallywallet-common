@@ -36,6 +36,7 @@ Throughout, we'll assume this boilerplate::
     from tallywallet.common.ledger import Ledger
     from tallywallet.common.ledger import Role
     from tallywallet.common.ledger import Status
+    from tallywallet.common.trade import TradePath
 
 Jan 1
 =====
