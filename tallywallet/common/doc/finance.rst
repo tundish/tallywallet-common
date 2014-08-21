@@ -8,27 +8,26 @@ Money is a thing which can't exist without human beings. Before
 new money is made, someone somewhere has to generate its value.
 
 In modern Western banking, that value derives from a promise to
-pay. In other words, a loan of one sort or another.
+pay. In other words, a debt of one sort or another.
 
-Here we'll show how to use Tallywallet to work out the value of
-debt over time. The examples are taken from
-`Schaum's Mathematics of Finance`, 2nd edition.
-
-In Tallywallet, loans are recorded with a promissory :py:func:`Note
-<tallywallet.common.finance.Note>`. So begin your code like this::
+In Tallywallet, debts are recorded with a promissory :py:func:`Note
+<tallywallet.common.finance.Note>`. A script begins like this::
 
     import datetime
     from decimal import Decimal
 
     from tallywallet.common.finance import Note
 
+Below we'll show how to use Tallywallet to work out the value of
+debt over time. The examples are taken from
+`Schaum's Mathematics of Finance`, 2nd edition.
 
 
 Lending
 =======
 
 We'll start off by recording the details of a historic loan. Back in
-in May of 1995, we lent out $1500 at an annualized interest rate of 8%.
+May of 1995, we lent out $1500 at an annualized interest rate of 8%.
 The loan was due to be repaid 90 days later::
 
     note = Note(
@@ -49,9 +48,10 @@ What was the `simple value` of this promise on maturity?::
 If you run this Python script now, you'll see that it came to `$1530.00`.
 
 The :py:func:`value_simple <tallywallet.common.finance.value_simple>`
-function applies when there's a single payment owing. When the note
-promises multiple payments, you'd find the dates on which they are due
-with :py:func:`value_series <tallywallet.common.finance.value_series>`.
+function applies when there's one interest period for the term of the note.
+When the debt spans multiple interest periods, you'd calculate the value
+of the note with
+:py:func:`value_series <tallywallet.common.finance.value_series>`.
 
 We'll see the flexibility of this function in a moment. For now, let's fill
 out its parameters with the attributes of the promissory note to confirm
@@ -70,7 +70,7 @@ Discounting
 
 As we recall, in the Spring of 1995 we found ourselves short of cash. We
 couldn't wait for our loan to be paid, so in July we sold on the debt to
-another. He offered to discount the loan at 9%.
+a business contact. He agreed to discount the loan at 9%.
 
 ::
 
@@ -98,15 +98,23 @@ When we print out the result of the deal we get::
 Amortization
 ============
 
-Let's try something a little closer to home. A Mortgage is what happens when
-interest is allowed to compound against a loan. The creditor demands regular
-payments which, to begin with, hardly pay off the principal at all.
+Now let's try something a little closer to home.
+
+A mortgage is what happens when interest is allowed to compound against
+a loan. The creditor demands regular payments, but to begin with they
+mostly go to supply interest on the debt; they hardly pay off the principal
+at all. Slowly, according to a process of `amortization`, the surplus
+to interest reduces what's owing.
+
+Tallywallet can construct a complete amortization schedule for this kind
+of debt.
 
 Here's an example. A debt of $6000 with interest at 16% compounded twice
 every year is to be amortized by equal semiannual payments over the next 3
 years, the first payment due in 6 months.
 
-Construct a complete amortization schedule for the debt::
+
+::
 
     from tallywallet.common.finance import schedule
 
@@ -120,9 +128,11 @@ Construct a complete amortization schedule for the debt::
         period=datetime.timedelta(days=180)
     )
 
-    record = list(schedule(loan, places=0))
+    plan = list(schedule(loan, places=0))
 
-::
+You'll find `plan` to be a sequence of objects, each specifying the
+amount and date of payment, along with how that's to be shared between
+interest and debt. The remaining balance is also calculated::
 
     [
         Amortization(

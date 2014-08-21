@@ -1,7 +1,7 @@
 ..  Titling
     ##++::==~~--''``
 
-A tutorial on Currency Exchange
+A tutorial on currency exchange
 :::::::::::::::::::::::::::::::
 
 This example is taken from `Peter Selinger's tutorial`_ on multiple currency
