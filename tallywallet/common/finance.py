@@ -46,6 +46,21 @@ as follows:
 Amortization = namedtuple(
     "Amortization",
     ["date", "payment", "interest", "repaid", "balance"])
+Amortization.__doc__ = """`{}`
+
+An Amortization object records a payment against an amortization schedule:
+
+    date
+        The date on which the payment is made.
+    payment
+        The total amount of the payment.
+    interest
+        The amount paid as interest.
+    repaid
+        The amount repaid from the principal.
+    balance
+        The remaining balance of the loan.
+""".format(Amortization.__doc__)
 
 
 def discount_simple(note:Note):
@@ -63,6 +78,21 @@ def discount_simple(note:Note):
 
 
 def schedule(note:Note, places=2, rounding=decimal.ROUND_UP):
+    """
+    Calculate the amortization schedule for a
+    :py:class:`Note <tallywallet.common.finance.Note>`.
+
+    places
+        An integer. Round the balance to this number of decimal places
+        at each calculation interval.
+    rounding
+        Selects the rounding method. Must be one of the constants defined
+        for this purpose in the `decimal` standard library module.
+
+    This function is a generator. It produces a sequence of
+    :py:class:`Amortization <tallywallet.common.finance.Amortization>`
+    objects.
+    """
     quantum = Decimal(10) ** -places
     n, rate, annuity = discount_simple(note)
     payment = annuity.quantize(quantum, rounding=rounding)

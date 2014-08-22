@@ -18,7 +18,7 @@ In Tallywallet, debts are recorded with a promissory :py:func:`Note
 
     from tallywallet.common.finance import Note
 
-Below we'll show how to use Tallywallet to work out the value of
+Below I'll show how to use Tallywallet to work out the value of
 debt over time. The examples are taken from
 `Schaum's Mathematics of Finance`, 2nd edition.
 
