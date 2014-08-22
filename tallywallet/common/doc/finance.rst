@@ -11,7 +11,7 @@ In modern Western banking, that value derives from a promise to
 pay. In other words, a debt of one sort or another.
 
 In Tallywallet, debts are recorded with a promissory :py:func:`Note
-<tallywallet.common.finance.Note>`. A script begins like this::
+<tallywallet.common.finance.Note>`. Your Python script begins like this::
 
     import datetime
     from decimal import Decimal

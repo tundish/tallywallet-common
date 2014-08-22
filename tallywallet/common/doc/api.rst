@@ -13,8 +13,20 @@ Currency
 Finance
 ========
 
+.. autoclass:: tallywallet.common.finance.Note
+   :member-order: bysource
+
+The functions of the Finance module are all intended to be compatible with
+the :py:class:`Note <tallywallet.common.finance.Note>` type. They either take
+such an object as a parameter, or their keyword arguments can be supplied from
+the result of the `vars` function on a
+:py:class:`Note <tallywallet.common.finance.Note>` object.
+
 .. automodule:: tallywallet.common.finance
-   :members: Note, Amortization, value_simple, value_series, discount_simple, schedule
+   :members: value_simple, value_series, discount_simple, schedule
+
+.. autoclass:: tallywallet.common.finance.Amortization
+   :member-order: bysource
 
 Trade
 =====

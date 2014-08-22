@@ -24,7 +24,9 @@ from decimal import Decimal
 Note = namedtuple(
     "Note",
     ["date", "principal", "currency", "term", "interest", "period"])
-Note.__doc__ = """The note keeps all the details of the promise to pay,
+Note.__doc__ = """`{}`
+
+A Note keeps all the details of a promise to pay a debt,
 as follows:
 
     date
@@ -39,7 +41,7 @@ as follows:
         The rate of interest.
     period
         The period of time over which interest is calculated.
-"""
+""".format(Note.__doc__)
 
 Amortization = namedtuple(
     "Amortization",
@@ -48,8 +50,11 @@ Amortization = namedtuple(
 
 def discount_simple(note:Note):
     """
-    Ref MoF Eqn 5.2
-    Discounted value of an ordinary simple annuity.
+    Calculates the discounted value of an ordinary simple annuity.
+    See `Schaum's Mathematics of Finance` Equation 5.2 .
+
+    Returns a 3-tuple of (number of payments, annualised rate, annuity payment)
+ 
     """
     n = int(note.term / note.period)
     i = note.interest * Decimal(note.period / datetime.timedelta(days=360))
@@ -74,10 +79,22 @@ def schedule(note:Note, places=2, rounding=decimal.ROUND_UP):
 
 
 def value_simple(note:Note):
+    """
+    Returns the simple value of a promissory note on maturity.
+    """
     return next(value_series(m=1, **vars(note)))[1]
 
 
 def value_series(date, principal, term, period, interest, m=1, **kwargs):
+    """
+    Calculate the value of a debt over time. Parameters are as for the
+    :py:class:`Note <tallywallet.common.finance.Note>` type. Additionally:
+
+    m
+        The number of times per `period` that interest is compounded.
+
+    This function is a generator. It produces 2-tuples of (date, value).
+    """
     interval = min(term, period / m)
     rate = interest * Decimal(interval / period)
     t = date

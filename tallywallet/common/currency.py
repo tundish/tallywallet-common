@@ -18,10 +18,15 @@
 
 import enum
 
+import tallywallet.common
+
 __doc__ = """
-The currency module defines currencies of various types. As of this
-release, there are only a handful yet defined.
-"""
+The currency module defines currencies of various types. Use them
+wherever you need to record loans or transactions of exchange.
+
+Tallwallet {} only defines a handful of currency types. Look out for
+improvements in future releases.
+""".format(tallywallet.common.__version__)
 
 
 @enum.unique
