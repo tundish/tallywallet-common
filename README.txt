@@ -11,11 +11,20 @@ This package
 
 Tallywallet is a very young project. This package implements the following:
 
+Code
+====
+
+* Functions to work with Promissory Notes
 * A Ledger class for double-entry accounting
 * An Exchange class to enable currency trading
 * `Pre-hoc` calculation of exchange rate gains on currency trading accounts
 * Evaluation of the Fundamental Accounting Equation to verify balanced accounts
 * A text format for saving Ledgers to file
+
+Documentation
+=============
+
+* A how-to on loans, discounting, and amortization
 * A tutorial on how to achieve foreign currency exchange in Python code
 * An example of a macroeconomic monetary circuit simulation
 
@@ -35,8 +44,8 @@ Quick start
 
 Download and unpack the source distribution::
 
-    $ tar -xzvf tallywallet-common-0.007.tar.gz
-    $ cd tallywallet-common-0.007
+    $ tar -xzvf tallywallet-common-0.009.tar.gz
+    $ cd tallywallet-common-0.009
 
 Run the tests::
 
@@ -58,12 +67,6 @@ It is developed by a private individual but released to the public under the
 The API may change significantly as the project proceeds. At this early stage,
 you should only use the latest release, which may not be compatible with
 previous versions.
-
-Next release
-============
-
-The next release will provide an example of a macro-economic simulation using
-balanced accounting methods.
 
 Can you help?
 =============
