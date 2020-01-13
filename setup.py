@@ -21,7 +21,7 @@ except ImportError:
                     "tallywallet", "common", "__init__.py"),
                     'r').read().split("=")[-1].strip()))
 
-__doc__ = open(os.path.join(os.path.dirname(__file__), "README.txt"),
+__doc__ = open(os.path.join(os.path.dirname(__file__), "README.rst"),
                'r').read()
 
 setup(
@@ -59,6 +59,19 @@ setup(
                     ]},
     install_requires=[],
     tests_require=["rson>=0.9"],
+    extras_require={
+        "dev": [
+            "pep8>=1.6.2",
+        ],
+        "docbuild": [
+            "sphinx>=1.6.1",
+            "sphinx-argparse>=0.2.0",
+            "sphinx_rtd_theme>=0.2.4"
+        ],
+        "test": [
+			"rson>=0.9"
+        ],
+    },
     entry_points={
         "console_scripts": [
         ],

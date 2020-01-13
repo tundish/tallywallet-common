@@ -31,29 +31,31 @@ Documentation
 Requirements
 ::::::::::::
 
-Tallywallet requires Python 3.4. It uses setuptools_ for installation, but
+Tallywallet requires Python 3. It uses setuptools_ for installation, but
 normally it has no external runtime dependencies.
-
-You may have to `compile Python 3.4`_ yourself if it is not yet available from
-your package repository.
 
 Tallywallet comes with unit tests. To run them all requires the RSON_ package.
 
 Quick start
 :::::::::::
 
-Download and unpack the source distribution::
+Clone the git repository::
 
-    $ tar -xzvf tallywallet-common-0.009.tar.gz
-    $ cd tallywallet-common-0.009
+    git clone git@github.com:tundish/tallywallet-common.git
+    cd tallywallet-common
+
+Install the package and its dependencies::
+
+    python3 -m pip install .[docbuild,test]
 
 Run the tests::
 
-    $ python3.4 -m unittest discover tallywallet
+    python3 -m unittest discover tallywallet
 
 Consult the documentation::
 
-    $ firefox tallywallet/common/doc/html/index.html
+	sphinx_build tallywallet/common/doc tallywallet/common/doc/html
+    firefox tallywallet/common/doc/html/index.html
 
 Roadmap
 :::::::
@@ -83,6 +85,5 @@ In either event, please leave a message on the project's `message board`_.
 
 .. _setuptools: https://pypi.python.org/pypi/setuptools
 .. _RSON: https://pypi.python.org/pypi/rson
-.. _compile Python 3.4: http://www.python.org/download/source/
 .. _GNU Affero General Public License: http://www.gnu.org/licenses/agpl-3.0.html
 .. _message board: https://www.assembla.com/spaces/tallywallet/messages

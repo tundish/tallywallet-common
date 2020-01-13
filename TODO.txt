@@ -8,8 +8,8 @@ Installation
 
 ::
 
-    python3.4 setup.py install
-    python3.4 -m unittest discover tallywallet
+    python3 -m pip install .[test]
+    python3 -m unittest discover tallywallet
 
 Issues
 ::::::
