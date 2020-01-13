@@ -59,7 +59,7 @@ our previous answer::
 
     from tallywallet.common.finance import value_series
 
-    print(list(value_series(**vars(note))))
+    print(list(value_series(**note,_asdict())))
 
 
 This gives us an output of

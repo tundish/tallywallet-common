@@ -112,7 +112,7 @@ def value_simple(note:Note):
     """
     Returns the simple value of a promissory note on maturity.
     """
-    return next(value_series(m=1, **vars(note)))[1]
+    return next(value_series(m=1, **note._asdict()))[1]
 
 
 def value_series(date, principal, term, period, interest, m=1, **kwargs):

@@ -97,7 +97,7 @@ class TestCompoundInterest(unittest.TestCase):
             interest=Decimal("0.12"),
             period=datetime.timedelta(days=360)
         )
-        series = list(value_series(m=2, **vars(note)))
+        series = list(value_series(m=2, **note._asdict()))
         self.assertEqual(4, len(series))
         # NB: Pennies are off-by-one from reference ->     ¬          ¬ 
         self.assertEqual(
